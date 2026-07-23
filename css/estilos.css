@@ -1,0 +1,227 @@
+:root {
+    --azul: #0d47a1;
+    --azul-oscuro: #062c66;
+    --verde: #1b5e20;
+    --verde-claro: #2e7d32;
+    --blanco: #ffffff;
+    --gris-texto: #1a1a1a;
+    --radio: 0.6rem;
+    --espacio: 1rem;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background-color: var(--blanco);
+    color: var(--gris-texto);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4 {
+    color: var(--azul);
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+a {
+    color: var(--azul);
+    text-decoration: underline;
+}
+
+a:hover,
+a:focus {
+    color: var(--azul-oscuro);
+}
+
+::selection {
+    background-color: var(--verde);
+    color: var(--blanco);
+}
+
+:focus-visible {
+    outline: 3px solid var(--verde);
+    outline-offset: 2px;
+}
+
+.contenedor {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 var(--espacio);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border: none;
+    border-radius: var(--radio);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.btn-primario {
+    background-color: var(--azul);
+    color: var(--blanco);
+}
+
+.btn-primario:hover,
+.btn-primario:focus {
+    background-color: var(--azul-oscuro);
+}
+
+.btn-secundario {
+    background-color: var(--verde);
+    color: var(--blanco);
+}
+
+.btn-secundario:hover,
+.btn-secundario:focus {
+    background-color: var(--verde-claro);
+}
+
+.btn-contorno {
+    background-color: var(--blanco);
+    color: var(--azul);
+    border: 3px solid var(--azul);
+}
+
+.tarjeta {
+    background-color: var(--blanco);
+    border: 2px solid var(--azul);
+    border-radius: var(--radio);
+    padding: var(--espacio);
+}
+
+.video-lse {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: #000000;
+    border: 4px solid var(--verde);
+    border-radius: var(--radio);
+    overflow: hidden;
+}
+
+.video-lse video,
+.video-lse iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+.video-lse .etiqueta-lse {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    background-color: var(--verde);
+    color: var(--blanco);
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radio);
+}
+
+.video-lse .subtitulos {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.85);
+    color: var(--blanco);
+    text-align: center;
+    padding: 0.5rem;
+    font-size: 1rem;
+}
+
+.video-doble {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--espacio);
+}
+
+.alerta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: var(--espacio);
+    border-radius: var(--radio);
+    font-weight: 700;
+}
+
+.alerta-info {
+    background-color: #e3f2fd;
+    color: var(--azul-oscuro);
+    border: 2px solid var(--azul);
+}
+
+.alerta-exito {
+    background-color: #e8f5e9;
+    color: var(--verde);
+    border: 2px solid var(--verde);
+}
+
+.barra-nav {
+    background-color: var(--azul);
+    color: var(--blanco);
+    padding: var(--espacio);
+}
+
+.barra-nav a {
+    color: var(--blanco);
+    text-decoration: none;
+    font-weight: 700;
+    margin-right: var(--espacio);
+}
+
+.barra-nav a:hover,
+.barra-nav a:focus {
+    text-decoration: underline;
+}
+
+.rejilla-tarjetas {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--espacio);
+}
+
+@media (min-width: 600px) {
+    .video-doble {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .rejilla-tarjetas {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 900px) {
+    .rejilla-tarjetas {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    body {
+        font-size: 19px;
+    }
+}
+
+@media (max-width: 480px) {
+    .btn {
+        width: 100%;
+    }
+
+    h1 {
+        font-size: 1.6rem;
+    }
+}
