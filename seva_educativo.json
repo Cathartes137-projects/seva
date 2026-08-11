@@ -1,0 +1,30 @@
+[
+{"type":"header","version":"5.2.1","comment":"Export to JSON plugin for PHPMyAdmin"},
+{"type":"database","name":"seva_educativo"},
+{"type":"table","name":"contenidos_educativos","database":"seva_educativo","data":
+[
+
+]
+}
+,{"type":"table","name":"cursos","database":"seva_educativo","data":
+[
+
+]
+}
+,{"type":"table","name":"palabras_repasadas","database":"seva_educativo","data":
+[
+
+]
+}
+,{"type":"table","name":"progreso_usuario","database":"seva_educativo","data":
+[
+
+]
+}
+,{"type":"table","name":"usuarios","database":"seva_educativo","data":
+[
+{"id_usuario":"1234567899","nombre":"Admin","email":"nosemeocurrenada@gmail.com","password":"admin12358","fecha_registro":"2026-07-23 17:39:34"},
+{"id_usuario":"1234567900","nombre":"Edwin Camacho navarro","email":"edwin1234@gmail.com","password":"$2y$10$v11rirE3RDlB5kt98w3pCeL5U7MzmnptpENL73tXs3UBPWDZwGA.i","fecha_registro":"2026-08-03 16:03:35"}
+]
+}
+]

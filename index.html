@@ -1,71 +1,1232 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEVA - Inicio</title>
-    <!-- Bootstrap 5 para diseño ágil y responsive -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --azul-seva: #0056b3;
-            --verde-seva: #28a745;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEVA · Aprende Lengua de Señas, Conecta con el Mundo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    :root{
+        /* --- Identidad de marca SEVA (no tocar) --- */
+        --azul-seva:#0056b3;
+        --verde-seva:#28a745;
+
+        /* --- Paleta derivada --- */
+        --ink:#0B1B33;
+        --ink-soft:#152A4D;
+        --paper:#FFFFFF;
+        --bg:#F5F8FC;
+        --azul-claro:#EAF2FF;
+        --verde-claro:#E9F8EE;
+        --texto:#16213E;
+        --muted:#6B7A99;
+        --linea:#E4E9F4;
+        --dorado:#FFC107;
+        --sombra:0 20px 45px -22px rgba(11,27,51,0.35);
+    }
+
+    *{ box-sizing:border-box; }
+
+    html{ scroll-behavior:smooth; }
+
+    body{
+        margin:0;
+        font-family:'Inter', sans-serif;
+        color:var(--texto);
+        background:var(--bg);
+    }
+
+    h1,h2,h3,h4{
+        font-family:'Baloo 2', sans-serif;
+        color:var(--ink);
+        margin:0;
+    }
+
+    a{ color:inherit; }
+
+    .visually-hidden{
+        position:absolute; width:1px; height:1px; overflow:hidden;
+        clip:rect(0,0,0,0); white-space:nowrap;
+    }
+
+    .skip-link{
+        position:absolute;
+        left:1rem; top:-3rem;
+        background:var(--azul-seva);
+        color:#fff;
+        padding:0.6rem 1rem;
+        border-radius:0.5rem;
+        z-index:200;
+        transition:top 0.15s ease;
+        font-weight:600;
+        text-decoration:none;
+    }
+    .skip-link:focus{ top:1rem; }
+
+    :focus-visible{
+        outline:3px solid var(--verde-seva);
+        outline-offset:2px;
+    }
+
+    /* =================== LAYOUT SHELL =================== */
+    .app{
+        display:grid;
+        grid-template-columns:264px 1fr;
+        min-height:100vh;
+    }
+
+    /* =================== SIDEBAR =================== */
+    .sidebar{
+        background:linear-gradient(180deg, var(--ink) 0%, var(--ink-soft) 100%);
+        color:#EAF0FF;
+        padding:1.8rem 1.4rem;
+        display:flex;
+        flex-direction:column;
+        position:sticky;
+        top:0;
+        height:100vh;
+        z-index:50;
+    }
+    .sidebar .marca{
+        display:flex;
+        align-items:center;
+        gap:0.6rem;
+        font-family:'Baloo 2', sans-serif;
+        font-weight:800;
+        font-size:1.4rem;
+        color:#fff;
+        text-decoration:none;
+        margin-bottom:2.2rem;
+    }
+    .sidebar .marca .punto{
+        width:11px; height:11px; border-radius:50%;
+        background:var(--verde-seva);
+        display:inline-block;
+        box-shadow:0 0 0 5px rgba(40,167,69,0.18);
+    }
+
+    .nav-principal{
+        display:flex;
+        flex-direction:column;
+        gap:0.3rem;
+        list-style:none;
+        padding:0;
+        margin:0;
+        flex:1;
+    }
+    .nav-principal a{
+        display:flex;
+        align-items:center;
+        gap:0.75rem;
+        text-decoration:none;
+        color:#C7D2EE;
+        font-weight:600;
+        font-size:0.98rem;
+        padding:0.7rem 0.85rem;
+        border-radius:0.7rem;
+        transition:background 0.15s ease, color 0.15s ease;
+    }
+    .nav-principal a svg{ flex-shrink:0; opacity:0.85; }
+    .nav-principal a:hover{
+        background:rgba(255,255,255,0.06);
+        color:#fff;
+    }
+    .nav-principal a.activo{
+        background:var(--azul-seva);
+        color:#fff;
+        box-shadow:0 8px 20px -8px rgba(0,86,179,0.7);
+    }
+    .nav-principal a.activo svg{ opacity:1; }
+
+    .sidebar-auth{
+        display:flex;
+        flex-direction:column;
+        gap:0.7rem;
+        padding-top:1.4rem;
+        border-top:1px solid rgba(255,255,255,0.1);
+    }
+    .btn{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        gap:0.5rem;
+        font-family:'Inter', sans-serif;
+        font-weight:700;
+        font-size:0.95rem;
+        padding:0.75rem 1.1rem;
+        border-radius:0.75rem;
+        border:none;
+        cursor:pointer;
+        text-decoration:none;
+        transition:transform 0.12s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+    .btn:active{ transform:translateY(1px); }
+
+    .btn-contorno-claro{
+        background:transparent;
+        color:#fff;
+        border:1.5px solid rgba(255,255,255,0.4);
+    }
+    .btn-contorno-claro:hover{ background:rgba(255,255,255,0.08); border-color:#fff; }
+
+    .btn-azul{
+        background:var(--azul-seva);
+        color:#fff;
+    }
+    .btn-azul:hover{ background:#00478f; }
+
+    .btn-verde{
+        background:var(--verde-seva);
+        color:#fff;
+    }
+    .btn-verde:hover{ background:#218838; box-shadow:0 10px 24px -10px rgba(40,167,69,0.6); }
+
+    .btn-contorno-azul{
+        background:#fff;
+        color:var(--azul-seva);
+        border:1.5px solid var(--azul-seva);
+    }
+    .btn-contorno-azul:hover{ background:var(--azul-claro); }
+
+    /* =================== MOBILE TOGGLE =================== */
+    .btn-menu{
+        display:none;
+        background:var(--ink);
+        color:#fff;
+        border:none;
+        width:44px; height:44px;
+        border-radius:0.6rem;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+    }
+
+    .fondo-sidebar-movil{
+        display:none;
+        position:fixed;
+        inset:0;
+        background:rgba(11,27,51,0.55);
+        z-index:40;
+    }
+
+    /* =================== MAIN =================== */
+    .principal{ display:flex; flex-direction:column; min-width:0; }
+
+    /* --- Topbar --- */
+    .topbar{
+        display:flex;
+        align-items:center;
+        gap:1.2rem;
+        padding:1.1rem 2.2rem;
+        background:var(--paper);
+        border-bottom:1px solid var(--linea);
+        position:sticky;
+        top:0;
+        z-index:30;
+    }
+    .buscador{
+        flex:1;
+        max-width:480px;
+        position:relative;
+    }
+    .buscador svg{
+        position:absolute;
+        left:0.9rem; top:50%;
+        transform:translateY(-50%);
+        color:var(--muted);
+    }
+    .buscador input{
+        width:100%;
+        padding:0.75rem 1rem 0.75rem 2.6rem;
+        border:1.5px solid var(--linea);
+        border-radius:0.8rem;
+        font-family:'Inter', sans-serif;
+        font-size:0.95rem;
+        background:var(--bg);
+        color:var(--texto);
+        transition:border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .buscador input::placeholder{ color:var(--muted); }
+    .buscador input:focus{
+        outline:none;
+        border-color:var(--azul-seva);
+        background:#fff;
+        box-shadow:0 0 0 4px rgba(0,86,179,0.12);
+    }
+
+    .topbar-derecha{
+        display:flex;
+        align-items:center;
+        gap:0.7rem;
+        margin-left:auto;
+        position:relative;
+    }
+    .icono-topbar{
+        position:relative;
+        width:44px; height:44px;
+        border-radius:0.7rem;
+        border:1.5px solid var(--linea);
+        background:#fff;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+        color:var(--ink);
+        transition:background 0.15s ease, border-color 0.15s ease;
+    }
+    .icono-topbar:hover{ background:var(--azul-claro); border-color:var(--azul-seva); }
+    .icono-topbar .punto-alerta{
+        position:absolute;
+        top:7px; right:8px;
+        width:8px; height:8px;
+        border-radius:50%;
+        background:var(--verde-seva);
+        border:2px solid #fff;
+    }
+
+    .menu-desplegable{
+        position:absolute;
+        top:calc(100% + 0.6rem);
+        right:0;
+        width:280px;
+        background:#fff;
+        border:1px solid var(--linea);
+        border-radius:1rem;
+        box-shadow:var(--sombra);
+        padding:0.9rem;
+        display:none;
+        z-index:60;
+    }
+    .menu-desplegable.abierto{ display:block; }
+    .menu-desplegable h4{
+        font-size:0.95rem;
+        margin-bottom:0.6rem;
+        padding:0 0.3rem;
+    }
+    .item-notificacion{
+        display:flex;
+        gap:0.7rem;
+        padding:0.6rem 0.3rem;
+        border-radius:0.6rem;
+        font-size:0.85rem;
+        color:var(--texto);
+    }
+    .item-notificacion:hover{ background:var(--bg); }
+    .item-notificacion .dot{
+        width:8px; height:8px; border-radius:50%;
+        background:var(--verde-seva);
+        margin-top:0.35rem;
+        flex-shrink:0;
+    }
+    .item-notificacion strong{ display:block; color:var(--ink); }
+    .item-notificacion span.hora{ color:var(--muted); font-size:0.75rem; }
+
+    .menu-perfil a{
+        display:flex;
+        align-items:center;
+        gap:0.6rem;
+        padding:0.65rem 0.5rem;
+        border-radius:0.6rem;
+        text-decoration:none;
+        font-weight:600;
+        font-size:0.9rem;
+        color:var(--texto);
+    }
+    .menu-perfil a:hover{ background:var(--bg); }
+    .menu-perfil hr{ border:none; border-top:1px solid var(--linea); margin:0.4rem 0; }
+
+    /* =================== HERO =================== */
+    .hero{
+        display:grid;
+        grid-template-columns:1.05fr 0.95fr;
+        gap:3rem;
+        align-items:center;
+        padding:3.5rem 2.2rem 4rem;
+        max-width:1280px;
+        margin:0 auto;
+        width:100%;
+    }
+
+    .eyebrow{
+        display:inline-flex;
+        align-items:center;
+        gap:0.45rem;
+        background:var(--verde-claro);
+        color:#1c7a37;
+        font-weight:700;
+        font-size:0.82rem;
+        padding:0.45rem 0.85rem;
+        border-radius:2rem;
+        margin-bottom:1.3rem;
+    }
+
+    .hero h1{
+        font-size:clamp(2.1rem, 3.6vw, 3.1rem);
+        font-weight:800;
+        line-height:1.14;
+        margin-bottom:1.1rem;
+    }
+    .hero h1 .resalte{ color:var(--azul-seva); }
+
+    .hero p.desc{
+        font-size:1.08rem;
+        line-height:1.65;
+        color:var(--muted);
+        max-width:520px;
+        margin-bottom:1.9rem;
+    }
+
+    .cta-fila{
+        display:flex;
+        flex-wrap:wrap;
+        gap:0.9rem;
+        margin-bottom:2.4rem;
+    }
+    .cta-fila .btn{ padding:0.95rem 1.6rem; font-size:1rem; }
+
+    .prueba-social{
+        display:flex;
+        align-items:center;
+        gap:0.9rem;
+    }
+    .avatares{
+        display:flex;
+    }
+    .avatares span{
+        width:38px; height:38px;
+        border-radius:50%;
+        border:3px solid #fff;
+        margin-left:-12px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-family:'Space Mono', monospace;
+        font-weight:700;
+        font-size:0.72rem;
+        color:#fff;
+    }
+    .avatares span:first-child{ margin-left:0; }
+    .avatares span:nth-child(1){ background:#0056b3; }
+    .avatares span:nth-child(2){ background:#28a745; }
+    .avatares span:nth-child(3){ background:#FFB84D; }
+    .avatares span:nth-child(4){ background:#7A5CFA; }
+
+    .prueba-texto .estrellas{
+        color:var(--dorado);
+        font-size:0.9rem;
+        letter-spacing:0.1em;
+        line-height:1;
+        margin-bottom:0.2rem;
+    }
+    .prueba-texto p{
+        margin:0;
+        font-size:0.88rem;
+        color:var(--muted);
+        font-weight:600;
+    }
+    .prueba-texto p span.num{
+        font-family:'Space Mono', monospace;
+        color:var(--ink);
+        font-weight:700;
+    }
+
+    /* =================== TARJETA DEMO (elemento firma) =================== */
+    .tarjeta-demo{
+        position:relative;
+        border-radius:1.5rem;
+        overflow:hidden;
+        box-shadow:var(--sombra);
+        background:linear-gradient(160deg, #10254A 0%, var(--ink) 65%, #08152B 100%);
+        aspect-ratio:4/5;
+        max-width:440px;
+        margin:0 auto;
+    }
+    .tarjeta-demo::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        background-image:radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+        background-size:24px 24px;
+        opacity:0.6;
+    }
+    .escena-demo{
+        position:absolute;
+        inset:0;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+    }
+    .escena-demo svg{ width:88%; height:auto; }
+
+    /* línea de escaneo del "hand-tracking" */
+    .linea-escaneo{
+        position:absolute;
+        left:8%;
+        right:8%;
+        height:2px;
+        background:linear-gradient(90deg, transparent, var(--verde-seva), transparent);
+        box-shadow:0 0 14px 2px rgba(40,167,69,0.7);
+        animation:escanear 3.2s ease-in-out infinite;
+    }
+    @keyframes escanear{
+        0%   { top:18%; opacity:0; }
+        10%  { opacity:1; }
+        50%  { top:80%; opacity:1; }
+        60%  { opacity:0; }
+        100% { top:18%; opacity:0; }
+    }
+
+    .punto-rastreo{
+        position:absolute;
+        width:9px; height:9px;
+        border-radius:50%;
+        background:var(--verde-seva);
+        box-shadow:0 0 0 5px rgba(40,167,69,0.22);
+        animation:pulso-punto 2.4s ease-in-out infinite;
+    }
+    @keyframes pulso-punto{
+        0%,100%{ transform:scale(1); }
+        50%{ transform:scale(1.35); }
+    }
+
+    .insignia-precision{
+        position:absolute;
+        bottom:1.1rem;
+        right:1.1rem;
+        left:1.1rem;
+        background:rgba(11,27,51,0.72);
+        backdrop-filter:blur(6px);
+        border:1px solid rgba(255,255,255,0.14);
+        border-radius:1rem;
+        padding:0.85rem 1rem;
+        display:flex;
+        align-items:center;
+        gap:0.75rem;
+        color:#fff;
+    }
+    .insignia-precision .icono-mano{
+        width:36px; height:36px;
+        border-radius:0.7rem;
+        background:var(--verde-seva);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        flex-shrink:0;
+    }
+    .insignia-precision .texto strong{
+        display:block;
+        font-family:'Baloo 2', sans-serif;
+        font-size:0.95rem;
+    }
+    .insignia-precision .texto .fila-precision{
+        display:flex;
+        align-items:center;
+        gap:0.5rem;
+        margin-top:0.3rem;
+    }
+    .insignia-precision .barra-precision{
+        flex:1;
+        height:6px;
+        border-radius:1rem;
+        background:rgba(255,255,255,0.18);
+        overflow:hidden;
+    }
+    .insignia-precision .barra-precision-relleno{
+        height:100%;
+        background:var(--verde-seva);
+        border-radius:1rem;
+        transition:width 0.5s ease;
+        width:98%;
+    }
+    .insignia-precision .valor-precision{
+        font-family:'Space Mono', monospace;
+        font-weight:700;
+        font-size:0.85rem;
+        color:#7CF29B;
+        min-width:38px;
+        text-align:right;
+    }
+
+    .chip-flotante-demo{
+        position:absolute;
+        top:1.1rem;
+        left:1.1rem;
+        background:rgba(255,255,255,0.1);
+        border:1px solid rgba(255,255,255,0.2);
+        color:#fff;
+        font-family:'Space Mono', monospace;
+        font-size:0.7rem;
+        font-weight:700;
+        letter-spacing:0.05em;
+        text-transform:uppercase;
+        padding:0.4rem 0.7rem;
+        border-radius:0.5rem;
+        display:flex;
+        align-items:center;
+        gap:0.4rem;
+    }
+    .chip-flotante-demo .punto-vivo{
+        width:7px; height:7px;
+        border-radius:50%;
+        background:#7CF29B;
+        animation:pulso-punto 1.6s ease-in-out infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+        .linea-escaneo, .punto-rastreo, .chip-flotante-demo .punto-vivo{ animation:none; }
+        html{ scroll-behavior:auto; }
+    }
+
+    /* =================== SECCIÓN CURSOS =================== */
+    .seccion{
+        padding:3.2rem 2.2rem;
+        max-width:1280px;
+        margin:0 auto;
+        width:100%;
+    }
+    .cabecera-seccion{
+        text-align:center;
+        max-width:620px;
+        margin:0 auto 2.4rem;
+    }
+    .cabecera-seccion .ojo{
+        font-family:'Space Mono', monospace;
+        font-size:0.78rem;
+        font-weight:700;
+        letter-spacing:0.14em;
+        text-transform:uppercase;
+        color:var(--azul-seva);
+        margin-bottom:0.6rem;
+        display:block;
+    }
+    .cabecera-seccion h2{
+        font-size:2rem;
+        margin-bottom:0.7rem;
+    }
+    .cabecera-seccion p{
+        color:var(--muted);
+        font-size:1rem;
+        line-height:1.6;
+    }
+
+    .rejilla-cursos{
+        display:grid;
+        grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+        gap:1.4rem;
+    }
+    .tarjeta-curso{
+        background:#fff;
+        border:1px solid var(--linea);
+        border-radius:1.1rem;
+        padding:1.5rem;
+        transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+    .tarjeta-curso:hover{
+        transform:translateY(-5px);
+        box-shadow:var(--sombra);
+        border-color:var(--azul-seva);
+    }
+    .tarjeta-curso .icono-curso{
+        width:52px; height:52px;
+        border-radius:0.9rem;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        margin-bottom:1.1rem;
+    }
+    .tarjeta-curso h3{ font-size:1.1rem; margin-bottom:0.5rem; }
+    .tarjeta-curso p{
+        color:var(--muted);
+        font-size:0.92rem;
+        line-height:1.55;
+        margin-bottom:1rem;
+    }
+    .tarjeta-curso a.enlace-curso{
+        display:inline-flex;
+        align-items:center;
+        gap:0.35rem;
+        font-weight:700;
+        font-size:0.88rem;
+        color:var(--azul-seva);
+        text-decoration:none;
+    }
+    .tarjeta-curso a.enlace-curso:hover{ text-decoration:underline; }
+
+    /* =================== POR QUÉ ELEGIR SEVA =================== */
+    .seccion-porque{
+        background:var(--ink);
+        color:#EAF0FF;
+        border-radius:2rem;
+        margin:1.5rem 2.2rem 3rem;
+        padding:3.5rem 2.2rem;
+        max-width:1280px;
+        margin-left:auto; margin-right:auto;
+    }
+    .seccion-porque .cabecera-seccion h2{ color:#fff; }
+    .seccion-porque .cabecera-seccion p{ color:#B7C2E0; }
+    .seccion-porque .cabecera-seccion .ojo{ color:#7CF29B; }
+
+    .rejilla-porque{
+        display:grid;
+        grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+        gap:1.3rem;
+    }
+    .tarjeta-porque{
+        background:rgba(255,255,255,0.05);
+        border:1px solid rgba(255,255,255,0.1);
+        border-radius:1.1rem;
+        padding:1.5rem;
+    }
+    .tarjeta-porque .icono-porque{
+        width:46px; height:46px;
+        border-radius:0.8rem;
+        background:rgba(40,167,69,0.18);
+        color:#7CF29B;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        margin-bottom:1rem;
+    }
+    .tarjeta-porque h3{ color:#fff; font-size:1.02rem; margin-bottom:0.4rem; }
+    .tarjeta-porque p{ color:#B7C2E0; font-size:0.88rem; line-height:1.55; margin:0; }
+
+    /* estadísticas */
+    .fila-stats{
+        display:grid;
+        grid-template-columns:repeat(3, 1fr);
+        gap:1rem;
+        margin-top:2.4rem;
+        padding-top:2.2rem;
+        border-top:1px solid rgba(255,255,255,0.1);
+        text-align:center;
+    }
+    .fila-stats .stat strong{
+        display:block;
+        font-family:'Space Mono', monospace;
+        font-size:1.9rem;
+        color:#7CF29B;
+    }
+    .fila-stats .stat span{
+        font-size:0.85rem;
+        color:#B7C2E0;
+    }
+
+    /* =================== FOOTER =================== */
+    footer{
+        background:#fff;
+        border-top:1px solid var(--linea);
+        padding:2.4rem 2.2rem 2rem;
+        text-align:center;
+        color:var(--muted);
+        font-size:0.88rem;
+    }
+    footer .marca-pie{
+        font-family:'Baloo 2', sans-serif;
+        font-weight:800;
+        color:var(--ink);
+        font-size:1.1rem;
+        margin-bottom:0.4rem;
+    }
+    footer a{ color:var(--azul-seva); text-decoration:none; font-weight:600; }
+    footer a:hover{ text-decoration:underline; }
+
+    /* =================== MODAL "Ver cómo funciona" =================== */
+    .fondo-modal{
+        position:fixed;
+        inset:0;
+        background:rgba(11,27,51,0.6);
+        display:none;
+        align-items:center;
+        justify-content:center;
+        padding:1.5rem;
+        z-index:100;
+    }
+    .fondo-modal.abierto{ display:flex; }
+    .modal{
+        background:#fff;
+        border-radius:1.4rem;
+        max-width:520px;
+        width:100%;
+        padding:2rem;
+        position:relative;
+        box-shadow:var(--sombra);
+    }
+    .modal .cerrar-modal{
+        position:absolute;
+        top:1rem; right:1rem;
+        width:38px; height:38px;
+        border-radius:0.6rem;
+        border:1.5px solid var(--linea);
+        background:#fff;
+        cursor:pointer;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        color:var(--ink);
+    }
+    .modal .cerrar-modal:hover{ background:var(--bg); }
+    .modal h3{ font-size:1.4rem; margin-bottom:0.3rem; padding-right:2rem; }
+    .modal p.sub{ color:var(--muted); margin-bottom:1.4rem; font-size:0.95rem; }
+    .pasos-modal{ list-style:none; padding:0; margin:0 0 1.6rem; display:flex; flex-direction:column; gap:1rem; }
+    .pasos-modal li{ display:flex; gap:0.9rem; }
+    .pasos-modal .num{
+        width:32px; height:32px; flex-shrink:0;
+        border-radius:50%;
+        background:var(--azul-claro);
+        color:var(--azul-seva);
+        font-family:'Space Mono', monospace;
+        font-weight:700;
+        display:flex; align-items:center; justify-content:center;
+        font-size:0.85rem;
+    }
+    .pasos-modal strong{ display:block; font-size:0.95rem; color:var(--ink); margin-bottom:0.15rem; }
+    .pasos-modal span{ font-size:0.87rem; color:var(--muted); line-height:1.5; }
+
+    /* =================== RESPONSIVE =================== */
+    @media (max-width: 1080px){
+        .hero{ grid-template-columns:1fr; }
+        .tarjeta-demo{ max-width:380px; }
+    }
+
+    @media (max-width: 900px){
+        .app{ grid-template-columns:1fr; }
+        .sidebar{
+            position:fixed;
+            left:0; top:0;
+            width:280px;
+            transform:translateX(-100%);
+            transition:transform 0.2s ease;
         }
-        body {
-            background-color: #f8f9fa;
-            font-family: Arial, sans-serif;
-        }
-        .hero-section {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-        }
-        /* Botón grande y accesible según requerimientos */
-        .btn-accesible {
-            padding: 20px 40px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border-radius: 15px;
-            background-color: var(--azul-seva);
-            color: white;
-            transition: transform 0.2s;
-            border: none;
-            text-decoration: none;
-        }
-        .btn-accesible:hover {
-            transform: scale(1.05);
-            background-color: var(--verde-seva);
-            color: white;
-        }
-        .logo-placeholder {
-            font-size: 4rem;
-            color: var(--azul-seva);
-            margin-bottom: 20px;
-        }
-    </style>
+        .sidebar.abierto{ transform:translateX(0); }
+        .fondo-sidebar-movil.abierto{ display:block; }
+        .btn-menu{ display:flex; }
+        .topbar{ padding:1rem 1.3rem; }
+        .buscador{ max-width:none; }
+    }
+
+    @media (max-width: 560px){
+        .hero{ padding:2.4rem 1.3rem 3rem; }
+        .seccion{ padding:2.4rem 1.3rem; }
+        .seccion-porque{ margin:1rem 0.6rem 2.4rem; padding:2.4rem 1.3rem; border-radius:1.4rem; }
+        .fila-stats{ grid-template-columns:1fr; gap:1.3rem; }
+        .cta-fila .btn{ width:100%; }
+        .prueba-social{ flex-wrap:wrap; }
+        .topbar-derecha .icono-topbar:nth-child(1){ display:none; } /* mantiene compacto en móvil */
+    }
+</style>
 </head>
 <body>
 
-    <main class="hero-section">
-        <!-- Identidad visual del proyecto SEVA -->
-        <div class="logo-placeholder">🤟</div>
-        <h1 class="display-4 fw-bold text-primary">Bienvenidos a SEVA</h1>
-        <p class="lead mb-5 text-secondary">Sistema Educativo de Lengua de Señas</p>
+<a href="#contenido" class="skip-link">Saltar al contenido</a>
 
-        <!-- Botón para llegar a la página de login -->
-        <a href="login.php" class="btn-accesible shadow-lg">
-            INICIAR SESIÓN
-        </a>
-        
-        <p class="mt-4">
-            <a href="registro.php" class="text-decoration-none text-success fw-bold">¿No tienes cuenta? Regístrate aquí</a>
-        </p>
-    </main>
+<div class="app">
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="sidebar" id="sidebar">
+        <a href="#inicio" class="marca"><span class="punto"></span>Seva</a>
+
+        <ul class="nav-principal" id="nav-principal">
+            <li><a href="#inicio" class="activo" data-nav="inicio">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+                Inicio
+            </a></li>
+            <li><a href="#cursos" data-nav="cursos">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                Explorar Cursos
+            </a></li>
+            <li><a href="login.php" data-nav="progreso">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+                Mi Progreso
+            </a></li>
+            <li><a href="login.php" data-nav="comunidad">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Comunidad
+            </a></li>
+        </ul>
+
+        <div class="sidebar-auth">
+            <a href="login.php" class="btn btn-contorno-claro">Iniciar Sesión</a>
+            <a href="registro.php" class="btn btn-azul">Registrarse</a>
+        </div>
+    </aside>
+
+    <div class="fondo-sidebar-movil" id="fondo-sidebar-movil"></div>
+
+    <!-- ================= PRINCIPAL ================= -->
+    <div class="principal">
+
+        <!-- ---- Topbar ---- -->
+        <header class="topbar">
+            <button class="btn-menu" id="btn-menu" aria-label="Abrir menú de navegación" aria-expanded="false" aria-controls="sidebar">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            </button>
+
+            <form class="buscador" id="form-buscar" role="search">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <label for="buscar-input" class="visually-hidden">Buscar señas o lecciones</label>
+                <input type="text" id="buscar-input" placeholder="Buscar señas o lecciones...">
+            </form>
+
+            <div class="topbar-derecha">
+                <button class="icono-topbar" id="btn-notificaciones" aria-label="Ver notificaciones" aria-expanded="false" aria-haspopup="true">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                    <span class="punto-alerta"></span>
+                </button>
+                <div class="menu-desplegable" id="menu-notificaciones" role="menu">
+                    <h4>Notificaciones</h4>
+                    <div class="item-notificacion"><span class="dot"></span><div><strong>¡Nueva lección disponible!</strong>Alfabeto dactilológico — nivel 2 <span class="hora">Hace 2 h</span></div></div>
+                    <div class="item-notificacion"><span class="dot"></span><div><strong>Racha de 3 días</strong>Sigue practicando para no perderla <span class="hora">Hoy</span></div></div>
+                    <div class="item-notificacion"><span class="dot"></span><div><strong>Bienvenido a Seva</strong>Completa tu perfil para empezar <span class="hora">Ayer</span></div></div>
+                </div>
+
+                <button class="icono-topbar" id="btn-perfil" aria-label="Abrir menú de perfil" aria-expanded="false" aria-haspopup="true">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+                </button>
+                <div class="menu-desplegable menu-perfil" id="menu-perfil" role="menu">
+                    <a href="login.php">Iniciar sesión</a>
+                    <a href="registro.php">Crear cuenta</a>
+                    <hr>
+                    <a href="#cursos">Explorar cursos</a>
+                </div>
+            </div>
+        </header>
+
+        <main id="contenido">
+
+            <!-- ================= HERO ================= -->
+            <section class="hero" id="inicio">
+                <div class="hero-texto">
+                    <span class="eyebrow">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                        Plataforma Inclusiva Certificada
+                    </span>
+                    <h1>Aprende Lengua de Señas, <span class="resalte">Conecta con el Mundo</span></h1>
+                    <p class="desc">SEVA, la plataforma inclusiva diseñada para que todos puedan comunicarse sin barreras. Aprende a tu ritmo con tecnología de seguimiento de manos en tiempo real.</p>
+
+                    <div class="cta-fila">
+                        <a href="registro.php" class="btn btn-verde">
+                            Empezar ahora
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </a>
+                        <button class="btn btn-contorno-azul" id="btn-como-funciona" type="button">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                            Ver cómo funciona
+                        </button>
+                    </div>
+
+                    <div class="prueba-social">
+                        <div class="avatares" aria-hidden="true">
+                            <span>MJ</span><span>LR</span><span>AC</span><span>+5k</span>
+                        </div>
+                        <div class="prueba-texto">
+                            <div class="estrellas" aria-hidden="true">★★★★★</div>
+                            <p><span class="num" id="contador-estudiantes">0</span> estudiantes activos</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta de demostración: elemento de firma (hand-tracking en vivo) -->
+                <div class="tarjeta-demo">
+                    <span class="chip-flotante-demo"><span class="punto-vivo"></span>EN VIVO</span>
+                    <div class="escena-demo">
+                        <svg viewBox="0 0 300 340" xmlns="http://www.w3.org/2000/svg">
+                            <!-- dos siluetas practicando lengua de señas -->
+                            <circle cx="100" cy="70" r="34" fill="#1E3763"/>
+                            <path d="M50 190 C50 140 72 110 100 110 C128 110 150 140 150 190 L150 210 L50 210 Z" fill="#1E3763"/>
+
+                            <circle cx="210" cy="90" r="30" fill="#274579"/>
+                            <path d="M168 200 C168 155 188 128 213 128 C238 128 258 155 258 200 L258 218 L168 218 Z" fill="#274579"/>
+
+                            <!-- mano señando (persona izquierda) -->
+                            <g class="punto-rastreo-grupo">
+                                <path d="M118 165 C130 158 142 158 148 168 C152 176 148 184 140 186 L155 178 C162 174 170 178 171 186 C172 193 167 199 160 200 L172 196 C179 194 186 198 187 205 C188 212 183 218 176 219 L150 226 C132 230 116 224 106 210 C98 199 100 184 112 175 Z"
+                                      fill="#FBEFE4" stroke="#28a745" stroke-width="2"/>
+                            </g>
+
+                            <!-- puntos de seguimiento IA -->
+                            <circle class="punto-rastreo" cx="120" cy="168" r="3" style="animation-delay:0s"/>
+                            <circle class="punto-rastreo" cx="145" cy="172" r="3" style="animation-delay:0.3s"/>
+                            <circle class="punto-rastreo" cx="168" cy="188" r="3" style="animation-delay:0.6s"/>
+                            <circle class="punto-rastreo" cx="180" cy="205" r="3" style="animation-delay:0.9s"/>
+                            <circle class="punto-rastreo" cx="150" cy="222" r="3" style="animation-delay:1.2s"/>
+
+                            <!-- líneas de conexión del esqueleto de mano -->
+                            <path d="M120 168 L145 172 L168 188 L180 205 L150 222" stroke="#7CF29B" stroke-width="1.4" fill="none" opacity="0.7" stroke-dasharray="3 3"/>
+                        </svg>
+                    </div>
+                    <div class="linea-escaneo"></div>
+
+                    <div class="insignia-precision">
+                        <div class="icono-mano">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-4.53a2 2 0 0 1 3.06-2.58L8 15"/></svg>
+                        </div>
+                        <div class="texto">
+                            <strong>Seña Correcta</strong>
+                            <div class="fila-precision">
+                                <div class="barra-precision"><div class="barra-precision-relleno" id="barra-precision"></div></div>
+                                <span class="valor-precision" id="valor-precision">98%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= EXPLORAR CURSOS ================= -->
+            <section class="seccion" id="cursos">
+                <div class="cabecera-seccion">
+                    <span class="ojo">Explorar cursos</span>
+                    <h2>Un camino de aprendizaje para cada nivel</h2>
+                    <p>Desde el abecedario dactilológico hasta conversaciones completas: cada curso está diseñado junto a pedagogos especialistas en lengua de señas.</p>
+                </div>
+
+                <div class="rejilla-cursos">
+                    <div class="tarjeta-curso">
+                        <div class="icono-curso" style="background:var(--azul-claro); color:var(--azul-seva);">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        </div>
+                        <h3>Alfabeto dactilológico</h3>
+                        <p>Domina cada letra con seguimiento de manos en tiempo real y práctica guiada.</p>
+                        <a href="login.php" class="enlace-curso">Empezar curso
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </a>
+                    </div>
+
+                    <div class="tarjeta-curso">
+                        <div class="icono-curso" style="background:var(--verde-claro); color:#1c7a37;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                        <h3>Saludos y presentaciones</h3>
+                        <p>Aprende a saludar, presentarte y mantener una conversación cotidiana.</p>
+                        <a href="login.php" class="enlace-curso">Empezar curso
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </a>
+                    </div>
+
+                    <div class="tarjeta-curso">
+                        <div class="icono-curso" style="background:#FFF3DE; color:#B8791B;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                        </div>
+                        <h3>Números y familia</h3>
+                        <p>Vocabulario esencial para contar, describir y hablar de tus seres queridos.</p>
+                        <a href="login.php" class="enlace-curso">Empezar curso
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= POR QUÉ ELEGIR SEVA ================= -->
+            <section class="seccion-porque">
+                <div class="cabecera-seccion">
+                    <span class="ojo">La diferencia Seva</span>
+                    <h2>Por qué elegir Seva</h2>
+                    <p>Construida junto a pedagogos e intérpretes de lengua de señas para que el aprendizaje sea real, accesible y medible.</p>
+                </div>
+
+                <div class="rejilla-porque">
+                    <div class="tarjeta-porque">
+                        <div class="icono-porque">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v0"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-4.53a2 2 0 0 1 3.06-2.58L8 15"/></svg>
+                        </div>
+                        <h3>Seguimiento de manos en tiempo real</h3>
+                        <p>Recibe retroalimentación instantánea sobre la precisión de cada seña que practicas.</p>
+                    </div>
+                    <div class="tarjeta-porque">
+                        <div class="icono-porque">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        </div>
+                        <h3>Aprende a tu propio ritmo</h3>
+                        <p>Sin horarios fijos: avanza cuando quieras y retoma justo donde lo dejaste.</p>
+                    </div>
+                    <div class="tarjeta-porque">
+                        <div class="icono-porque">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
+                        </div>
+                        <h3>Diseñada por pedagogos</h3>
+                        <p>Cada lección sigue una progresión pensada por especialistas en lengua de señas.</p>
+                    </div>
+                    <div class="tarjeta-porque">
+                        <div class="icono-porque">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                        <h3>Comunidad activa</h3>
+                        <p>Practica y comparte tu progreso con miles de estudiantes en el mismo camino.</p>
+                    </div>
+                </div>
+
+                <div class="fila-stats">
+                    <div class="stat"><strong id="stat-estudiantes">0</strong><span>Estudiantes activos</span></div>
+                    <div class="stat"><strong id="stat-precision">0%</strong><span>Precisión promedio</span></div>
+                    <div class="stat"><strong id="stat-lecciones">0+</strong><span>Lecciones disponibles</span></div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- ================= FOOTER ================= -->
+        <footer>
+            <div class="marca-pie">🤟 Seva</div>
+            <p>Sistema Educativo de Lengua de Señas · Aprende, practica y conecta sin barreras.</p>
+            <p><a href="registro.php">Crear cuenta gratis</a> · <a href="login.php">Iniciar sesión</a></p>
+        </footer>
+    </div>
+</div>
+
+<!-- ================= MODAL: Ver cómo funciona ================= -->
+<div class="fondo-modal" id="fondo-modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal">
+        <button class="cerrar-modal" id="cerrar-modal" aria-label="Cerrar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+        <h3 id="titulo-modal">¿Cómo funciona Seva?</h3>
+        <p class="sub">Tres pasos entre tú y tu primera conversación en lengua de señas.</p>
+        <ul class="pasos-modal">
+            <li>
+                <span class="num">1</span>
+                <div><strong>Elige una lección</strong><span>Empieza por el abecedario o salta a temas de tu interés.</span></div>
+            </li>
+            <li>
+                <span class="num">2</span>
+                <div><strong>Practica frente a tu cámara</strong><span>Nuestro modelo de seguimiento de manos observa tu seña en tiempo real.</span></div>
+            </li>
+            <li>
+                <span class="num">3</span>
+                <div><strong>Recibe retroalimentación al instante</strong><span>Ve tu precisión y corrige antes de avanzar a la siguiente seña.</span></div>
+            </li>
+        </ul>
+        <a href="registro.php" class="btn btn-verde" style="width:100%;">Crear mi cuenta gratis</a>
+    </div>
+</div>
+
+<script>
+(function(){
+    /* ---------- Menú móvil ---------- */
+    const sidebar = document.getElementById('sidebar');
+    const fondoMovil = document.getElementById('fondo-sidebar-movil');
+    const btnMenu = document.getElementById('btn-menu');
+
+    function abrirSidebar(){
+        sidebar.classList.add('abierto');
+        fondoMovil.classList.add('abierto');
+        btnMenu.setAttribute('aria-expanded', 'true');
+    }
+    function cerrarSidebar(){
+        sidebar.classList.remove('abierto');
+        fondoMovil.classList.remove('abierto');
+        btnMenu.setAttribute('aria-expanded', 'false');
+    }
+    btnMenu.addEventListener('click', function(){
+        sidebar.classList.contains('abierto') ? cerrarSidebar() : abrirSidebar();
+    });
+    fondoMovil.addEventListener('click', cerrarSidebar);
+    sidebar.querySelectorAll('a').forEach(a => a.addEventListener('click', cerrarSidebar));
+
+    /* ---------- Menús desplegables (notificaciones / perfil) ---------- */
+    function configurarDesplegable(btnId, menuId){
+        const btn = document.getElementById(btnId);
+        const menu = document.getElementById(menuId);
+        btn.addEventListener('click', function(e){
+            e.stopPropagation();
+            const abierto = menu.classList.toggle('abierto');
+            btn.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+            document.querySelectorAll('.menu-desplegable').forEach(m => { if (m !== menu) m.classList.remove('abierto'); });
+        });
+    }
+    configurarDesplegable('btn-notificaciones', 'menu-notificaciones');
+    configurarDesplegable('btn-perfil', 'menu-perfil');
+
+    document.addEventListener('click', function(){
+        document.querySelectorAll('.menu-desplegable').forEach(m => m.classList.remove('abierto'));
+    });
+
+    /* ---------- Buscador ---------- */
+    document.getElementById('form-buscar').addEventListener('submit', function(e){
+        e.preventDefault();
+        window.location.href = 'login.php';
+    });
+
+    /* ---------- Modal "Ver cómo funciona" ---------- */
+    const fondoModal = document.getElementById('fondo-modal');
+    document.getElementById('btn-como-funciona').addEventListener('click', function(){
+        fondoModal.classList.add('abierto');
+    });
+    document.getElementById('cerrar-modal').addEventListener('click', function(){
+        fondoModal.classList.remove('abierto');
+    });
+    fondoModal.addEventListener('click', function(e){
+        if (e.target === fondoModal) fondoModal.classList.remove('abierto');
+    });
+    document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape') fondoModal.classList.remove('abierto');
+    });
+
+    /* ---------- Resaltado de navegación al hacer scroll ---------- */
+    const enlacesNav = document.querySelectorAll('.nav-principal a[data-nav]');
+    const secciones = ['inicio', 'cursos'].map(id => document.getElementById(id)).filter(Boolean);
+    const observador = new IntersectionObserver(function(entradas){
+        entradas.forEach(function(entrada){
+            if (entrada.isIntersecting){
+                enlacesNav.forEach(a => a.classList.remove('activo'));
+                const activo = document.querySelector('.nav-principal a[data-nav="' + entrada.target.id + '"]');
+                if (activo) activo.classList.add('activo');
+            }
+        });
+    }, { rootMargin: '-40% 0px -50% 0px' });
+    secciones.forEach(s => observador.observe(s));
+
+    /* ---------- Contadores animados ---------- */
+    function animarContador(el, destino, sufijo, duracion){
+        sufijo = sufijo || '';
+        duracion = duracion || 1400;
+        const inicio = performance.now();
+        function paso(ahora){
+            const progreso = Math.min((ahora - inicio) / duracion, 1);
+            const valor = Math.floor(progreso * destino);
+            el.textContent = valor.toLocaleString('es-CO') + sufijo;
+            if (progreso < 1) requestAnimationFrame(paso);
+        }
+        requestAnimationFrame(paso);
+    }
+
+    const contadorEstudiantes = document.getElementById('contador-estudiantes');
+    const statEstudiantes = document.getElementById('stat-estudiantes');
+    const statPrecision = document.getElementById('stat-precision');
+    const statLecciones = document.getElementById('stat-lecciones');
+
+    let contadoHero = false;
+    const heroObs = new IntersectionObserver(function(entradas){
+        entradas.forEach(function(entrada){
+            if (entrada.isIntersecting && !contadoHero){
+                contadoHero = true;
+                animarContador(contadorEstudiantes, 5000, '+');
+            }
+        });
+    }, { threshold: 0.4 });
+    heroObs.observe(contadorEstudiantes);
+
+    let contadoStats = false;
+    const statsObs = new IntersectionObserver(function(entradas){
+        entradas.forEach(function(entrada){
+            if (entrada.isIntersecting && !contadoStats){
+                contadoStats = true;
+                animarContador(statEstudiantes, 5000, '+');
+                animarContador(statPrecision, 98, '%');
+                animarContador(statLecciones, 120, '+');
+            }
+        });
+    }, { threshold: 0.3 });
+    statsObs.observe(document.querySelector('.fila-stats'));
+
+    /* ---------- Precisión "en vivo" del hand-tracking (elemento de firma) ---------- */
+    const valorPrecision = document.getElementById('valor-precision');
+    const barraPrecision = document.getElementById('barra-precision');
+    setInterval(function(){
+        const nuevo = Math.floor(95 + Math.random() * 5); // 95–99
+        valorPrecision.textContent = nuevo + '%';
+        barraPrecision.style.width = nuevo + '%';
+    }, 2600);
+})();
+</script>
 </body>
 </html>

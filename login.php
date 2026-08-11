@@ -5,6 +5,13 @@ require 'conexion.php';
 $error = '';
 $email_val = '';
 
+if (isset($_GET['salir'])) {
+    session_unset();
+    session_destroy();
+    header('Location: login.php');
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email      = trim($_POST['email'] ?? '');
     $contrasena = $_POST['password'] ?? '';
@@ -35,21 +42,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Iniciar sesión · Señas</title>
+<title>Iniciar sesión · SEVA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
     :root{
-        --ink:#161B33;
-        --ink-soft:#2C3466;
+        --azul-seva:#0056b3;
+        --azul-oscuro:#003d80;
+        --verde-seva:#28a745;
+        --verde-oscuro:#1e7e34;
+        --ink:#04294d;
         --paper:#FFFFFF;
-        --coral:#FF6B54;
-        --coral-dark:#E5543F;
-        --gold:#FFB84D;
-        --teal:#3FC1B0;
         --text:#1B1F3B;
-        --muted:#7A80A0;
-        --line:#E9E6F5;
+        --muted:#6B7690;
+        --line:#E4EAF3;
         --danger:#D6465B;
         --danger-bg:#FDECEF;
     }
@@ -69,8 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     /* ---------- IZQUIERDA: ilustración ---------- */
     .panel-senas{
         position:relative;
-        background:radial-gradient(circle at 80% 20%, #232A57 0%, var(--ink) 55%, #0F1329 100%);
-        color:#F3F1FF;
+        background:radial-gradient(circle at 80% 20%, #0A3D75 0%, var(--ink) 55%, #021A33 100%);
+        color:#F3F6FF;
         padding:3.5rem 3rem;
         display:flex;
         flex-direction:column;
@@ -96,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     .marca .punto{
         width:10px;height:10px;border-radius:50%;
-        background:var(--coral);
+        background:var(--verde-seva);
         display:inline-block;
     }
     .hero-texto{
@@ -111,10 +117,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         line-height:1.12;
         margin:0 0 0.9rem;
     }
-    .hero-texto h1 span{color:var(--gold);}
+    .hero-texto h1 span{color:var(--verde-seva);}
     .hero-texto p{
         font-size:1rem;
-        color:#C7C9E6;
+        color:#C9D6EC;
         line-height:1.55;
         margin:0;
     }
@@ -149,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-weight:700;
         background:rgba(255,255,255,0.08);
         border:1px solid rgba(255,255,255,0.18);
-        color:#F3F1FF;
+        color:#F3F6FF;
         padding:0.35rem 0.6rem;
         border-radius:0.5rem;
     }
@@ -161,7 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-size:0.72rem;
         letter-spacing:0.14em;
         text-transform:uppercase;
-        color:var(--teal);
+        color:var(--verde-seva);
         margin:0 0 0.6rem;
     }
     .letras{ display:flex; flex-wrap:wrap; gap:0.4rem; }
@@ -176,9 +182,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         border:1px solid rgba(255,255,255,0.14);
     }
     .letras span.activa{
-        background:var(--teal);
-        border-color:var(--teal);
-        color:#0F1329;
+        background:var(--verde-seva);
+        border-color:var(--verde-seva);
+        color:#04294d;
     }
 
     /* ---------- DERECHA: formulario ---------- */
@@ -196,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-weight:700;
         letter-spacing:0.16em;
         text-transform:uppercase;
-        color:var(--coral-dark);
+        color:var(--azul-seva);
         margin:0 0 0.5rem;
     }
     .tarjeta h2{
@@ -236,13 +242,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-family:'Inter', sans-serif;
         font-size:0.95rem;
         color:var(--text);
-        background:#FCFCFF;
+        background:#FBFCFF;
         transition:border-color 0.15s ease, box-shadow 0.15s ease;
     }
     .campo input:focus{
         outline:none;
-        border-color:var(--coral);
-        box-shadow:0 0 0 4px rgba(255,107,84,0.14);
+        border-color:var(--azul-seva);
+        box-shadow:0 0 0 4px rgba(0,86,179,0.14);
     }
 
     .fila-extra{
@@ -255,14 +261,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         color:var(--muted);
         text-decoration:none;
     }
-    .fila-extra a:hover{ color:var(--coral-dark); text-decoration:underline; }
+    .fila-extra a:hover{ color:var(--azul-oscuro); text-decoration:underline; }
 
     .btn-entrar{
         width:100%;
         padding:0.85rem;
         border:none;
         border-radius:0.7rem;
-        background:var(--coral);
+        background:var(--azul-seva);
         color:#fff;
         font-size:1rem;
         font-weight:700;
@@ -270,9 +276,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         cursor:pointer;
         transition:background 0.15s ease, transform 0.1s ease;
     }
-    .btn-entrar:hover{ background:var(--coral-dark); }
+    .btn-entrar:hover{ background:var(--azul-oscuro); }
     .btn-entrar:active{ transform:translateY(1px); }
-    .btn-entrar:focus-visible{ outline:3px solid var(--gold); outline-offset:2px; }
+    .btn-entrar:focus-visible{ outline:3px solid var(--verde-seva); outline-offset:2px; }
 
     .pie{
         text-align:center;
@@ -280,7 +286,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-size:0.9rem;
         color:var(--muted);
     }
-    .pie a{ color:var(--coral-dark); font-weight:600; text-decoration:none; }
+    .pie a{ color:var(--verde-oscuro); font-weight:600; text-decoration:none; }
     .pie a:hover{ text-decoration:underline; }
 
     @media (max-width: 860px){
@@ -298,7 +304,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- ================= IZQUIERDA: ilustración ================= -->
     <div class="panel-senas">
-        <div class="marca"><span class="punto"></span>Señas</div>
+        <div class="marca"><span class="punto"></span>SEVA</div>
 
         <div class="hero-texto">
             <h1>Qué bueno <span>verte</span> otra vez.</h1>
@@ -316,13 +322,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- mano en seña de "correcto / OK" -->
                 <g class="mano-ok">
                     <path d="M110 200 C100 175 98 150 106 128 C110 118 120 114 127 119 C132 123 132 130 129 137 L128 108 C128 99 136 93 144 95 C151 97 155 105 154 113 L155 100 C156 91 165 85 173 88 C180 91 184 99 182 107 L183 96 C185 88 194 83 201 87 C208 91 211 99 208 107 L205 145 C202 172 190 192 172 203 C153 214 128 213 110 200 Z"
-                          fill="#FBEFE4" stroke="#3FC1B0" stroke-width="2"/>
-                    <circle cx="150" cy="210" r="10" fill="none" stroke="#3FC1B0" stroke-width="3"/>
-                    <path d="M144 210 L149 216 L158 203" stroke="#3FC1B0" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                          fill="#FBEFE4" stroke="#28a745" stroke-width="2"/>
+                    <circle cx="150" cy="210" r="10" fill="none" stroke="#28a745" stroke-width="3"/>
+                    <path d="M144 210 L149 216 L158 203" stroke="#28a745" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
                 </g>
 
-                <path d="M70 90 Q85 78 100 90" stroke="#FFB84D" stroke-width="3" fill="none" stroke-linecap="round"/>
-                <path d="M60 112 Q77 98 94 112" stroke="#FF6B54" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.8"/>
+                <path d="M70 90 Q85 78 100 90" stroke="#28a745" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <path d="M60 112 Q77 98 94 112" stroke="#0056b3" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.8"/>
             </svg>
         </div>
 

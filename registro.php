@@ -45,25 +45,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Crear cuenta · Señas</title>
+<title>Crear cuenta · SEVA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
     :root{
-        --ink:#161B33;
-        --ink-soft:#2C3466;
+        --azul-seva:#0056b3;
+        --azul-oscuro:#003d80;
+        --verde-seva:#28a745;
+        --verde-oscuro:#1e7e34;
+        --ink:#04294d;
         --paper:#FFFFFF;
-        --coral:#FF6B54;
-        --coral-dark:#E5543F;
-        --gold:#FFB84D;
-        --teal:#3FC1B0;
         --text:#1B1F3B;
-        --muted:#7A80A0;
-        --line:#E9E6F5;
+        --muted:#6B7690;
+        --line:#E4EAF3;
         --danger:#D6465B;
         --danger-bg:#FDECEF;
-        --success:#2FA37C;
-        --success-bg:#E9F8F1;
+        --success:#1e7e34;
+        --success-bg:#E9F8EE;
     }
     *{box-sizing:border-box;}
     body{
@@ -81,8 +80,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     /* ---------- LEFT: illustration panel ---------- */
     .panel-senas{
         position:relative;
-        background:radial-gradient(circle at 20% 15%, #232A57 0%, var(--ink) 55%, #0F1329 100%);
-        color:#F3F1FF;
+        background:radial-gradient(circle at 20% 15%, #0A3D75 0%, var(--ink) 55%, #021A33 100%);
+        color:#F3F6FF;
         padding:3.5rem 3rem;
         display:flex;
         flex-direction:column;
@@ -109,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     .marca .punto{
         width:10px;height:10px;border-radius:50%;
-        background:var(--coral);
+        background:var(--verde-seva);
         display:inline-block;
     }
     .hero-texto{
@@ -124,10 +123,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         line-height:1.12;
         margin:0 0 0.9rem;
     }
-    .hero-texto h1 span{color:var(--gold);}
+    .hero-texto h1 span{color:var(--verde-seva);}
     .hero-texto p{
         font-size:1rem;
-        color:#C7C9E6;
+        color:#C9D6EC;
         line-height:1.55;
         margin:0;
     }
@@ -164,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-weight:700;
         background:rgba(255,255,255,0.08);
         border:1px solid rgba(255,255,255,0.18);
-        color:#F3F1FF;
+        color:#F3F6FF;
         padding:0.35rem 0.6rem;
         border-radius:0.5rem;
         backdrop-filter:blur(2px);
@@ -181,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-size:0.72rem;
         letter-spacing:0.14em;
         text-transform:uppercase;
-        color:var(--teal);
+        color:var(--verde-seva);
         margin:0 0 0.6rem;
     }
     .letras{
@@ -200,9 +199,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         border:1px solid rgba(255,255,255,0.14);
     }
     .letras span.activa{
-        background:var(--coral);
-        border-color:var(--coral);
-        color:#161B33;
+        background:var(--azul-seva);
+        border-color:var(--azul-seva);
+        color:#F3F6FF;
     }
 
     /* ---------- RIGHT: form panel ---------- */
@@ -220,7 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-weight:700;
         letter-spacing:0.16em;
         text-transform:uppercase;
-        color:var(--coral-dark);
+        color:var(--azul-seva);
         margin:0 0 0.5rem;
     }
     .tarjeta h2{
@@ -260,13 +259,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-family:'Inter', sans-serif;
         font-size:0.95rem;
         color:var(--text);
-        background:#FCFCFF;
+        background:#FBFCFF;
         transition:border-color 0.15s ease, box-shadow 0.15s ease;
     }
     .campo input:focus{
         outline:none;
-        border-color:var(--coral);
-        box-shadow:0 0 0 4px rgba(255,107,84,0.14);
+        border-color:var(--azul-seva);
+        box-shadow:0 0 0 4px rgba(0,86,179,0.14);
     }
     .campo small{
         display:block;
@@ -281,7 +280,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         padding:0.85rem;
         border:none;
         border-radius:0.7rem;
-        background:var(--coral);
+        background:var(--azul-seva);
         color:#fff;
         font-size:1rem;
         font-weight:700;
@@ -290,9 +289,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         margin-top:0.4rem;
         transition:background 0.15s ease, transform 0.1s ease;
     }
-    .btn-crear:hover{ background:var(--coral-dark); }
+    .btn-crear:hover{ background:var(--azul-oscuro); }
     .btn-crear:active{ transform:translateY(1px); }
-    .btn-crear:focus-visible{ outline:3px solid var(--gold); outline-offset:2px; }
+    .btn-crear:focus-visible{ outline:3px solid var(--verde-seva); outline-offset:2px; }
 
     .pie{
         text-align:center;
@@ -300,7 +299,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-size:0.9rem;
         color:var(--muted);
     }
-    .pie a{ color:var(--coral-dark); font-weight:600; text-decoration:none; }
+    .pie a{ color:var(--verde-oscuro); font-weight:600; text-decoration:none; }
     .pie a:hover{ text-decoration:underline; }
 
     @media (max-width: 860px){
@@ -318,7 +317,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- ================= IZQUIERDA: ilustración ================= -->
     <div class="panel-senas">
-        <div class="marca"><span class="punto"></span>Señas</div>
+        <div class="marca"><span class="punto"></span>SEVA</div>
 
         <div class="hero-texto">
             <h1>Cada seña <span>abre</span> una conversación.</h1>
@@ -337,16 +336,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- mano saludando -->
                 <g class="mano-saludo">
                     <path d="M120 230 C110 200 108 175 112 150 C114 138 122 132 130 134 C136 136 138 143 137 150 L136 120 C136 110 144 103 152 104 C160 105 165 113 165 122 L166 112 C167 103 175 96 183 98 C191 100 196 108 195 117 L197 128 C198 120 206 114 214 117 C221 120 225 128 223 136 L215 178 C210 205 198 224 180 234 C160 245 136 246 120 230 Z"
-                          fill="#FBEFE4" stroke="#E5543F" stroke-width="2"/>
+                          fill="#FBEFE4" stroke="#0056b3" stroke-width="2"/>
                 </g>
 
                 <!-- segunda mano, forma de "amigo" apoyando -->
                 <path d="M180 260 C170 250 168 238 174 228 C182 216 200 214 212 222 C222 229 226 240 222 250 C216 262 196 268 180 260 Z"
-                      fill="#FFD9A6" stroke="#E5543F" stroke-width="2" opacity="0.9"/>
+                      fill="#D9ECFF" stroke="#0056b3" stroke-width="2" opacity="0.9"/>
 
                 <!-- líneas de movimiento -->
-                <path d="M60 90 Q75 80 90 90" stroke="#3FC1B0" stroke-width="3" fill="none" stroke-linecap="round"/>
-                <path d="M55 110 Q72 98 88 110" stroke="#FFB84D" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.8"/>
+                <path d="M60 90 Q75 80 90 90" stroke="#28a745" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <path d="M55 110 Q72 98 88 110" stroke="#28a745" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.8"/>
             </svg>
         </div>
 

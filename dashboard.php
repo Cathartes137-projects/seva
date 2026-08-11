@@ -265,6 +265,96 @@ try {
         .topbar{ padding:1rem 1.2rem; flex-wrap:wrap; gap:0.6rem; }
         .topbar-derecha{ gap:0.8rem; }
     }
+
+    /* ---------- Menú hamburguesa (configuración y opciones) ---------- */
+    .menu-opciones{
+        position:relative;
+    }
+    .btn-hamburguesa{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        width:40px;
+        height:40px;
+        padding:0;
+        background:transparent;
+        border:1.5px solid rgba(255,255,255,0.3);
+        border-radius:0.6rem;
+        color:#fff;
+        cursor:pointer;
+        transition:background 0.15s ease, border-color 0.15s ease;
+    }
+    .btn-hamburguesa:hover{ background:rgba(255,255,255,0.1); }
+    .btn-hamburguesa svg{ display:block; }
+
+    .panel-opciones{
+        position:absolute;
+        top:calc(100% + 0.6rem);
+        right:0;
+        width:250px;
+        background:var(--paper);
+        color:var(--text);
+        border:1px solid var(--line);
+        border-radius:0.9rem;
+        box-shadow:0 16px 32px -14px rgba(22,27,51,0.3);
+        padding:0.6rem;
+        display:none;
+        z-index:80;
+    }
+    .panel-opciones.abierto{ display:block; }
+
+    .panel-opciones .encabezado-opciones{
+        padding:0.5rem 0.6rem 0.7rem;
+        border-bottom:1px solid var(--line);
+        margin-bottom:0.4rem;
+    }
+    .panel-opciones .encabezado-opciones .nombre-usuario{
+        display:block;
+        font-family:'Baloo 2', sans-serif;
+        font-weight:700;
+        font-size:0.95rem;
+        color:var(--ink);
+    }
+    .panel-opciones .encabezado-opciones .correo-usuario{
+        display:block;
+        font-size:0.78rem;
+        color:var(--muted);
+        margin-top:0.1rem;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+    }
+
+    .panel-opciones .opcion{
+        display:flex;
+        align-items:center;
+        gap:0.7rem;
+        width:100%;
+        padding:0.6rem 0.6rem;
+        border:none;
+        background:none;
+        border-radius:0.6rem;
+        font-family:'Inter', sans-serif;
+        font-size:0.9rem;
+        font-weight:600;
+        color:var(--text);
+        text-decoration:none;
+        cursor:pointer;
+        text-align:left;
+    }
+    .panel-opciones .opcion svg{ flex-shrink:0; color:var(--muted); }
+    .panel-opciones .opcion:hover{ background:var(--bg); }
+    .panel-opciones .opcion:hover svg{ color:var(--coral-dark); }
+
+    .panel-opciones .separador-opciones{
+        border:none;
+        border-top:1px solid var(--line);
+        margin:0.4rem 0.2rem;
+    }
+
+    .panel-opciones .opcion.salir{ color:var(--danger); }
+    .panel-opciones .opcion.salir svg{ color:var(--danger); }
+    .panel-opciones .opcion.salir:hover{ background:var(--danger-bg); }
 </style>
 </head>
 <body>
@@ -272,6 +362,40 @@ try {
     <div class="marca"><span class="punto"></span>Señas</div>
     <div class="topbar-derecha">
         <span class="saludo">Hola, <strong><?= htmlspecialchars($nombre) ?></strong></span>
+
+        <div class="menu-opciones">
+            <button type="button" class="btn-hamburguesa" id="btn-opciones" aria-label="Abrir menú de opciones" aria-haspopup="true" aria-expanded="false" aria-controls="panel-opciones">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            </button>
+
+            <div class="panel-opciones" id="panel-opciones" role="menu">
+                <div class="encabezado-opciones">
+                    <span class="nombre-usuario"><?= htmlspecialchars($nombre) ?></span>
+                    <span class="correo-usuario"><?= htmlspecialchars($_SESSION['email'] ?? '') ?></span>
+                </div>
+
+                <a href="perfil.php" class="opcion" role="menuitem">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+                    Mi perfil
+                </a>
+                <a href="configuracion.php" class="opcion" role="menuitem">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Configuración de cuenta
+                </a>
+                <a href="#" class="opcion" role="menuitem">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+                    Ayuda y soporte
+                </a>
+
+                <hr class="separador-opciones">
+
+                <a href="login.php?salir=1" class="opcion salir" role="menuitem">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+                    Cerrar sesión
+                </a>
+            </div>
+        </div>
+
         <a href="login.php?salir=1">Salir</a>
     </div>
 </header>
@@ -342,6 +466,29 @@ try {
             window.location.href = 'leccion.php?id=' + this.dataset.id;
         });
     });
+
+    // Menú hamburguesa de opciones (configuración, perfil, ayuda, cerrar sesión)
+    const btnOpciones = document.getElementById('btn-opciones');
+    const panelOpciones = document.getElementById('panel-opciones');
+    if (btnOpciones && panelOpciones) {
+        btnOpciones.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const abierto = panelOpciones.classList.toggle('abierto');
+            btnOpciones.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', function () {
+            panelOpciones.classList.remove('abierto');
+            btnOpciones.setAttribute('aria-expanded', 'false');
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                panelOpciones.classList.remove('abierto');
+                btnOpciones.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
 </script>
 </body>
 </html>
