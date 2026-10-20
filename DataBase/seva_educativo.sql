@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 04-08-2026 a las 23:18:37
+-- Tiempo de generación: 17-10-2026 a las 00:24:53
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -126,7 +126,9 @@ CREATE TABLE `usuarios` (
 
 INSERT INTO `usuarios` (`id_usuario`, `nombre`, `email`, `password`, `fecha_registro`) VALUES
 (1234567899, 'Admin', 'nosemeocurrenada@gmail.com', 'admin12358', '2026-07-23 22:39:34'),
-(1234567900, 'Edwin Camacho navarro', 'edwin1234@gmail.com', '$2y$10$v11rirE3RDlB5kt98w3pCeL5U7MzmnptpENL73tXs3UBPWDZwGA.i', '2026-08-03 21:03:35');
+(1234567900, 'Edwin Camacho navarro', 'edwin1234@gmail.com', '$2y$10$v11rirE3RDlB5kt98w3pCeL5U7MzmnptpENL73tXs3UBPWDZwGA.i', '2026-08-03 21:03:35'),
+(1234567901, 'Carlos alejandro', 'carlos@gmail.com', '$2y$10$KSm7FF.wAgGcGk1EA12/5.fwHMwHWtn665Awj21dCYpL5ZNiqqhrK', '2026-09-30 22:21:45'),
+(1234567902, 'yarlenis', 'mancillayarlenis40@gmail.com', '$2y$10$SoIz0xb71BDB9WdKt79gk.W7nt8LjOYbfs7UEKnWxNjP4I3jlWkTm', '2026-09-30 22:25:20');
 
 --
 -- Índices para tablas volcadas
@@ -199,7 +201,7 @@ ALTER TABLE `progreso_usuario`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1234567901;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1234567903;
 
 --
 -- Restricciones para tablas volcadas
