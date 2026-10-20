@@ -1,6 +1,14 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require 'conexion.php';
+
+// Si el usuario ya está autenticado, redirigir directamente al dashboard
+if (isset($_SESSION['usuario_id']) && !isset($_GET['salir'])) {
+    header('Location: dashboard.php');
+    exit;
+}
 
 $error = '';
 $email_val = '';
@@ -15,7 +23,7 @@ if (isset($_GET['salir'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email      = trim($_POST['email'] ?? '');
     $contrasena = $_POST['password'] ?? '';
-    $email_val  = htmlspecialchars($email, ENT_QUOTES);
+    $email_val  = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
 
     if ($email === '' || $contrasena === '') {
         $error = 'Todos los campos son obligatorios.';
@@ -25,12 +33,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $fila = $stmt->fetch();
 
         if ($fila && password_verify($contrasena, $fila['password'])) {
-            session_regenerate_id(true);
+            if (!headers_sent()) {
+                session_regenerate_id(true);
+            }
             $_SESSION['usuario_id'] = $fila['id_usuario'];
             $_SESSION['nombre']     = $fila['nombre'];
             $_SESSION['email']      = $fila['email'];
-            header('Location: dashboard.php');
-            exit;
+            if (!headers_sent()) {
+                header('Location: dashboard.php');
+                exit;
+            }
         } else {
             $error = 'Correo o contraseña incorrectos.';
         }
@@ -218,12 +230,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-size:0.95rem;
     }
     .alerta{
-        padding:0.8rem 1rem;
+        padding:0.9rem 1.1rem;
         border-radius:0.7rem;
-        font-size:0.9rem;
+        font-size:0.92rem;
         margin-bottom:1.3rem;
         background:var(--danger-bg);
         color:var(--danger);
+        border:1.5px solid rgba(214, 70, 91, 0.35);
+        display:flex;
+        align-items:flex-start;
+        gap:0.75rem;
     }
 
     .campo{ margin-bottom:1.15rem; }
@@ -236,6 +252,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     .campo input{
         width:100%;
+        min-height:44px;
         padding:0.75rem 0.95rem;
         border:1.5px solid var(--line);
         border-radius:0.7rem;
@@ -248,23 +265,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .campo input:focus{
         outline:none;
         border-color:var(--azul-seva);
-        box-shadow:0 0 0 4px rgba(0,86,179,0.14);
+        box-shadow:0 0 0 3px rgba(0,86,179,0.18);
+    }
+    .campo input:focus-visible{
+        outline:3px solid var(--azul-seva);
+        outline-offset:2px;
     }
 
     .fila-extra{
         display:flex;
         justify-content:flex-end;
-        margin:-0.6rem 0 1.3rem;
+        margin:-0.4rem 0 1.2rem;
     }
     .fila-extra a{
         font-size:0.85rem;
         color:var(--muted);
         text-decoration:none;
+        display:inline-flex;
+        align-items:center;
+        min-height:44px;
+        padding:0.25rem 0.5rem;
+        border-radius:0.4rem;
     }
     .fila-extra a:hover{ color:var(--azul-oscuro); text-decoration:underline; }
+    .fila-extra a:focus-visible{
+        outline:3px solid var(--azul-seva);
+        outline-offset:2px;
+    }
 
     .btn-entrar{
         width:100%;
+        min-height:44px;
         padding:0.85rem;
         border:none;
         border-radius:0.7rem;
@@ -275,6 +306,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-family:'Inter', sans-serif;
         cursor:pointer;
         transition:background 0.15s ease, transform 0.1s ease;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
     }
     .btn-entrar:hover{ background:var(--azul-oscuro); }
     .btn-entrar:active{ transform:translateY(1px); }
@@ -286,8 +320,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-size:0.9rem;
         color:var(--muted);
     }
-    .pie a{ color:var(--verde-oscuro); font-weight:600; text-decoration:none; }
+    .pie a{
+        color:var(--verde-oscuro);
+        font-weight:600;
+        text-decoration:none;
+        display:inline-flex;
+        align-items:center;
+        min-height:44px;
+        padding:0.25rem 0.5rem;
+        border-radius:0.4rem;
+    }
     .pie a:hover{ text-decoration:underline; }
+    .pie a:focus-visible{
+        outline:3px solid var(--azul-seva);
+        outline-offset:2px;
+    }
 
     @media (max-width: 860px){
         .layout{ grid-template-columns:1fr; }
@@ -349,7 +396,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="sub">Ingresa con tu correo y contraseña.</p>
 
             <?php if ($error): ?>
-                <div class="alerta"><?= htmlspecialchars($error) ?></div>
+                <div class="alerta" role="alert" aria-live="assertive">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0; margin-top:1px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span><?= htmlspecialchars($error) ?></span>
+                </div>
             <?php endif; ?>
 
             <form method="POST" action="login.php" novalidate>
