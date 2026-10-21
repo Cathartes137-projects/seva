@@ -1,6 +1,6 @@
 # Plan de Remediación y Auditoría de Ingeniería Inversa — Proyecto SEVA
 **Rama base:** `seva-antigraity-migracion` · **Rama de trabajo:** `fix/auditoria-defectos`
-**Fecha:** 2026-10-20 · **Estado:** fases 0–7 completadas; fase 8 pendiente (2026-10-21)
+**Fecha:** 2026-10-20 · **Estado:** fases 0–8 completadas; PR pendiente de apertura (2026-10-21)
 
 > Fuente de verdad del proyecto: `docs/MEMORIA_PROYECTO.md`.
 > Reglas de trabajo: `docs/.antigravityrules.md` (planificar antes de codificar, un módulo por vez, YAGNI, WCAG 2, 44×44 px, design tokens).
@@ -183,10 +183,12 @@ Métodos: análisis estático (`$_GET/$_POST`, concatenación SQL, salida sin es
 
 - **Evidencia (2026-10-21):** los 8 documentos existen en `docs/AUDITORIA/` (`00` línea base conservada + `01`–`07`); 38 pruebas dinámicas ejecutadas (37 ✅ / 1 ⚠️: contraste de alerta de error 3,77:1, documentado como N-02); CSRF negativo en los 7 POST, SQLi/XSS sin bypass, fijación de sesión rechazada, rehash `$2y$04$` → `$2y$10$`, rate limit 5 fallos → 15 min, 5 cabeceras + CSP en local y HSTS condicional, recuperación con token de un solo uso/caducado y anti-enumeración con cuerpos idénticos; `php -l` sin errores en 11 archivos; 0 usuarios/intentos/tokens de prueba tras la limpieza; solo cambiaron `docs/AUDITORIA/*` y este plan.
 
-### Fase 8 — Documentación y cierre (D19)
+### Fase 8 — Documentación y cierre (D19) — ✅ completada (2026-10-21)
 - Reparar `MEMORIA_PROYECTO.md`: eliminar `ez<<<<` del inicio, purgar `uid=1000(sandbox)…` de §3.2, restaurar citas vacías (`utf8mb4`, nombres de flujo y tablas), actualizar §5 con lo resuelto y lo pendiente.
 - `docs/AUDITORIA/README.md` como índice.
 - PR `fix/auditoria-defectos → seva-antigraity-migracion` con checklist y evidencia de pruebas.
+
+- **Evidencia (2026-10-21):** `MEMORIA_PROYECTO.md` reparada (250 líneas, sin `ez<<<<` ni `uid=1000`, 8 tablas, 22 defectos resueltos + D04 mitigado); `docs/AUDITORIA/README.md` indexa los 8 documentos con enlaces relativos válidos; `docs/PR_FINAL.md` contiene resumen, evidencia de las 38 pruebas, checklist D01–D23 y riesgos; `php -l` sigue en 0 errores y no se modificó código fuente. El PR queda preparado para abrirse por web porque `gh` no está instalado.
 
 ---
 
@@ -260,7 +262,7 @@ Métodos: análisis estático (`$_GET/$_POST`, concatenación SQL, salida sin es
 | F5 | Respuesta uniforme en recuperación; token de un solo uso y caducidad OK |
 | F6 | Vocabulario por lección desde BD; filtros con `aria-pressed`; teclado completo |
 | F7 | 8 documentos de auditoría con evidencia y comparativa |
-| F8 | MEMORIA sin basura; enlaces internos válidos; PR abierto con checklist |
+| F8 | MEMORIA sin basura; enlaces internos válidos; PR preparado con checklist |
 
 ---
 
@@ -274,6 +276,6 @@ Métodos: análisis estático (`$_GET/$_POST`, concatenación SQL, salida sin es
 - [x] F5: recuperación con tokens, placeholder SVG y carpeta `video/` (2026-10-21).
 - [x] F6: vocabulario por lección, filtros accesibles, seed normalizado y validación de nombre (2026-10-21).
 - [x] F7: auditoría de ingeniería inversa con 8 documentos y 38 pruebas (2026-10-21).
-- [ ] F8: reparar la MEMORIA, crear el índice de auditoría y abrir el PR final.
+- [x] F8: MEMORIA reparada, índice de auditoría y PR preparado (2026-10-21).
 - [ ] Publicar `seva-antigraity-migracion` si aún no está en el remoto.
 - [ ] PR final con evidencia.
