@@ -34,6 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email_val = '';
     } elseif ($nombre === '' || $email === '' || $contrasena === '') {
         $error = 'Todos los campos son obligatorios.';
+    } elseif (mb_strlen($nombre, 'UTF-8') < 3 || mb_strlen($nombre, 'UTF-8') > 100) {
+        // Validación en servidor (D22): el límite no puede depender del navegador
+        $error = 'El nombre debe tener entre 3 y 100 caracteres.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'El correo electrónico no es válido.';
     } elseif (strlen($contrasena) < 8) {
@@ -500,7 +503,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?= honeypot_campo() ?>
                 <div class="campo">
                     <label for="nombre">Nombre completo</label>
-                    <input type="text" id="nombre" name="nombre" value="<?= $nombre_val ?>" required>
+                    <input type="text" id="nombre" name="nombre" value="<?= $nombre_val ?>" minlength="3" maxlength="100" autocomplete="name" required>
                 </div>
 
                 <div class="campo">
