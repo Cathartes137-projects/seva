@@ -1,23 +1,49 @@
 <?php
-session_start();
 require 'conexion.php';
+require 'seguridad.php';
 
-$error = '';
-$email_val = '';
+seguridad_iniciar_sesion();
 
-if (isset($_GET['salir'])) {
-    session_unset();
-    session_destroy();
-    header('Location: login.php');
+// Si el usuario ya está autenticado, redirigir directamente al dashboard
+if (isset($_SESSION['usuario_id'])) {
+    header('Location: dashboard.php');
     exit;
 }
 
+$error = '';
+$exito = '';
+$email_val = '';
+
+if (csrf_error_en_url()) {
+    $error = 'La solicitud expiró o no es válida. Inténtalo de nuevo.';
+}
+
+// Mensaje de confirmación tras restablecer la contraseña (Fase 5 / D13)
+if (isset($_GET['recuperado']) && $_GET['recuperado'] === '1') {
+    $exito = 'Tu contraseña se actualizó correctamente. Ya puedes iniciar sesión.';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Toda petición POST exige un token CSRF válido (D05)
+    seguridad_validar_csrf('login.php');
+
     $email      = trim($_POST['email'] ?? '');
     $contrasena = $_POST['password'] ?? '';
-    $email_val  = htmlspecialchars($email, ENT_QUOTES);
+    $email_val  = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
 
-    if ($email === '' || $contrasena === '') {
+    $ip_cliente = seguridad_ip_cliente();
+    $segundos_bloqueo = seguridad_login_bloqueo($pdo, $ip_cliente, $email);
+
+    if (honeypot_accionado()) {
+        // Bot detectado: respuesta neutra idéntica a un fallo real, sin tocar la BD
+        error_log('SEVA honeypot activado en login desde IP ' . $ip_cliente);
+        $error = 'Correo o contraseña incorrectos.';
+    } elseif ($segundos_bloqueo > 0) {
+        // Límite superado: mensaje neutro, sin revelar si la cuenta existe
+        $minutos = (int) ceil($segundos_bloqueo / 60);
+        $error = 'Demasiados intentos fallidos. Espera ' . $minutos
+            . ' minuto(s) e inténtalo de nuevo.';
+    } elseif ($email === '' || $contrasena === '') {
         $error = 'Todos los campos son obligatorios.';
     } else {
         $stmt = $pdo->prepare('SELECT id_usuario, nombre, email, password FROM usuarios WHERE email = ?');
@@ -25,13 +51,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $fila = $stmt->fetch();
 
         if ($fila && password_verify($contrasena, $fila['password'])) {
-            session_regenerate_id(true);
+            // Login correcto: limpiar el contador de intentos (D09)
+            seguridad_login_exito($pdo, $ip_cliente, $email);
+
+            // Actualiza el hash si el algoritmo o el coste cambiaron (D07)
+            seguridad_rehash_password($pdo, (int) $fila['id_usuario'], $contrasena, $fila['password']);
+
+            // Previene la fijación de sesión
+            seguridad_regenerar_sesion();
+
             $_SESSION['usuario_id'] = $fila['id_usuario'];
             $_SESSION['nombre']     = $fila['nombre'];
             $_SESSION['email']      = $fila['email'];
-            header('Location: dashboard.php');
-            exit;
+            if (!headers_sent()) {
+                header('Location: dashboard.php');
+                exit;
+            }
         } else {
+            // Fallo de autenticación: contar el intento (D09)
+            seguridad_login_fallo($pdo, $ip_cliente, $email);
             $error = 'Correo o contraseña incorrectos.';
         }
     }
@@ -65,6 +103,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-family:'Inter', sans-serif;
         color:var(--text);
         background:var(--paper);
+    }
+    /* Campo trampa anti-bots: fuera de pantalla, invisible para personas
+       y lectores de pantalla (D10). */
+    .hp-trampa{
+        position:absolute;
+        left:-9999px;
+        top:auto;
+        width:1px;
+        height:1px;
+        overflow:hidden;
     }
     .layout{
         display:grid;
@@ -218,12 +266,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-size:0.95rem;
     }
     .alerta{
-        padding:0.8rem 1rem;
+        padding:0.9rem 1.1rem;
         border-radius:0.7rem;
-        font-size:0.9rem;
+        font-size:0.92rem;
         margin-bottom:1.3rem;
         background:var(--danger-bg);
         color:var(--danger);
+        border:1.5px solid rgba(214, 70, 91, 0.35);
+        display:flex;
+        align-items:flex-start;
+        gap:0.75rem;
+    }
+    .alerta-exito{
+        background:#E9F7EE;
+        color:#1e7e34;
+        border-color:rgba(40, 167, 69, 0.35);
     }
 
     .campo{ margin-bottom:1.15rem; }
@@ -236,6 +293,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     .campo input{
         width:100%;
+        min-height:44px;
         padding:0.75rem 0.95rem;
         border:1.5px solid var(--line);
         border-radius:0.7rem;
@@ -248,23 +306,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .campo input:focus{
         outline:none;
         border-color:var(--azul-seva);
-        box-shadow:0 0 0 4px rgba(0,86,179,0.14);
+        box-shadow:0 0 0 3px rgba(0,86,179,0.18);
+    }
+    .campo input:focus-visible{
+        outline:3px solid var(--azul-seva);
+        outline-offset:2px;
     }
 
     .fila-extra{
         display:flex;
         justify-content:flex-end;
-        margin:-0.6rem 0 1.3rem;
+        margin:-0.4rem 0 1.2rem;
     }
     .fila-extra a{
         font-size:0.85rem;
         color:var(--muted);
         text-decoration:none;
+        display:inline-flex;
+        align-items:center;
+        min-height:44px;
+        padding:0.25rem 0.5rem;
+        border-radius:0.4rem;
     }
     .fila-extra a:hover{ color:var(--azul-oscuro); text-decoration:underline; }
+    .fila-extra a:focus-visible{
+        outline:3px solid var(--azul-seva);
+        outline-offset:2px;
+    }
 
     .btn-entrar{
         width:100%;
+        min-height:44px;
         padding:0.85rem;
         border:none;
         border-radius:0.7rem;
@@ -275,6 +347,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-family:'Inter', sans-serif;
         cursor:pointer;
         transition:background 0.15s ease, transform 0.1s ease;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
     }
     .btn-entrar:hover{ background:var(--azul-oscuro); }
     .btn-entrar:active{ transform:translateY(1px); }
@@ -286,8 +361,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-size:0.9rem;
         color:var(--muted);
     }
-    .pie a{ color:var(--verde-oscuro); font-weight:600; text-decoration:none; }
+    .pie a{
+        color:var(--verde-oscuro);
+        font-weight:600;
+        text-decoration:none;
+        display:inline-flex;
+        align-items:center;
+        min-height:44px;
+        padding:0.25rem 0.5rem;
+        border-radius:0.4rem;
+    }
     .pie a:hover{ text-decoration:underline; }
+    .pie a:focus-visible{
+        outline:3px solid var(--azul-seva);
+        outline-offset:2px;
+    }
 
     @media (max-width: 860px){
         .layout{ grid-template-columns:1fr; }
@@ -349,10 +437,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="sub">Ingresa con tu correo y contraseña.</p>
 
             <?php if ($error): ?>
-                <div class="alerta"><?= htmlspecialchars($error) ?></div>
+                <div class="alerta" role="alert" aria-live="assertive">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0; margin-top:1px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span><?= htmlspecialchars($error) ?></span>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($exito !== ''): ?>
+                <div class="alerta alerta-exito" role="status" aria-live="polite">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0; margin-top:1px;">
+                        <path d="M20 6 9 17l-5-5"></path>
+                    </svg>
+                    <span><?= htmlspecialchars($exito) ?></span>
+                </div>
             <?php endif; ?>
 
             <form method="POST" action="login.php" novalidate>
+                <?= csrf_campo() ?>
+                <?= honeypot_campo() ?>
                 <div class="campo">
                     <label for="email">Correo electrónico</label>
                     <input type="email" id="email" name="email" value="<?= $email_val ?>" required autofocus>

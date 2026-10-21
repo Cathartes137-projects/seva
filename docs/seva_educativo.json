@@ -1,0 +1,45 @@
+[
+{"type":"header","version":"5.2.1","comment":"Export to JSON plugin for PHPMyAdmin"},
+{"type":"database","name":"seva_educativo"},
+{"type":"table","name":"contenidos_educativos","database":"seva_educativo","data":
+[
+{"id":"1","titulo":"Alfabeto dactilológico","descripcion":"Aprende a deletrear cada letra del abecedario con las manos.","ruta_imagen":"img\/lecciones\/alfabeto.jpg","ruta_video":"video\/alfabeto.mp4","nivel":"basico","orden":"1","fecha_creacion":"2026-08-04 14:11:08"},
+{"id":"2","titulo":"Saludos y presentaciones","descripcion":"Hola, buenos días, ¿cómo estás?, mucho gusto.","ruta_imagen":"img\/lecciones\/saludos.jpg","ruta_video":"video\/saludos.mp4","nivel":"basico","orden":"2","fecha_creacion":"2026-08-04 14:11:08"},
+{"id":"3","titulo":"Números del 1 al 10","descripcion":"Cómo representar los números básicos con señas.","ruta_imagen":"img\/lecciones\/numeros.jpg","ruta_video":"video\/numeros.mp4","nivel":"basico","orden":"3","fecha_creacion":"2026-08-04 14:11:08"},
+{"id":"4","titulo":"Colores","descripcion":"Vocabulario de colores primarios y secundarios.","ruta_imagen":"img\/lecciones\/colores.jpg","ruta_video":"video\/colores.mp4","nivel":"basico","orden":"4","fecha_creacion":"2026-08-04 14:11:08"},
+{"id":"5","titulo":"La familia","descripcion":"Mamá, papá, hermano, hermana, abuelo, abuela.","ruta_imagen":"img\/lecciones\/familia.jpg","ruta_video":"video\/familia.mp4","nivel":"basico","orden":"5","fecha_creacion":"2026-08-04 14:11:08"},
+{"id":"6","titulo":"Días de la semana","descripcion":"Lunes a domingo, y expresiones de tiempo básicas.","ruta_imagen":"img\/lecciones\/dias.jpg","ruta_video":"video\/dias.mp4","nivel":"intermedio","orden":"6","fecha_creacion":"2026-08-04 14:11:08"},
+{"id":"7","titulo":"Emociones y sentimientos","descripcion":"Feliz, triste, enojado, sorprendido, cansado.","ruta_imagen":"img\/lecciones\/emociones.jpg","ruta_video":"video\/emociones.mp4","nivel":"intermedio","orden":"7","fecha_creacion":"2026-08-04 14:11:08"},
+{"id":"8","titulo":"Comida y bebida","descripcion":"Vocabulario esencial para pedir y hablar de alimentos.","ruta_imagen":"img\/lecciones\/comida.jpg","ruta_video":"video\/comida.mp4","nivel":"intermedio","orden":"8","fecha_creacion":"2026-08-04 14:11:08"},
+{"id":"9","titulo":"Preguntas básicas","descripcion":"Qué, quién, dónde, cuándo, por qué, cómo.","ruta_imagen":"img\/lecciones\/preguntas.jpg","ruta_video":"video\/preguntas.mp4","nivel":"intermedio","orden":"9","fecha_creacion":"2026-08-04 14:11:08"},
+{"id":"10","titulo":"Lugares y direcciones","descripcion":"Casa, escuela, hospital, izquierda, derecha, cerca, lejos.","ruta_imagen":"img\/lecciones\/lugares.jpg","ruta_video":"video\/lugares.mp4","nivel":"avanzado","orden":"10","fecha_creacion":"2026-08-04 14:11:08"},
+{"id":"11","titulo":"El clima","descripcion":"Sol, lluvia, frío, calor, viento.","ruta_imagen":"img\/lecciones\/clima.jpg","ruta_video":"video\/clima.mp4","nivel":"avanzado","orden":"11","fecha_creacion":"2026-08-04 14:11:08"},
+{"id":"12","titulo":"Verbos comunes","descripcion":"Comer, dormir, trabajar, estudiar, jugar, viajar.","ruta_imagen":"img\/lecciones\/verbos.jpg","ruta_video":"video\/verbos.mp4","nivel":"avanzado","orden":"12","fecha_creacion":"2026-08-04 14:11:08"}
+]
+}
+,{"type":"table","name":"cursos","database":"seva_educativo","data":
+[
+
+]
+}
+,{"type":"table","name":"palabras_repasadas","database":"seva_educativo","data":
+[
+
+]
+}
+,{"type":"table","name":"progreso_usuario","database":"seva_educativo","data":
+[
+{"id":"1","usuario_id":"1234567900","contenido_id":"1","completado":"1","fecha_completado":"2026-08-04 14:11:08"},
+{"id":"2","usuario_id":"1234567900","contenido_id":"2","completado":"1","fecha_completado":"2026-08-04 14:11:08"},
+{"id":"3","usuario_id":"1234567900","contenido_id":"3","completado":"1","fecha_completado":"2026-08-04 14:11:08"}
+]
+}
+,{"type":"table","name":"usuarios","database":"seva_educativo","data":
+[
+{"id_usuario":"1234567899","nombre":"Admin","email":"nosemeocurrenada@gmail.com","password":"admin12358","fecha_registro":"2026-07-23 17:39:34"},
+{"id_usuario":"1234567900","nombre":"Edwin Camacho navarro","email":"edwin1234@gmail.com","password":"$2y$10$v11rirE3RDlB5kt98w3pCeL5U7MzmnptpENL73tXs3UBPWDZwGA.i","fecha_registro":"2026-08-03 16:03:35"},
+{"id_usuario":"1234567901","nombre":"Carlos alejandro","email":"carlos@gmail.com","password":"$2y$10$KSm7FF.wAgGcGk1EA12\/5.fwHMwHWtn665Awj21dCYpL5ZNiqqhrK","fecha_registro":"2026-09-30 17:21:45"},
+{"id_usuario":"1234567902","nombre":"yarlenis","email":"mancillayarlenis40@gmail.com","password":"$2y$10$SoIz0xb71BDB9WdKt79gk.W7nt8LjOYbfs7UEKnWxNjP4I3jlWkTm","fecha_registro":"2026-09-30 17:25:20"}
+]
+}
+]
