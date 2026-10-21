@@ -1,6 +1,6 @@
 # Plan de Remediación y Auditoría de Ingeniería Inversa — Proyecto SEVA
 **Rama base:** `seva-antigraity-migracion` · **Rama de trabajo:** `fix/auditoria-defectos`
-**Fecha:** 2026-10-20 · **Estado:** aprobado, en ejecución
+**Fecha:** 2026-10-20 · **Estado:** fases 0–7 completadas; fase 8 pendiente (2026-10-21)
 
 > Fuente de verdad del proyecto: `docs/MEMORIA_PROYECTO.md`.
 > Reglas de trabajo: `docs/.antigravityrules.md` (planificar antes de codificar, un módulo por vez, YAGNI, WCAG 2, 44×44 px, design tokens).
@@ -168,7 +168,7 @@ git push -u origin fix/auditoria-defectos
 - **Regresión:** vocabulario distinto por lección; filtros accesibles con teclado.
 - **Evidencia (2026-10-21):** `php -l` sin errores; migración `003` aplicada a `seva_educativo` y `seva_educativo_test` con 50 señas en las 12 lecciones (4 por lección, 6 en «Saludos»); import limpio en base desechable con IDs `1..12`, usuarios `1..2` y `AUTO_INCREMENT` 13/3/51 (D18 ya cubierto por el seed de F1); las lecciones 1, 2, 5 y 12 muestran tarjetas distintas y se probó el estado vacío; dashboard con `role="group"`, 4 `aria-pressed` y 0 `role="tab"/aria-selected`; registro rechaza 2 y 101 caracteres y acepta 3 (multibyte) y 100.
 
-### Fase 7 — Auditoría de ingeniería inversa (D20)
+### Fase 7 — Auditoría de ingeniería inversa (D20) — ✅ completada (2026-10-21)
 Reconstrucción del sistema desde sus artefactos + verificación antes/después:
 1. `00-linea-base.md` — captura previa (Fase 0).
 2. `01-inventario.md` — archivos, LOC, grafo `require/include`, mapa de endpoints (método: análisis estático).
@@ -180,6 +180,8 @@ Reconstrucción del sistema desde sus artefactos + verificación antes/después:
 8. `07-informe-final.md` — comparativa línea base vs estado final.
 
 Métodos: análisis estático (`$_GET/$_POST`, concatenación SQL, salida sin escape), diff de esquema, caja negra HTTP, revisión manual de accesibilidad (teclado, zoom 200 %, contraste, `prefers-reduced-motion`).
+
+- **Evidencia (2026-10-21):** los 8 documentos existen en `docs/AUDITORIA/` (`00` línea base conservada + `01`–`07`); 38 pruebas dinámicas ejecutadas (37 ✅ / 1 ⚠️: contraste de alerta de error 3,77:1, documentado como N-02); CSRF negativo en los 7 POST, SQLi/XSS sin bypass, fijación de sesión rechazada, rehash `$2y$04$` → `$2y$10$`, rate limit 5 fallos → 15 min, 5 cabeceras + CSP en local y HSTS condicional, recuperación con token de un solo uso/caducado y anti-enumeración con cuerpos idénticos; `php -l` sin errores en 11 archivos; 0 usuarios/intentos/tokens de prueba tras la limpieza; solo cambiaron `docs/AUDITORIA/*` y este plan.
 
 ### Fase 8 — Documentación y cierre (D19)
 - Reparar `MEMORIA_PROYECTO.md`: eliminar `ez<<<<` del inicio, purgar `uid=1000(sandbox)…` de §3.2, restaurar citas vacías (`utf8mb4`, nombres de flujo y tablas), actualizar §5 con lo resuelto y lo pendiente.
@@ -264,9 +266,14 @@ Métodos: análisis estático (`$_GET/$_POST`, concatenación SQL, salida sin es
 
 ## 12. Próximos pasos
 
-- [ ] F0: backup, BD de pruebas, línea base.
+- [x] F0: backup, BD de pruebas y línea base (2026-10-21).
+- [x] F1: higiene del repositorio, seed sanitizado y secretos fuera del árbol (2026-10-21).
+- [x] F2: sesión endurecida, CSRF, rehash y logout dedicado (2026-10-21).
+- [x] F3: rate limiting y honeypot (2026-10-21).
+- [x] F4: cabeceras, CSP, HTTPS/HSTS y errores ocultos (2026-10-21).
 - [x] F5: recuperación con tokens, placeholder SVG y carpeta `video/` (2026-10-21).
 - [x] F6: vocabulario por lección, filtros accesibles, seed normalizado y validación de nombre (2026-10-21).
-- [ ] Publicar `seva-antigraity-migracion` y crear/push `fix/auditoria-defectos`.
-- [ ] F1 → F8 en orden, con push y tag al cierre de cada fase.
+- [x] F7: auditoría de ingeniería inversa con 8 documentos y 38 pruebas (2026-10-21).
+- [ ] F8: reparar la MEMORIA, crear el índice de auditoría y abrir el PR final.
+- [ ] Publicar `seva-antigraity-migracion` si aún no está en el remoto.
 - [ ] PR final con evidencia.
