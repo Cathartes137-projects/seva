@@ -149,7 +149,7 @@ git push -u origin fix/auditoria-defectos
 - **Deuda documentada:** sustituir `'unsafe-inline'` extrayendo JS a archivos y usando nonces.
 - **Regresión:** `curl -I` muestra cabeceras; fuentes, estilos e inline intactos; errores no visibles al usuario.
 
-### Fase 5 — Funcionalidad rota (D13, D14, D15)
+### Fase 5 — Funcionalidad rota (D13, D14, D15) — ✅ completada (2026-10-21)
 **Recuperación de contraseña (decisión: tokens sin envío real):**
 - Tabla `recuperacion_password (id, id_usuario FK CASCADE, token_hash, expira, usado)`.
 - `recuperar.php`: valida formato; **respuesta idéntica** con o sin usuario (evita enumeración); genera `random_bytes(32)`, guarda `hash('sha256', $token)` con `expira = NOW() + 30 min`; un token nuevo invalida los anteriores; aplica rate limit; `error_log` del enlace; en pantalla el enlace solo si `APP_ENV === 'local'`.
@@ -158,6 +158,7 @@ git push -u origin fix/auditoria-defectos
 - `img/lecciones/default.svg` (placeholder vectorial) + actualización del fallback de `dashboard.php`.
 - `video/.gitkeep` + `video/README.md`; el código ya mitiga con `file_exists`.
 - **Regresión:** misma respuesta para correo existente/inexistente; token de un solo uso y caducidad verificadas.
+- **Evidencia (2026-10-21):** `php -l` sin errores en los 6 PHP tocados; migración `002` aplicada a `seva_educativo` y `seva_educativo_test`; con `APP_ENV=production` los cuerpos de respuesta para correo existente e inexistente son idénticos (y sin enlace en pantalla); token reutilizado, caducado y POST sin CSRF rechazados; login con la contraseña nueva correcto; las 8 tarjetas del dashboard usan `default.svg` sin 404 y `leccion.php` valida portada y video en disco.
 
 ### Fase 6 — Datos, contenido y ARIA (D16, D17, D18, D22)
 - Tabla `vocabulario_senas (id, contenido_id FK, palabra, descripcion, orden)` + seed de la lección 2; `leccion.php` consulta la tabla con fallback al contenido actual.
@@ -263,6 +264,7 @@ Métodos: análisis estático (`$_GET/$_POST`, concatenación SQL, salida sin es
 ## 12. Próximos pasos
 
 - [ ] F0: backup, BD de pruebas, línea base.
+- [x] F5: recuperación con tokens, placeholder SVG y carpeta `video/` (2026-10-21).
 - [ ] Publicar `seva-antigraity-migracion` y crear/push `fix/auditoria-defectos`.
 - [ ] F1 → F8 en orden, con push y tag al cierre de cada fase.
 - [ ] PR final con evidencia.
