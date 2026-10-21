@@ -160,12 +160,13 @@ git push -u origin fix/auditoria-defectos
 - **Regresión:** misma respuesta para correo existente/inexistente; token de un solo uso y caducidad verificadas.
 - **Evidencia (2026-10-21):** `php -l` sin errores en los 6 PHP tocados; migración `002` aplicada a `seva_educativo` y `seva_educativo_test`; con `APP_ENV=production` los cuerpos de respuesta para correo existente e inexistente son idénticos (y sin enlace en pantalla); token reutilizado, caducado y POST sin CSRF rechazados; login con la contraseña nueva correcto; las 8 tarjetas del dashboard usan `default.svg` sin 404 y `leccion.php` valida portada y video en disco.
 
-### Fase 6 — Datos, contenido y ARIA (D16, D17, D18, D22)
+### Fase 6 — Datos, contenido y ARIA (D16, D17, D18, D22) — ✅ completada (2026-10-21)
 - Tabla `vocabulario_senas (id, contenido_id FK, palabra, descripcion, orden)` + seed de la lección 2; `leccion.php` consulta la tabla con fallback al contenido actual.
 - Filtros del dashboard: `role="group"` + `aria-pressed` (elimina el patrón tablist incompleto); JS actualizado.
 - Seed con IDs normalizados 1..n y AUTO_INCREMENT coherente.
 - Validación servidor del nombre en `registro.php` (`mb_strlen` 3–100).
 - **Regresión:** vocabulario distinto por lección; filtros accesibles con teclado.
+- **Evidencia (2026-10-21):** `php -l` sin errores; migración `003` aplicada a `seva_educativo` y `seva_educativo_test` con 50 señas en las 12 lecciones (4 por lección, 6 en «Saludos»); import limpio en base desechable con IDs `1..12`, usuarios `1..2` y `AUTO_INCREMENT` 13/3/51 (D18 ya cubierto por el seed de F1); las lecciones 1, 2, 5 y 12 muestran tarjetas distintas y se probó el estado vacío; dashboard con `role="group"`, 4 `aria-pressed` y 0 `role="tab"/aria-selected`; registro rechaza 2 y 101 caracteres y acepta 3 (multibyte) y 100.
 
 ### Fase 7 — Auditoría de ingeniería inversa (D20)
 Reconstrucción del sistema desde sus artefactos + verificación antes/después:
@@ -265,6 +266,7 @@ Métodos: análisis estático (`$_GET/$_POST`, concatenación SQL, salida sin es
 
 - [ ] F0: backup, BD de pruebas, línea base.
 - [x] F5: recuperación con tokens, placeholder SVG y carpeta `video/` (2026-10-21).
+- [x] F6: vocabulario por lección, filtros accesibles, seed normalizado y validación de nombre (2026-10-21).
 - [ ] Publicar `seva-antigraity-migracion` y crear/push `fix/auditoria-defectos`.
 - [ ] F1 → F8 en orden, con push y tag al cierre de cada fase.
 - [ ] PR final con evidencia.
