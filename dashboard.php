@@ -1,13 +1,11 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 require 'conexion.php';
+require 'seguridad.php';
 
-if (!isset($_SESSION['usuario_id'])) {
-    header('Location: login.php');
-    exit;
-}
+seguridad_iniciar_sesion();
+
+// Validación estricta de sesión de usuario
+seguridad_requiere_login();
 
 $usuario_id = $_SESSION['usuario_id'];
 $nombre     = $_SESSION['nombre'] ?? 'Estudiante';

@@ -1,15 +1,12 @@
 <?php
 // configuracion.php - Panel de Configuraciones de Accesibilidad y Seguridad en SEVA
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 require 'conexion.php';
+require 'seguridad.php';
+
+seguridad_iniciar_sesion();
 
 // Validación estricta de sesión de usuario
-if (!isset($_SESSION['usuario_id'])) {
-    header('Location: login.php');
-    exit;
-}
+seguridad_requiere_login();
 
 $usuario_id = (int) $_SESSION['usuario_id'];
 $nombre     = $_SESSION['nombre'] ?? 'Estudiante';
@@ -18,8 +15,15 @@ $email      = $_SESSION['email'] ?? '';
 $mensaje_exito_seguridad = '';
 $mensaje_error_seguridad = '';
 
+// Aviso cuando una petición POST llega sin token CSRF válido (D05)
+if (csrf_error_en_url()) {
+    $mensaje_error_seguridad = 'La solicitud expiró o no es válida. Inténtalo de nuevo.';
+}
+
 // Procesamiento del cambio seguro de contraseña
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'cambiar_password') {
+    seguridad_validar_csrf('configuracion.php');
+
     $pass_actual    = $_POST['pass_actual'] ?? '';
     $pass_nueva     = $_POST['pass_nueva'] ?? '';
     $pass_confirmar = $_POST['pass_confirmar'] ?? '';
@@ -223,6 +227,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['accion']) 
             <?php endif; ?>
 
             <form method="POST" action="configuracion.php" novalidate style="max-width: 520px;">
+                <?= csrf_campo() ?>
                 <input type="hidden" name="accion" value="cambiar_password">
 
                 <div class="campo">

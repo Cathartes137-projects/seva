@@ -1,11 +1,11 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 require 'conexion.php';
+require 'seguridad.php';
+
+seguridad_iniciar_sesion();
 
 // Si el usuario ya está autenticado, redirigir directamente al dashboard
-if (isset($_SESSION['usuario_id']) && !isset($_GET['salir'])) {
+if (isset($_SESSION['usuario_id'])) {
     header('Location: dashboard.php');
     exit;
 }
@@ -13,14 +13,14 @@ if (isset($_SESSION['usuario_id']) && !isset($_GET['salir'])) {
 $error = '';
 $email_val = '';
 
-if (isset($_GET['salir'])) {
-    session_unset();
-    session_destroy();
-    header('Location: login.php');
-    exit;
+if (csrf_error_en_url()) {
+    $error = 'La solicitud expiró o no es válida. Inténtalo de nuevo.';
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Toda petición POST exige un token CSRF válido (D05)
+    seguridad_validar_csrf('login.php');
+
     $email      = trim($_POST['email'] ?? '');
     $contrasena = $_POST['password'] ?? '';
     $email_val  = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
@@ -33,9 +33,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $fila = $stmt->fetch();
 
         if ($fila && password_verify($contrasena, $fila['password'])) {
-            if (!headers_sent()) {
-                session_regenerate_id(true);
-            }
+            // Actualiza el hash si el algoritmo o el coste cambiaron (D07)
+            seguridad_rehash_password($pdo, (int) $fila['id_usuario'], $contrasena, $fila['password']);
+
+            // Previene la fijación de sesión
+            seguridad_regenerar_sesion();
+
             $_SESSION['usuario_id'] = $fila['id_usuario'];
             $_SESSION['nombre']     = $fila['nombre'];
             $_SESSION['email']      = $fila['email'];
@@ -407,6 +410,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" action="login.php" novalidate>
+                <?= csrf_campo() ?>
                 <div class="campo">
                     <label for="email">Correo electrónico</label>
                     <input type="email" id="email" name="email" value="<?= $email_val ?>" required autofocus>

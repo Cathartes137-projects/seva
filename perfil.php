@@ -1,22 +1,26 @@
 <?php
 // perfil.php - Gestión del Perfil del Estudiante en SEVA
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 require 'conexion.php';
+require 'seguridad.php';
+
+seguridad_iniciar_sesion();
 
 // Validación estricta de sesión de usuario
-if (!isset($_SESSION['usuario_id'])) {
-    header('Location: login.php');
-    exit;
-}
+seguridad_requiere_login();
 
 $usuario_id = (int) $_SESSION['usuario_id'];
 $mensaje_exito = '';
 $mensaje_error = '';
 
+// Aviso cuando una petición POST llega sin token CSRF válido (D05)
+if (csrf_error_en_url()) {
+    $mensaje_error = 'La solicitud expiró o no es válida. Inténtalo de nuevo.';
+}
+
 // Procesamiento de actualización de datos personales (Nombre)
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'actualizar_nombre') {
+    seguridad_validar_csrf('perfil.php');
+
     $nuevo_nombre = trim($_POST['nombre'] ?? '');
 
     if (mb_strlen($nuevo_nombre, 'UTF-8') < 3) {
@@ -263,6 +267,7 @@ try {
             </p>
 
             <form method="POST" action="perfil.php" novalidate>
+                <?= csrf_campo() ?>
                 <input type="hidden" name="accion" value="actualizar_nombre">
 
                 <div class="campo">

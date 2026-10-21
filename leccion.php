@@ -1,13 +1,11 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 require 'conexion.php';
+require 'seguridad.php';
 
-if (!isset($_SESSION['usuario_id'])) {
-    header('Location: login.php');
-    exit;
-}
+seguridad_iniciar_sesion();
+
+// Validación estricta de sesión de usuario
+seguridad_requiere_login();
 
 $usuario_id = $_SESSION['usuario_id'];
 $nombre     = $_SESSION['nombre'] ?? 'Estudiante';
@@ -15,6 +13,9 @@ $id         = isset($_GET['id']) ? (int) $_GET['id'] : 1;
 
 // Procesar completitud de lección vía POST (AJAX o envío tradicional)
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['marcar_completada'])) {
+    // Toda petición POST exige un token CSRF válido (D05)
+    seguridad_validar_csrf('leccion.php?id=' . $id);
+
     try {
         $stmt_comp = $pdo->prepare('INSERT INTO progreso_usuario (usuario_id, contenido_id, completado, fecha_completado) 
             VALUES (?, ?, 1, NOW()) 
@@ -302,6 +303,7 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
             <p>Guarda tu avance para reflejarlo en tu progreso general y continuar avanzando en Tu Camino.</p>
 
             <form method="POST" action="leccion.php?id=<?= $id ?>" id="form-completar" style="display:inline-block;">
+                <?= csrf_campo() ?>
                 <input type="hidden" name="marcar_completada" value="1">
                 <button type="submit" class="btn btn-secundario" id="btn-completar" <?= $leccion_completada ? 'disabled style="background:var(--line); color:var(--muted); cursor:default;"' : '' ?>>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
@@ -400,36 +402,40 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
         const textoCompletar = document.getElementById('texto-completar');
 
         if (formCompletar && btnCompletar) {
+            let enviandoNativo = false;
             formCompletar.addEventListener('submit', function (e) {
-                if (window.fetch) {
-                    e.preventDefault();
-                    btnCompletar.disabled = true;
-                    if (textoCompletar) textoCompletar.textContent = 'Guardando avance...';
-
-                    const formData = new FormData(formCompletar);
-                    fetch('leccion.php?id=<?= $id ?>', {
-                        method: 'POST',
-                        body: formData,
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data && data.exito) {
-                            if (textoCompletar) textoCompletar.textContent = '¡Lección Completada!';
-                            btnCompletar.style.background = 'var(--line)';
-                            btnCompletar.style.color = 'var(--muted)';
-                            btnCompletar.style.cursor = 'default';
-                            if (anuncioEstado) {
-                                anuncioEstado.textContent = 'La lección ha sido registrada como completada en tu perfil.';
-                            }
-                        } else {
-                            formCompletar.submit();
-                        }
-                    })
-                    .catch(() => {
-                        formCompletar.submit();
-                    });
+                if (enviandoNativo || !window.fetch) {
+                    return;
                 }
+                e.preventDefault();
+                btnCompletar.disabled = true;
+                if (textoCompletar) textoCompletar.textContent = 'Guardando avance...';
+
+                const formData = new FormData(formCompletar);
+                fetch('leccion.php?id=<?= $id ?>', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.exito) {
+                        if (textoCompletar) textoCompletar.textContent = '¡Lección Completada!';
+                        btnCompletar.style.background = 'var(--line)';
+                        btnCompletar.style.color = 'var(--muted)';
+                        btnCompletar.style.cursor = 'default';
+                        if (anuncioEstado) {
+                            anuncioEstado.textContent = 'La lección ha sido registrada como completada en tu perfil.';
+                        }
+                    } else {
+                        enviandoNativo = true;
+                        formCompletar.submit();
+                    }
+                })
+                .catch(() => {
+                    enviandoNativo = true;
+                    formCompletar.submit();
+                });
             });
         }
 

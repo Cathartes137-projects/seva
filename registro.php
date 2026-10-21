@@ -1,12 +1,22 @@
 <?php
 require 'conexion.php';
+require 'seguridad.php';
+
+seguridad_iniciar_sesion();
 
 $error = '';
 $exito = false;
 $nombre_val = '';
 $email_val = '';
 
+if (csrf_error_en_url()) {
+    $error = 'La solicitud expiró o no es válida. Inténtalo de nuevo.';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Toda petición POST exige un token CSRF válido (D05)
+    seguridad_validar_csrf('registro.php');
+
     $nombre     = trim($_POST['nombre'] ?? '');
     $email      = trim($_POST['email'] ?? '');
     $contrasena = $_POST['password'] ?? '';
@@ -470,6 +480,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" action="registro.php" id="form-registro" novalidate>
+                <?= csrf_campo() ?>
                 <div class="campo">
                     <label for="nombre">Nombre completo</label>
                     <input type="text" id="nombre" name="nombre" value="<?= $nombre_val ?>" required>
