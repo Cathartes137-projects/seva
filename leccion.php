@@ -34,6 +34,23 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['marcar_comple
     }
 }
 
+/**
+ * Convierte un texto en una clave estable para el DOM y localStorage
+ * (p. ej. "¿Cómo estás?" → "como_estas"). Se usa para conservar el progreso
+ * de práctica aunque cambien los IDs de la base de datos.
+ */
+function seva_slug_palabra(string $texto): string
+{
+    $texto = strtolower(trim($texto));
+    $texto = strtr($texto, [
+        'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u', 'ñ' => 'n',
+        '¿' => '', '?' => '', '¡' => '', '!' => '',
+    ]);
+    $texto = preg_replace('/[^a-z0-9]+/', '_', (string) $texto);
+
+    return trim((string) $texto, '_');
+}
+
 // Datos base de la lección
 $leccion = [
     'id'          => $id,
@@ -112,6 +129,40 @@ try {
             }
             if (!empty($fila['nivel'])) {
                 $leccion['nivel'] = ucfirst(strtolower($fila['nivel']));
+            }
+
+            // Vocabulario propio de la lección (D16). Si la consulta falla
+            // (por ejemplo, migración sin aplicar) se conserva el array base.
+            try {
+                $stmt_voc = $pdo->prepare(
+                    'SELECT id, palabra, descripcion
+                     FROM vocabulario_senas
+                     WHERE contenido_id = ?
+                     ORDER BY orden ASC, id ASC'
+                );
+                $stmt_voc->execute([$leccion['id']]);
+                $filas_voc = $stmt_voc->fetchAll();
+
+                $leccion['vocabulario'] = [];
+                $claves_usadas = [];
+                foreach ($filas_voc as $fila_voc) {
+                    $clave = seva_slug_palabra((string) $fila_voc['palabra']);
+                    if ($clave === '') {
+                        $clave = 'sena_' . $fila_voc['id'];
+                    }
+                    if (isset($claves_usadas[$clave])) {
+                        $clave .= '_' . $fila_voc['id'];
+                    }
+                    $claves_usadas[$clave] = true;
+
+                    $leccion['vocabulario'][] = [
+                        'id'          => $clave,
+                        'palabra'     => $fila_voc['palabra'],
+                        'descripcion' => $fila_voc['descripcion'],
+                    ];
+                }
+            } catch (PDOException $e) {
+                error_log('Lección - no se pudo cargar el vocabulario: ' . $e->getMessage());
             }
         }
 
@@ -271,6 +322,7 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
         </section>
 
         <!-- 2. Tarjetas de Señas y Práctica Interactiva -->
+        <?php if (!empty($leccion['vocabulario'])): ?>
         <section class="seccion-practica" aria-labelledby="titulo-practica">
             <div class="encabezado-practica">
                 <div>
@@ -305,6 +357,19 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
                 <?php endforeach; ?>
             </div>
         </section>
+        <?php else: ?>
+        <section class="seccion-practica" aria-labelledby="titulo-practica-vacia">
+            <div class="encabezado-practica">
+                <div>
+                    <h2 id="titulo-practica-vacia" style="font-size:1.35rem; margin:0 0 0.2rem;">Vocabulario en preparación</h2>
+                    <p style="color:var(--muted); margin:0; font-size:0.92rem;">
+                        Todavía no hay señas cargadas para esta lección. Puedes repasar la transcripción
+                        y marcar la lección como completada.
+                    </p>
+                </div>
+            </div>
+        </section>
+        <?php endif; ?>
 
         <!-- 3. Acción Final: Marcar como Completada -->
         <section class="tarjeta-accion-final" aria-labelledby="titulo-completar">

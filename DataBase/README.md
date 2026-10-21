@@ -33,7 +33,14 @@ Aplica las migraciones en orden (son idempotentes):
 
 ```bash
 mysql -u root -h 127.0.0.1 seva_educativo < DataBase/migrations/001_intentos_login.sql
+mysql -u root -h 127.0.0.1 seva_educativo < DataBase/migrations/002_recuperacion_password.sql
+mysql -u root -h 127.0.0.1 seva_educativo < DataBase/migrations/003_vocabulario_senas.sql
 ```
+
+> Tras aplicar `003_vocabulario_senas.sql` en una base existente, carga el bloque
+> **«Vocabulario de señas por lección»** de `seed_demo.sql` para que cada lección
+> tenga sus propias señas. En una instalación nueva ese bloque se carga con el
+> propio seed.
 
 En Windows con XAMPP, usa la ruta completa del cliente:
 `C:\xampp\mysql\bin\mysql.exe`
@@ -56,6 +63,7 @@ Cambiar obligatoriamente en cualquier despliegue real.
 - `cursos` — catálogo de cursos (sin uso actual en el código)
 - `intentos_login` — control de intentos fallidos para el límite anti fuerza bruta
 - `recuperacion_password` — tokens de un solo uso para restablecer contraseñas (hash SHA-256)
+- `vocabulario_senas` — señas propias de cada lección (palabra, descripción y orden)
 
 ## Respaldos
 

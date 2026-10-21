@@ -121,3 +121,22 @@ CREATE TABLE `recuperacion_password` (
   CONSTRAINT `fk_recuperacion_usuario` FOREIGN KEY (`id_usuario`)
     REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- -----------------------------------------------------------------------------
+-- Tabla: vocabulario_senas
+-- Vocabulario propio de cada lección (Fase 6 / D16). Antes estaba hardcodeado
+-- en leccion.php y todas las lecciones mostraban las señas de "Saludos".
+-- ON DELETE CASCADE: al borrar la lección desaparece su vocabulario.
+-- -----------------------------------------------------------------------------
+CREATE TABLE `vocabulario_senas` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `contenido_id` int(11) NOT NULL,
+  `palabra` varchar(100) NOT NULL,
+  `descripcion` text NOT NULL,
+  `orden` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_contenido_palabra` (`contenido_id`, `palabra`),
+  KEY `idx_contenido_orden` (`contenido_id`, `orden`),
+  CONSTRAINT `fk_vocabulario_contenido` FOREIGN KEY (`contenido_id`)
+    REFERENCES `contenidos_educativos` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
