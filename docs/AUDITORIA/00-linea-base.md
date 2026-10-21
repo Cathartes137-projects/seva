@@ -270,3 +270,24 @@ BD restaurada a 5 usuarios y 4 registros de progreso.
 **Fase 1 — Higiene del repositorio** (D01, D02, D03, D04, D23):
 `.gitignore`, `.gitattributes`, eliminación de `db.php`, sanitización del seed SQL
 y documentación de la rotación del secreto.
+
+---
+
+## 10. Continuidad de la auditoría (Fase 7)
+
+Este documento se conserva **sin alteraciones** como captura del estado
+PRE-intervención. La documentación de ingeniería inversa posterior se organiza así:
+
+| Documento | Contenido |
+|---|---|
+| `01-inventario.md` | Inventario final, LOC, endpoints y grafo de dependencias |
+| `02-modelo-datos.md` | ERD Mermaid, tablas, FKs e índices reconstruidos desde MariaDB |
+| `03-flujos.md` | Diagramas de secuencia de los flujos principales |
+| `04-trazabilidad.md` | Matriz MEMORIA ↔ código ↔ base de datos |
+| `05-seguridad.md` | Hallazgos OWASP/CWE, mitigaciones y estado de D04 |
+| `06-pruebas.md` | Registro ejecutable de pruebas dinámicas y WCAG 2.1 AA |
+| `07-informe-final.md` | Comparativa estado inicial vs. estado final |
+
+La comparación cuantitativa y el cierre de los 23 defectos están en
+`07-informe-final.md`. Las cifras de este documento corresponden a la Fase 0 y no
+deben usarse como estado actual del sistema.
