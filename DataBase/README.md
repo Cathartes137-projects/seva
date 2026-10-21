@@ -6,8 +6,9 @@ Scripts versionados del esquema y de los datos de demostración.
 
 | Archivo | Contenido | Uso |
 |---|---|---|
-| `schema.sql` | Estructura de las 5 tablas (InnoDB, utf8mb4) | Siempre |
+| `schema.sql` | Estructura completa de las tablas (InnoDB, utf8mb4) | Instalación nueva |
 | `seed_demo.sql` | Datos ficticios de demostración | Solo desarrollo |
+| `migrations/*.sql` | Cambios incrementales para bases ya existentes | Actualización |
 
 > **Importante:** `seed_demo.sql` contiene únicamente datos ficticios
 > (correos en `example.com` y contraseñas hasheadas con bcrypt).
@@ -24,6 +25,14 @@ mysql -u root -h 127.0.0.1 seva_educativo < DataBase/schema.sql
 
 # 3. (Opcional) Cargar datos de demostración
 mysql -u root -h 127.0.0.1 seva_educativo < DataBase/seed_demo.sql
+```
+
+### Actualizar una base de datos existente
+
+Aplica las migraciones en orden (son idempotentes):
+
+```bash
+mysql -u root -h 127.0.0.1 seva_educativo < DataBase/migrations/001_intentos_login.sql
 ```
 
 En Windows con XAMPP, usa la ruta completa del cliente:
@@ -45,6 +54,7 @@ Cambiar obligatoriamente en cualquier despliegue real.
 - `progreso_usuario` — lecciones completadas por usuario
 - `palabras_repasadas` — repetición espaciada de vocabulario
 - `cursos` — catálogo de cursos (sin uso actual en el código)
+- `intentos_login` — control de intentos fallidos para el límite anti fuerza bruta
 
 ## Respaldos
 
