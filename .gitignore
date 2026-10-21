@@ -21,6 +21,11 @@ backup_*.sql
 logs/
 error_log
 
+# --- Videos de lecciones (binarios pesados, se despliegan aparte) ---
+video/*
+!video/.gitkeep
+!video/README.md
+
 # --- Temporales y de editor ---
 *.tmp
 *.temp

@@ -157,7 +157,14 @@ try {
                                 $hecha = in_array($l['id'], $completados_ids);
                                 $nivel_raw = strtolower($l['nivel'] ?? 'basico');
                                 $nivel_nom = ($nivel_raw === 'intermedio') ? 'Intermedio' : (($nivel_raw === 'avanzado') ? 'Avanzado' : 'Básico');
-                                $img_src = !empty($l['ruta_imagen']) ? htmlspecialchars($l['ruta_imagen']) : 'img/lecciones/default.jpg';
+                                // Fallback (D14): se usa el placeholder SVG cuando la ruta está vacía,
+                                // es insegura o el archivo no existe en disco (8 imágenes ausentes).
+                                $ruta_img = ltrim(str_replace('\\', '/', (string) ($l['ruta_imagen'] ?? '')), '/');
+                                if ($ruta_img === '' || strpos($ruta_img, '..') !== false
+                                    || !is_file(__DIR__ . '/' . $ruta_img)) {
+                                    $ruta_img = 'img/lecciones/default.svg';
+                                }
+                                $img_src = htmlspecialchars($ruta_img, ENT_QUOTES, 'UTF-8');
                             ?>
                             <article class="tarjeta-leccion" data-nivel="<?= htmlspecialchars($nivel_raw) ?>" data-titulo="<?= htmlspecialchars(strtolower($l['titulo'])) ?>">
                                 <div class="portada-leccion">

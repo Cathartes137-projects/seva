@@ -95,11 +95,20 @@ try {
             if (!empty($fila['descripcion'])) {
                 $leccion['descripcion'] = $fila['descripcion'];
             }
-            if (!empty($fila['ruta_video'])) {
-                $leccion['ruta_video'] = $fila['ruta_video'];
-            }
             if (!empty($fila['ruta_imagen'])) {
-                $leccion['ruta_imagen'] = $fila['ruta_imagen'];
+                // Fallback (D14): solo se acepta una ruta existente y sin traversal
+                $ruta_img = ltrim(str_replace('\\', '/', (string) $fila['ruta_imagen']), '/');
+                $leccion['ruta_imagen'] = ($ruta_img !== '' && strpos($ruta_img, '..') === false
+                    && is_file(__DIR__ . '/' . $ruta_img))
+                    ? $ruta_img
+                    : 'img/lecciones/default.svg';
+            }
+            if (!empty($fila['ruta_video'])) {
+                // La ruta se valida en el render con is_file(); aquí se normaliza
+                $ruta_vid = ltrim(str_replace('\\', '/', (string) $fila['ruta_video']), '/');
+                $leccion['ruta_video'] = ($ruta_vid !== '' && strpos($ruta_vid, '..') === false)
+                    ? $ruta_vid
+                    : '';
             }
             if (!empty($fila['nivel'])) {
                 $leccion['nivel'] = ucfirst(strtolower($fila['nivel']));
@@ -216,7 +225,7 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
             <div class="video-lse">
                 <span class="etiqueta-lse" aria-hidden="true">LSE</span>
 
-                <?php if (!empty($leccion['ruta_video']) && file_exists($leccion['ruta_video'])): ?>
+                <?php if (!empty($leccion['ruta_video']) && is_file(__DIR__ . '/' . $leccion['ruta_video'])): ?>
                     <video controls preload="metadata" poster="<?= htmlspecialchars($leccion['ruta_imagen']) ?>">
                         <source src="<?= htmlspecialchars($leccion['ruta_video']) ?>" type="video/mp4">
                         Tu navegador no soporta la reproducción de video.
