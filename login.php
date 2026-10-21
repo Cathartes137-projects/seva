@@ -25,7 +25,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $contrasena = $_POST['password'] ?? '';
     $email_val  = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
 
-    if ($email === '' || $contrasena === '') {
+    $ip_cliente = seguridad_ip_cliente();
+    $segundos_bloqueo = seguridad_login_bloqueo($pdo, $ip_cliente, $email);
+
+    if (honeypot_accionado()) {
+        // Bot detectado: respuesta neutra idéntica a un fallo real, sin tocar la BD
+        error_log('SEVA honeypot activado en login desde IP ' . $ip_cliente);
+        $error = 'Correo o contraseña incorrectos.';
+    } elseif ($segundos_bloqueo > 0) {
+        // Límite superado: mensaje neutro, sin revelar si la cuenta existe
+        $minutos = (int) ceil($segundos_bloqueo / 60);
+        $error = 'Demasiados intentos fallidos. Espera ' . $minutos
+            . ' minuto(s) e inténtalo de nuevo.';
+    } elseif ($email === '' || $contrasena === '') {
         $error = 'Todos los campos son obligatorios.';
     } else {
         $stmt = $pdo->prepare('SELECT id_usuario, nombre, email, password FROM usuarios WHERE email = ?');
@@ -33,6 +45,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $fila = $stmt->fetch();
 
         if ($fila && password_verify($contrasena, $fila['password'])) {
+            // Login correcto: limpiar el contador de intentos (D09)
+            seguridad_login_exito($pdo, $ip_cliente, $email);
+
             // Actualiza el hash si el algoritmo o el coste cambiaron (D07)
             seguridad_rehash_password($pdo, (int) $fila['id_usuario'], $contrasena, $fila['password']);
 
@@ -47,6 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
         } else {
+            // Fallo de autenticación: contar el intento (D09)
+            seguridad_login_fallo($pdo, $ip_cliente, $email);
             $error = 'Correo o contraseña incorrectos.';
         }
     }
@@ -80,6 +97,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-family:'Inter', sans-serif;
         color:var(--text);
         background:var(--paper);
+    }
+    /* Campo trampa anti-bots: fuera de pantalla, invisible para personas
+       y lectores de pantalla (D10). */
+    .hp-trampa{
+        position:absolute;
+        left:-9999px;
+        top:auto;
+        width:1px;
+        height:1px;
+        overflow:hidden;
     }
     .layout{
         display:grid;
@@ -411,6 +438,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form method="POST" action="login.php" novalidate>
                 <?= csrf_campo() ?>
+                <?= honeypot_campo() ?>
                 <div class="campo">
                     <label for="email">Correo electrónico</label>
                     <input type="email" id="email" name="email" value="<?= $email_val ?>" required autofocus>

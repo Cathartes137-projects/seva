@@ -26,7 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre_val = htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8');
     $email_val  = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
 
-    if ($nombre === '' || $email === '' || $contrasena === '') {
+    if (honeypot_accionado()) {
+        // Bot detectado: se simula el éxito sin crear la cuenta (D10)
+        error_log('SEVA honeypot activado en registro desde IP ' . seguridad_ip_cliente());
+        $exito = true;
+        $nombre_val = '';
+        $email_val = '';
+    } elseif ($nombre === '' || $email === '' || $contrasena === '') {
         $error = 'Todos los campos son obligatorios.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'El correo electrónico no es válido.';
@@ -81,6 +87,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-family:'Inter', sans-serif;
         color:var(--text);
         background:var(--paper);
+    }
+    /* Campo trampa anti-bots: fuera de pantalla, invisible para personas
+       y lectores de pantalla (D10). */
+    .hp-trampa{
+        position:absolute;
+        left:-9999px;
+        top:auto;
+        width:1px;
+        height:1px;
+        overflow:hidden;
     }
     .layout{
         display:grid;
@@ -481,6 +497,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form method="POST" action="registro.php" id="form-registro" novalidate>
                 <?= csrf_campo() ?>
+                <?= honeypot_campo() ?>
                 <div class="campo">
                     <label for="nombre">Nombre completo</label>
                     <input type="text" id="nombre" name="nombre" value="<?= $nombre_val ?>" required>
