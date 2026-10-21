@@ -134,19 +134,19 @@ try {
                         <input type="text" id="buscador" placeholder="Buscar lección por título..." aria-label="Buscar lecciones en tiempo real">
                     </div>
 
-                    <!-- Pestañas de filtro por nivel -->
-                    <div class="filtros-camino" role="tablist" aria-label="Filtrar lecciones por nivel">
-                        <button type="button" class="btn-filtro activo" data-filtro="todos" role="tab" aria-selected="true" id="tab-todos">Todas</button>
-                        <button type="button" class="btn-filtro" data-filtro="basico" role="tab" aria-selected="false" id="tab-basico">Básico</button>
-                        <button type="button" class="btn-filtro" data-filtro="intermedio" role="tab" aria-selected="false" id="tab-intermedio">Intermedio</button>
-                        <button type="button" class="btn-filtro" data-filtro="avanzado" role="tab" aria-selected="false" id="tab-avanzado">Avanzado</button>
+                    <!-- Filtros de nivel: grupo de botones, no pestañas (D17) -->
+                    <div class="filtros-camino" role="group" aria-label="Filtrar lecciones por nivel">
+                        <button type="button" class="btn-filtro activo" data-filtro="todos" aria-pressed="true">Todas</button>
+                        <button type="button" class="btn-filtro" data-filtro="basico" aria-pressed="false">Básico</button>
+                        <button type="button" class="btn-filtro" data-filtro="intermedio" aria-pressed="false">Intermedio</button>
+                        <button type="button" class="btn-filtro" data-filtro="avanzado" aria-pressed="false">Avanzado</button>
                     </div>
                 </div>
 
                 <div class="encabezado-seccion-camino">
                     <h2 id="titulo-camino">
                         Tu Camino
-                        <span class="badge-contador" id="contador-visibles"><?= $total ?> disponibles</span>
+                        <span class="badge-contador" id="contador-visibles" role="status" aria-live="polite"><?= $total ?> disponibles</span>
                     </h2>
                 </div>
 
@@ -209,7 +209,7 @@ try {
     </main>
 
     <script>
-        // Filtrado en tiempo real: Buscador y Pestañas de nivel
+        // Filtrado en tiempo real: buscador y botones de nivel (D17)
         const buscador = document.getElementById('buscador');
         const botonesFiltro = document.querySelectorAll('.btn-filtro');
         const tarjetas = document.querySelectorAll('.tarjeta-leccion');
@@ -252,10 +252,10 @@ try {
             btn.addEventListener('click', function () {
                 botonesFiltro.forEach(function (b) {
                     b.classList.remove('activo');
-                    b.setAttribute('aria-selected', 'false');
+                    b.setAttribute('aria-pressed', 'false');
                 });
                 this.classList.add('activo');
-                this.setAttribute('aria-selected', 'true');
+                this.setAttribute('aria-pressed', 'true');
                 filtroNivelActual = this.dataset.filtro;
                 aplicarFiltros();
             });
