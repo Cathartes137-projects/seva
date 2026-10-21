@@ -377,3 +377,64 @@ function honeypot_accionado(): bool
 {
     return !empty($_POST['seva_web']);
 }
+
+// -----------------------------------------------------------------------------
+// 6. ENTORNO Y URLS
+// -----------------------------------------------------------------------------
+// APP_ENV controla comportamientos exclusivos de desarrollo. En producción debe
+// definirse APP_ENV=production (por ejemplo en el VirtualHost o en .htaccess):
+//   SetEnv APP_ENV production
+// Si no se define, se asume "local" para no romper el flujo de desarrollo.
+// -----------------------------------------------------------------------------
+
+const SEGURIDAD_PREFIJO_RECUPERACION = 'recuperacion:';
+
+/**
+ * Devuelve el entorno de ejecución normalizado ("local", "production", ...).
+ */
+function seva_app_env(): string
+{
+    $env = getenv('APP_ENV');
+    if (is_string($env) && trim($env) !== '') {
+        return strtolower(trim($env));
+    }
+    return 'local';
+}
+
+/**
+ * Indica si la aplicación se ejecuta en entorno local (desarrollo).
+ */
+function seva_es_local(): bool
+{
+    return seva_app_env() === 'local';
+}
+
+/**
+ * Devuelve la URL base de la aplicación terminada en "/".
+ * Se deriva de la petición actual y se valida el host para evitar cabeceras
+ * manipuladas al construir enlaces absolutos (p. ej. el de recuperación).
+ */
+function seva_url_base(): string
+{
+    $esquema = seguridad_es_https() ? 'https' : 'http';
+
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    if (!is_string($host) || !preg_match('/^[A-Za-z0-9._\-:\[\]]+$/', $host)) {
+        $host = 'localhost';
+    }
+
+    $script = $_SERVER['SCRIPT_NAME'] ?? '/';
+    $directorio = str_replace('\\', '/', dirname($script));
+    $directorio = ($directorio === '/' || $directorio === '.') ? '' : rtrim($directorio, '/');
+
+    return $esquema . '://' . $host . $directorio . '/';
+}
+
+/**
+ * Clave de rate limit para las solicitudes de recuperación. Se separa del
+ * contador de login para que solicitar enlaces no bloquee el inicio de sesión.
+ */
+function seguridad_recuperacion_clave(string $email): string
+{
+    return mb_substr(SEGURIDAD_PREFIJO_RECUPERACION . seguridad_email_clave($email), 0, 150, 'UTF-8');
+}

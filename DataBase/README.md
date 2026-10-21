@@ -55,6 +55,7 @@ Cambiar obligatoriamente en cualquier despliegue real.
 - `palabras_repasadas` — repetición espaciada de vocabulario
 - `cursos` — catálogo de cursos (sin uso actual en el código)
 - `intentos_login` — control de intentos fallidos para el límite anti fuerza bruta
+- `recuperacion_password` — tokens de un solo uso para restablecer contraseñas (hash SHA-256)
 
 ## Respaldos
 

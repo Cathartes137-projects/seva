@@ -11,10 +11,16 @@ if (isset($_SESSION['usuario_id'])) {
 }
 
 $error = '';
+$exito = '';
 $email_val = '';
 
 if (csrf_error_en_url()) {
     $error = 'La solicitud expiró o no es válida. Inténtalo de nuevo.';
+}
+
+// Mensaje de confirmación tras restablecer la contraseña (Fase 5 / D13)
+if (isset($_GET['recuperado']) && $_GET['recuperado'] === '1') {
+    $exito = 'Tu contraseña se actualizó correctamente. Ya puedes iniciar sesión.';
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -271,6 +277,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         align-items:flex-start;
         gap:0.75rem;
     }
+    .alerta-exito{
+        background:#E9F7EE;
+        color:#1e7e34;
+        border-color:rgba(40, 167, 69, 0.35);
+    }
 
     .campo{ margin-bottom:1.15rem; }
     .campo label{
@@ -433,6 +444,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <line x1="12" y1="16" x2="12.01" y2="16"></line>
                     </svg>
                     <span><?= htmlspecialchars($error) ?></span>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($exito !== ''): ?>
+                <div class="alerta alerta-exito" role="status" aria-live="polite">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0; margin-top:1px;">
+                        <path d="M20 6 9 17l-5-5"></path>
+                    </svg>
+                    <span><?= htmlspecialchars($exito) ?></span>
                 </div>
             <?php endif; ?>
 
