@@ -256,7 +256,6 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
         <!-- Encabezado de la lección -->
         <header class="encabezado-leccion">
             <div class="meta-leccion">
-                <span class="insignia-nivel nivel-<?= htmlspecialchars($nivel_clase) ?>"><?= htmlspecialchars($leccion['nivel']) ?></span>
                 <span class="badge-contador" style="background:var(--paper); border:1px solid var(--line);">⏱ <?= htmlspecialchars($leccion['duracion']) ?> de práctica</span>
                 <?php if ($leccion_completada): ?>
                     <span class="insignia-completada" style="position:static;">
