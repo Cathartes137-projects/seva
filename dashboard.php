@@ -36,6 +36,97 @@ try {
     error_log('Dashboard - error de base de datos: ' . $e->getMessage());
     $error_bd = 'No se pudieron cargar las lecciones. Verifica la conexión a la base de datos de SEVA.';
 }
+
+// === Datos de presentación para la ruta de aprendizaje ===
+// Solo reorganiza lo ya consultado: no altera el cálculo de progreso ni las
+// consultas a "progreso_usuario" / "contenidos_educativos".
+$niveles_ruta = [
+    'basico' => [
+        'nombre'  => 'Básico',
+        'lema'    => 'Tus primeras señas',
+        'icono'   => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>',
+        'lecciones' => [],
+    ],
+    'intermedio' => [
+        'nombre'  => 'Intermedio',
+        'lema'    => 'Amplía tu vocabulario',
+        'icono'   => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>',
+        'lecciones' => [],
+    ],
+    'avanzado' => [
+        'nombre'  => 'Avanzado',
+        'lema'    => 'Domina la conversación',
+        'icono'   => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="5"/><path d="M8.5 12.5L7 22l5-3 5 3-1.5-9.5"/></svg>',
+        'lecciones' => [],
+    ],
+];
+
+$completados_ids = array_map('intval', $completados_ids);
+
+// Primera lección no completada = siguiente paso sugerido (bloqueo secuencial).
+$siguiente_id = null;
+foreach ($lecciones as $l) {
+    if (!in_array((int) $l['id'], $completados_ids, true)) {
+        $siguiente_id = (int) $l['id'];
+        break;
+    }
+}
+
+foreach ($lecciones as $indice => $l) {
+    $slug = strtolower((string) ($l['nivel'] ?? 'basico'));
+    if (!isset($niveles_ruta[$slug])) {
+        $slug = 'basico';
+    }
+
+    $id = (int) $l['id'];
+    if (in_array($id, $completados_ids, true)) {
+        $estado = 'completada';
+    } elseif ($siguiente_id === $id) {
+        $estado = 'actual';
+    } else {
+        $estado = 'bloqueada';
+    }
+
+    $niveles_ruta[$slug]['lecciones'][] = [
+        'id'     => $id,
+        'titulo' => (string) $l['titulo'],
+        'estado' => $estado,
+        'numero' => count($niveles_ruta[$slug]['lecciones']) + 1,
+    ];
+}
+
+// Zigzag del camino: centro → izquierda → centro → derecha (se repite).
+$patron_x = [50, 24, 50, 76];
+
+foreach ($niveles_ruta as $slug => $niv) {
+    $total_niv = count($niv['lecciones']);
+    $trazos = [];
+
+    for ($i = 0; $i < $total_niv - 1; $i++) {
+        $x1 = $patron_x[$i % 4];
+        $y1 = $i * 100 + 25;
+        $x2 = $patron_x[($i + 1) % 4];
+        $y2 = ($i + 1) * 100 + 25;
+        $medio = ($y1 + $y2) / 2;
+
+        $estado_destino = $niv['lecciones'][$i + 1]['estado'];
+        $clase_conector = $estado_destino === 'completada'
+            ? 'conector-completado'
+            : ($estado_destino === 'actual' ? 'conector-actual' : 'conector-bloqueado');
+
+        $trazos[] = '<path class="conector-linea ' . $clase_conector . '" d="M ' . $x1 . ' ' . $y1
+            . ' C ' . $x1 . ' ' . $medio . ', ' . $x2 . ' ' . $medio . ', ' . $x2 . ' ' . $y2 . '"></path>';
+    }
+
+    $niveles_ruta[$slug]['svg'] = implode('', $trazos);
+    $niveles_ruta[$slug]['completadas'] = count(array_filter(
+        $niv['lecciones'],
+        static fn (array $leccion): bool => $leccion['estado'] === 'completada'
+    ));
+    $niveles_ruta[$slug]['porcentaje'] = $total_niv > 0
+        ? (int) round(($niveles_ruta[$slug]['completadas'] / $total_niv) * 100)
+        : 0;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -146,50 +237,82 @@ try {
                 <div class="encabezado-seccion-camino">
                     <h2 id="titulo-camino">
                         Tu Camino
-                        <span class="badge-contador" id="contador-visibles" role="status" aria-live="polite"><?= $total ?> disponibles</span>
+                        <span class="badge-contador" id="contador-visibles" role="status" aria-live="polite"><?= $total ?> lecciones</span>
                     </h2>
                 </div>
 
                 <?php if (count($lecciones) > 0): ?>
-                    <div class="grid-lecciones" id="contenedor-lecciones">
-                        <?php foreach ($lecciones as $l): ?>
-                            <?php
-                                $hecha = in_array($l['id'], $completados_ids);
-                                $nivel_raw = strtolower($l['nivel'] ?? 'basico');
-                                $nivel_nom = ($nivel_raw === 'intermedio') ? 'Intermedio' : (($nivel_raw === 'avanzado') ? 'Avanzado' : 'Básico');
-                                // Fallback (D14): se usa el placeholder SVG cuando la ruta está vacía,
-                                // es insegura o el archivo no existe en disco (8 imágenes ausentes).
-                                $ruta_img = ltrim(str_replace('\\', '/', (string) ($l['ruta_imagen'] ?? '')), '/');
-                                if ($ruta_img === '' || strpos($ruta_img, '..') !== false
-                                    || !is_file(__DIR__ . '/' . $ruta_img)) {
-                                    $ruta_img = 'img/lecciones/default.svg';
-                                }
-                                $img_src = htmlspecialchars($ruta_img, ENT_QUOTES, 'UTF-8');
-                            ?>
-                            <article class="tarjeta-leccion" data-nivel="<?= htmlspecialchars($nivel_raw) ?>" data-titulo="<?= htmlspecialchars(strtolower($l['titulo'])) ?>">
-                                <div class="portada-leccion">
-                                    <span class="insignia-nivel nivel-<?= htmlspecialchars($nivel_raw) ?>"><?= $nivel_nom ?></span>
-                                    
-                                    <?php if ($hecha): ?>
-                                        <span class="insignia-completada" aria-label="Lección completada">
-                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-                                            Completada
-                                        </span>
-                                    <?php endif; ?>
+                    <div class="ruta-aprendizaje" id="contenedor-lecciones">
+                        <?php foreach ($niveles_ruta as $slug => $niv): ?>
+                            <?php if (count($niv['lecciones']) === 0) { continue; } ?>
 
-                                    <img src="<?= $img_src ?>" alt="Portada de la lección: <?= htmlspecialchars($l['titulo']) ?>" loading="lazy" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22300%22%20height%3D%22165%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20300%20165%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23E8EEF5%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20fill%3D%22%230056b3%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22bold%22%20font-size%3D%2216%22%20text-anchor%3D%22middle%22%20dy%3D%22.3em%22%3ESEVA%20LSE%3C%2Ftext%3E%3C%2Fsvg%3E'">
-                                </div>
+                            <section class="tramo-nivel tramo-<?= htmlspecialchars($slug) ?>" data-nivel="<?= htmlspecialchars($slug) ?>" aria-labelledby="titulo-nivel-<?= htmlspecialchars($slug) ?>">
+                                <header class="banner-nivel">
+                                    <span class="banner-nivel-icono"><?= $niv['icono'] ?></span>
+                                    <div class="banner-nivel-texto">
+                                        <h3 id="titulo-nivel-<?= htmlspecialchars($slug) ?>">Nivel <?= htmlspecialchars($niv['nombre']) ?></h3>
+                                        <p><?= htmlspecialchars($niv['lema']) ?> · <?= (int) $niv['completadas'] ?> de <?= count($niv['lecciones']) ?> completadas</p>
+                                    </div>
+                                    <span class="banner-nivel-pct" aria-hidden="true"><?= (int) $niv['porcentaje'] ?>%</span>
+                                </header>
 
-                                <div class="tarjeta-cuerpo">
-                                    <h3 class="titulo-leccion"><?= htmlspecialchars($l['titulo']) ?></h3>
-                                    <p class="descripcion-leccion">
-                                        <?= htmlspecialchars(!empty($l['descripcion']) ? $l['descripcion'] : 'Práctica interactiva de Lengua de Señas.') ?>
-                                    </p>
-                                    <a href="leccion.php?id=<?= (int)$l['id'] ?>" class="btn btn-primario btn-ver" aria-label="Ver lección: <?= htmlspecialchars($l['titulo']) ?>">
-                                        Ver lección
-                                    </a>
+                                <div class="lienzo-camino">
+                                    <!-- Conectores curvos: decorativos, la secuencia se lee en el orden del DOM -->
+                                    <svg class="conectores-camino" viewBox="0 0 100 <?= count($niv['lecciones']) * 100 ?>" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                                        <?= $niv['svg'] ?>
+                                    </svg>
+
+                                    <ol class="nodos-camino" role="list">
+                                    <?php foreach ($niv['lecciones'] as $i => $lec): ?>
+                                        <?php
+                                            $x = $patron_x[$i % 4];
+                                            $estado_texto = match ($lec['estado']) {
+                                                'completada' => 'Completada. Puedes repasarla cuando quieras.',
+                                                'actual'     => 'Disponible ahora. Es tu siguiente lección.',
+                                                default      => 'Bloqueada. Completa la lección anterior para desbloquearla.',
+                                            };
+                                            $aria_label = 'Lección ' . $lec['numero'] . ': ' . $lec['titulo'] . '. ' . $estado_texto;
+                                            $icono_badge = match ($lec['estado']) {
+                                                'completada' => '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="20 6 9 17 4 12"/></svg>',
+                                                'actual'     => '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
+                                                default      => '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+                                            };
+                                        ?>
+                                        <li class="nodo-item"
+                                            data-nivel="<?= htmlspecialchars($slug) ?>"
+                                            data-titulo="<?= htmlspecialchars(mb_strtolower($lec['titulo'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
+                                            data-estado="<?= htmlspecialchars($lec['estado']) ?>"
+                                            style="--x: <?= $x ?>%;">
+
+                                            <?php if ($lec['estado'] === 'bloqueada'): ?>
+                                                <span class="nodo" role="link" aria-disabled="true" aria-label="<?= htmlspecialchars($aria_label, ENT_QUOTES, 'UTF-8') ?>">
+                                                    <span class="nodo-circulo" aria-hidden="true">
+                                                        <?= $lec['numero'] ?>
+                                                        <span class="nodo-badge"><?= $icono_badge ?></span>
+                                                    </span>
+                                                    <span class="nodo-etiqueta">
+                                                        <span class="nodo-titulo"><?= htmlspecialchars($lec['titulo']) ?></span>
+                                                    </span>
+                                                </span>
+                                            <?php else: ?>
+                                                <a class="nodo" href="leccion.php?id=<?= (int) $lec['id'] ?>" aria-label="<?= htmlspecialchars($aria_label, ENT_QUOTES, 'UTF-8') ?>"<?= $lec['estado'] === 'actual' ? ' aria-current="step"' : '' ?>>
+                                                    <span class="nodo-circulo" aria-hidden="true">
+                                                        <?= $lec['numero'] ?>
+                                                        <span class="nodo-badge"><?= $icono_badge ?></span>
+                                                    </span>
+                                                    <span class="nodo-etiqueta">
+                                                        <?php if ($lec['estado'] === 'actual'): ?>
+                                                            <span class="nodo-etiqueta-estado">Siguiente</span>
+                                                        <?php endif; ?>
+                                                        <span class="nodo-titulo"><?= htmlspecialchars($lec['titulo']) ?></span>
+                                                    </span>
+                                                </a>
+                                            <?php endif; ?>
+                                        </li>
+                                    <?php endforeach; ?>
+                                    </ol>
                                 </div>
-                            </article>
+                            </section>
                         <?php endforeach; ?>
                     </div>
 
@@ -209,38 +332,91 @@ try {
     </main>
 
     <script>
-        // Filtrado en tiempo real: buscador y botones de nivel (D17)
+        // Filtrado en tiempo real del camino: buscador y botones de nivel.
         const buscador = document.getElementById('buscador');
         const botonesFiltro = document.querySelectorAll('.btn-filtro');
-        const tarjetas = document.querySelectorAll('.tarjeta-leccion');
+        const tramos = document.querySelectorAll('.tramo-nivel');
+        const todosLosNodos = document.querySelectorAll('.nodo-item');
         const sinResultados = document.getElementById('sin-resultados');
         const contadorVisibles = document.getElementById('contador-visibles');
+        const PATRON_X = [50, 24, 50, 76];
         let filtroNivelActual = 'todos';
+
+        // Redibuja los conectores SVG según los nodos visibles del tramo.
+        function dibujarConectores(tramo) {
+            const lista = tramo.querySelector('.nodos-camino');
+            const svg = tramo.querySelector('.conectores-camino');
+            if (!lista || !svg) {
+                return;
+            }
+
+            const visibles = Array.from(lista.querySelectorAll('.nodo-item')).filter(function (nodo) {
+                return nodo.style.display !== 'none';
+            });
+
+            visibles.forEach(function (nodo, indice) {
+                nodo.style.setProperty('--x', PATRON_X[indice % PATRON_X.length] + '%');
+            });
+
+            if (visibles.length < 2) {
+                svg.innerHTML = '';
+                svg.setAttribute('viewBox', '0 0 100 100');
+                return;
+            }
+
+            svg.setAttribute('viewBox', '0 0 100 ' + (visibles.length * 100));
+
+            let trazos = '';
+            for (let i = 0; i < visibles.length - 1; i++) {
+                const x1 = PATRON_X[i % PATRON_X.length];
+                const y1 = i * 100 + 25;
+                const x2 = PATRON_X[(i + 1) % PATRON_X.length];
+                const y2 = (i + 1) * 100 + 25;
+                const medio = (y1 + y2) / 2;
+                const estado = visibles[i + 1].dataset.estado || 'bloqueada';
+                const clase = estado === 'completada'
+                    ? 'conector-completado'
+                    : (estado === 'actual' ? 'conector-actual' : 'conector-bloqueado');
+
+                trazos += '<path class="conector-linea ' + clase + '" d="M ' + x1 + ' ' + y1
+                    + ' C ' + x1 + ' ' + medio + ', ' + x2 + ' ' + medio + ', ' + x2 + ' ' + y2 + '"></path>';
+            }
+
+            svg.innerHTML = trazos;
+        }
 
         function aplicarFiltros() {
             const termino = buscador ? buscador.value.trim().toLowerCase() : '';
             let visibles = 0;
 
-            tarjetas.forEach(function (tarjeta) {
-                const titulo = tarjeta.dataset.titulo || '';
-                const nivel = tarjeta.dataset.nivel || '';
-
-                const coincideTexto = termino === '' || titulo.includes(termino);
+            tramos.forEach(function (tramo) {
+                const nivel = tramo.dataset.nivel || '';
                 const coincideNivel = filtroNivelActual === 'todos' || nivel === filtroNivelActual;
+                let visiblesTramo = 0;
 
-                if (coincideTexto && coincideNivel) {
-                    tarjeta.style.display = '';
-                    visibles++;
-                } else {
-                    tarjeta.style.display = 'none';
+                tramo.querySelectorAll('.nodo-item').forEach(function (nodo) {
+                    const titulo = nodo.dataset.titulo || '';
+                    const coincideTexto = termino === '' || titulo.includes(termino);
+                    const mostrar = coincideNivel && coincideTexto;
+
+                    nodo.style.display = mostrar ? '' : 'none';
+                    if (mostrar) {
+                        visiblesTramo++;
+                        visibles++;
+                    }
+                });
+
+                tramo.style.display = (coincideNivel && visiblesTramo > 0) ? '' : 'none';
+                if (visiblesTramo > 0) {
+                    dibujarConectores(tramo);
                 }
             });
 
             if (sinResultados) {
-                sinResultados.style.display = (visibles === 0 && tarjetas.length > 0) ? 'block' : 'none';
+                sinResultados.style.display = (visibles === 0 && todosLosNodos.length > 0) ? 'block' : 'none';
             }
             if (contadorVisibles) {
-                contadorVisibles.textContent = visibles + (visibles === 1 ? ' disponible' : ' disponibles');
+                contadorVisibles.textContent = visibles + (visibles === 1 ? ' lección' : ' lecciones');
             }
         }
 
@@ -260,6 +436,9 @@ try {
                 aplicarFiltros();
             });
         });
+
+        // Estado inicial: conectores alineados con el zigzag del servidor.
+        tramos.forEach(dibujarConectores);
 
         // Menú accesible de opciones de usuario
         const btnOpciones = document.getElementById('btn-opciones');
