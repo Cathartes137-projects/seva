@@ -135,7 +135,7 @@ try {
             // (por ejemplo, migración sin aplicar) se conserva el array base.
             try {
                 $stmt_voc = $pdo->prepare(
-                    'SELECT id, palabra, descripcion
+                    'SELECT id, palabra, descripcion, imagen, con_movimiento, instruccion_movimiento
                      FROM vocabulario_senas
                      WHERE contenido_id = ?
                      ORDER BY orden ASC, id ASC'
@@ -155,10 +155,19 @@ try {
                     }
                     $claves_usadas[$clave] = true;
 
+                    $ruta_img_voc = ltrim(str_replace('\\', '/', (string) ($fila_voc['imagen'] ?? '')), '/');
+                    $imagen_voc = ($ruta_img_voc !== '' && strpos($ruta_img_voc, '..') === false
+                        && is_file(__DIR__ . '/' . $ruta_img_voc))
+                        ? $ruta_img_voc
+                        : '';
+
                     $leccion['vocabulario'][] = [
                         'id'          => $clave,
                         'palabra'     => $fila_voc['palabra'],
                         'descripcion' => $fila_voc['descripcion'],
+                        'imagen'      => $imagen_voc,
+                        'con_movimiento' => !empty($fila_voc['con_movimiento']),
+                        'instruccion' => (string) ($fila_voc['instruccion_movimiento'] ?? ''),
                     ];
                 }
             } catch (PDOException $e) {
@@ -182,6 +191,8 @@ $nivel_clase = strtolower($leccion['nivel'] ?? 'basico');
 if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
     $nivel_clase = 'basico';
 }
+
+$es_alfabeto = stripos((string) $leccion['titulo'], 'alfabeto') !== false;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -196,6 +207,38 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <!-- Estilos Oficiales SEVA -->
     <link rel="stylesheet" href="css/estilos.css">
+    <style>
+        /* Recursos LSC: mostrar la seña completa sin recortes */
+        .preview-seña img {
+            object-fit: contain;
+            background: #fff;
+            padding: .3rem;
+        }
+        .etq-movimiento {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            align-self: flex-start;
+            margin: 0 0 .45rem;
+            padding: .2rem .6rem;
+            border-radius: 99px;
+            background: var(--sol-cl, #FFF4D6);
+            color: #7A4B00;
+            font: 700 .72rem 'Inter', sans-serif;
+            letter-spacing: .02em;
+        }
+        .tarjeta-seña .instruccion-movimiento {
+            flex: 0 0 auto;
+            margin: .2rem 0 1rem;
+            padding: .55rem .7rem;
+            border-left: 4px solid var(--sol, #FFB400);
+            border-radius: .4rem;
+            background: var(--sol-cl, #FFF4D6);
+            color: var(--text);
+            font-size: .82rem;
+            line-height: 1.45;
+        }
+    </style>
 </head>
 <body>
     <a href="#contenido-leccion" class="skip-link">Saltar al contenido</a>
@@ -271,10 +314,10 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
 
         <!-- 1. Contenedor de Video 16:9 Adaptado W3C (.video-lse) -->
         <section class="seccion-multimedia" aria-labelledby="titulo-video">
-            <h2 id="titulo-video" style="font-size:1.35rem; margin-bottom:0.75rem;">Demostración en Lengua de Señas</h2>
+            <h2 id="titulo-video" style="font-size:1.35rem; margin-bottom:0.75rem;">Demostración en Lengua de Señas Colombiana (LSC)</h2>
 
-            <div class="video-lse">
-                <span class="etiqueta-lse" aria-hidden="true">LSE</span>
+            <div class="video-lse" style="background:linear-gradient(rgba(4,20,36,.28),rgba(4,20,36,.55)), url('<?= htmlspecialchars($leccion['ruta_imagen']) ?>') center/cover no-repeat;">
+                <span class="etiqueta-lse" aria-hidden="true">LSC</span>
 
                 <?php if (!empty($leccion['ruta_video']) && is_file(__DIR__ . '/' . $leccion['ruta_video'])): ?>
                     <video controls preload="metadata" poster="<?= htmlspecialchars($leccion['ruta_imagen']) ?>">
@@ -282,7 +325,7 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
                         Tu navegador no soporta la reproducción de video.
                     </video>
                 <?php else: ?>
-                    <div class="placeholder-video">
+                    <div class="placeholder-video" style="background:rgba(4,20,36,.72); border-radius:.9rem; padding:1.4rem 1.8rem; backdrop-filter:blur(3px);">
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <rect x="2" y="2" width="20" height="20" rx="4"></rect>
                             <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon>
@@ -313,10 +356,16 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
             <div class="panel-transcripcion" id="panel-transcripcion">
                 <h3 style="font-size:1.1rem; margin-top:0; color:var(--ink);">Transcripción y descripción gestual</h3>
                 <ol style="margin:0; padding-left:1.3rem; line-height:1.7; color:var(--text);">
-                    <li><strong>Contacto visual y postura:</strong> Mantén una postura relajada con las manos en el espacio gestual frente al pecho.</li>
-                    <li><strong>Señas de bienvenida:</strong> Palma extendida a la altura de la sien con movimiento de vaivén.</li>
-                    <li><strong>Expresión facial:</strong> Las cejas y la mirada acompañan el significado interrogativo o afirmativo de cada gesto.</li>
-                    <li><strong>Dactilología:</strong> Mantén la mano dominante quieta y deletrea cada letra de forma fluida.</li>
+                    <li><strong>Postura y espacio gestual:</strong> Mantén una postura relajada, con las manos frente al pecho y la palma de la mano dominante visible para quien te lee.</li>
+                    <?php if ($es_alfabeto): ?>
+                        <li><strong>Mano dominante:</strong> Forma cada letra con la mano activa; la mano contraria sirve de apoyo y permanece quieta.</li>
+                        <li><strong>Una letra a la vez:</strong> Deletrea sin rebotes ni cambios bruscos de muñeca; la transición entre letras debe ser fluida.</li>
+                        <li><strong>Letras con movimiento:</strong> G, H, J, Ñ, S y Z requieren un trazo o giro adicional; sigue la instrucción de cada tarjeta.</li>
+                    <?php else: ?>
+                        <li><strong>Mano dominante:</strong> Realiza cada seña con la mano activa; la mano contraria sirve de apoyo y permanece quieta.</li>
+                        <li><strong>Una seña a la vez:</strong> Ejecuta el gesto completo sin rebotes ni cambios bruscos; la transición entre señas debe ser fluida.</li>
+                        <li><strong>Movimiento y expresión:</strong> Si la tarjeta indica «Con movimiento», sigue la instrucción y acompaña la seña con una expresión facial natural.</li>
+                    <?php endif; ?>
                 </ol>
             </div>
         </section>
@@ -338,15 +387,29 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
                 <?php foreach ($leccion['vocabulario'] as $item): ?>
                     <article class="tarjeta-seña" id="tarjeta-<?= htmlspecialchars($item['id']) ?>" data-reveal>
                         <div class="preview-seña">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
-                                <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path>
-                                <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
-                                <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
-                            </svg>
+                            <?php if (!empty($item['imagen'])): ?>
+                                <img src="<?= htmlspecialchars($item['imagen']) ?>"
+                                     alt="Seña de «<?= htmlspecialchars($item['palabra']) ?>» en Lengua de Señas Colombiana"
+                                     loading="lazy" decoding="async">
+                            <?php else: ?>
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                                    <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path>
+                                    <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
+                                    <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+                                </svg>
+                            <?php endif; ?>
                         </div>
                         <h3><?= htmlspecialchars($item['palabra']) ?></h3>
+                        <?php if (!empty($item['con_movimiento'])): ?>
+                            <span class="etq-movimiento">
+                                <span aria-hidden="true">↔</span> Con movimiento
+                            </span>
+                        <?php endif; ?>
                         <p><?= htmlspecialchars($item['descripcion']) ?></p>
+                        <?php if (!empty($item['instruccion'])): ?>
+                            <p class="instruccion-movimiento"><strong>Movimiento:</strong> <?= htmlspecialchars($item['instruccion']) ?></p>
+                        <?php endif; ?>
 
                         <!-- Casilla de verificación accesible con zona táctil >= 44x44px -->
                         <label class="control-check-practica">

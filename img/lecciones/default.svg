@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 330" width="600" height="330" role="img" aria-labelledby="tituloPortada">
-  <title id="tituloPortada">Portada genérica de lección SEVA · Lengua de Señas</title>
+  <title id="tituloPortada">Portada genérica de lección SEVA · Lengua de Señas Colombiana</title>
 
   <defs>
     <linearGradient id="fondo" x1="0" y1="0" x2="1" y2="1">
@@ -41,8 +41,8 @@
   <!-- Texto de marca -->
   <text x="300" y="286" text-anchor="middle"
         font-family="Inter, Segoe UI, Arial, sans-serif" font-size="24" font-weight="700"
-        fill="#0056b3" letter-spacing="3">SEVA · LSE</text>
+        fill="#0056b3" letter-spacing="3">SEVA · LSC</text>
   <text x="300" y="312" text-anchor="middle"
         font-family="Inter, Segoe UI, Arial, sans-serif" font-size="14" font-weight="500"
-        fill="#5B6B85" letter-spacing="1.2">Lección de Lengua de Señas</text>
+        fill="#5B6B85" letter-spacing="1.2">Lección de Lengua de Señas Colombiana</text>
 </svg>
