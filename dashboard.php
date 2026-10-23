@@ -19,7 +19,7 @@ $porcentaje = 0;
 $completados_ids = [];
 
 try {
-    // Consulta extendida con nivel y orden para la ruta gamificada
+    // Consulta de lecciones (se conserva el orden pedagógico)
     $stmt_lec = $pdo->query('SELECT id, titulo, descripcion, ruta_imagen, ruta_video, nivel, orden FROM contenidos_educativos ORDER BY orden ASC, id ASC');
     $lecciones = $stmt_lec->fetchAll();
     $total = count($lecciones);
@@ -28,7 +28,7 @@ try {
     $stmt_comp->execute([$usuario_id]);
     $completadas = (int) $stmt_comp->fetch()['c'];
 
-    $porcentaje = $total > 0 ? round(($completadas / $total) * 100) : 0;
+    $porcentaje = $total > 0 ? (int) round(($completadas / $total) * 100) : 0;
 
     $stmt_ids = $pdo->prepare('SELECT contenido_id FROM progreso_usuario WHERE usuario_id = ? AND completado = 1');
     $stmt_ids->execute([$usuario_id]);
@@ -38,33 +38,9 @@ try {
     $error_bd = 'No se pudieron cargar las lecciones. Verifica la conexión a la base de datos de SEVA.';
 }
 
-// === Datos de presentación para la ruta de aprendizaje ===
-// Solo reorganiza lo ya consultado: no altera el cálculo de progreso ni las
-// consultas a "progreso_usuario" / "contenidos_educativos".
-$niveles_ruta = [
-    'basico' => [
-        'nombre'  => 'Básico',
-        'lema'    => 'Tus primeras señas',
-        'icono'   => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>',
-        'lecciones' => [],
-    ],
-    'intermedio' => [
-        'nombre'  => 'Intermedio',
-        'lema'    => 'Amplía tu vocabulario',
-        'icono'   => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>',
-        'lecciones' => [],
-    ],
-    'avanzado' => [
-        'nombre'  => 'Avanzado',
-        'lema'    => 'Domina la conversación',
-        'icono'   => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="5"/><path d="M8.5 12.5L7 22l5-3 5 3-1.5-9.5"/></svg>',
-        'lecciones' => [],
-    ],
-];
-
 $completados_ids = array_map('intval', $completados_ids);
 
-// Primera lección no completada = siguiente paso sugerido (bloqueo secuencial).
+// Primera lección no completada = siguiente paso sugerido.
 $siguiente_id = null;
 foreach ($lecciones as $l) {
     if (!in_array((int) $l['id'], $completados_ids, true)) {
@@ -73,7 +49,6 @@ foreach ($lecciones as $l) {
     }
 }
 
-// Título de la siguiente lección y mensaje del héroe (solo presentación).
 $siguiente_titulo = '';
 if ($siguiente_id !== null) {
     foreach ($lecciones as $l) {
@@ -85,7 +60,7 @@ if ($siguiente_id !== null) {
 }
 
 if ($error_bd !== '') {
-    $hero_subtitulo = 'Revisa la conexión con la base de datos para continuar tu camino.';
+    $hero_subtitulo = 'Revisa la conexión con la base de datos para continuar tu aprendizaje.';
 } elseif ($total === 0) {
     $hero_subtitulo = 'Todavía no hay lecciones publicadas. Cuando se agreguen, aparecerán aquí.';
 } elseif ($siguiente_id !== null) {
@@ -94,503 +69,437 @@ if ($error_bd !== '') {
     $hero_subtitulo = '¡Completaste todas las lecciones! Repásalas cuando quieras y sigue practicando con los juegos.';
 }
 
-// Seña del día: se lee del JSON local y rota según el día del año.
-$sena_dia = null;
-$sena_archivo = '';
-$ruta_guia = __DIR__ . '/data/guia.json';
-if (is_file($ruta_guia)) {
-    $guia_datos = json_decode((string) file_get_contents($ruta_guia), true);
-    if (is_array($guia_datos)) {
-        $guia_datos = array_values(array_filter($guia_datos, static function ($g): bool {
-            return is_array($g) && !empty($g['palabra']);
-        }));
-        if (count($guia_datos) > 0) {
-            $sena_dia = $guia_datos[(int) date('z') % count($guia_datos)];
-            $ruta_rel = ltrim(str_replace('\\', '/', (string) ($sena_dia['archivo'] ?? '')), '/');
-            if ($ruta_rel !== '' && strpos($ruta_rel, '..') === false && is_file(__DIR__ . '/' . $ruta_rel)) {
-                $sena_archivo = $ruta_rel;
-            }
-        }
+$niveles = [
+    'basico'     => 'Básico',
+    'intermedio' => 'Intermedio',
+    'avanzado'   => 'Avanzado',
+];
+
+/**
+ * Devuelve una ruta de imagen segura y existente; si no, el marcador local.
+ */
+function seva_imagen_leccion(?string $ruta): string
+{
+    $ruta = ltrim(str_replace('\\', '/', (string) $ruta), '/');
+    if ($ruta !== '' && strpos($ruta, '..') === false && is_file(__DIR__ . '/' . $ruta)) {
+        return $ruta;
     }
-}
-
-foreach ($lecciones as $indice => $l) {
-    $slug = strtolower((string) ($l['nivel'] ?? 'basico'));
-    if (!isset($niveles_ruta[$slug])) {
-        $slug = 'basico';
-    }
-
-    $id = (int) $l['id'];
-    if (in_array($id, $completados_ids, true)) {
-        $estado = 'completada';
-    } elseif ($siguiente_id === $id) {
-        $estado = 'actual';
-    } else {
-        $estado = 'bloqueada';
-    }
-
-    $niveles_ruta[$slug]['lecciones'][] = [
-        'id'     => $id,
-        'titulo' => (string) $l['titulo'],
-        'estado' => $estado,
-        'numero' => count($niveles_ruta[$slug]['lecciones']) + 1,
-    ];
-}
-
-// Zigzag del camino: centro → izquierda → centro → derecha (se repite).
-$patron_x = [50, 24, 50, 76];
-
-foreach ($niveles_ruta as $slug => $niv) {
-    $total_niv = count($niv['lecciones']);
-    $trazos = [];
-
-    for ($i = 0; $i < $total_niv - 1; $i++) {
-        $x1 = $patron_x[$i % 4];
-        $y1 = $i * 100 + 25;
-        $x2 = $patron_x[($i + 1) % 4];
-        $y2 = ($i + 1) * 100 + 25;
-        $medio = ($y1 + $y2) / 2;
-
-        $estado_destino = $niv['lecciones'][$i + 1]['estado'];
-        $clase_conector = $estado_destino === 'completada'
-            ? 'conector-completado'
-            : ($estado_destino === 'actual' ? 'conector-actual' : 'conector-bloqueado');
-
-        $trazos[] = '<path class="conector-linea ' . $clase_conector . '" d="M ' . $x1 . ' ' . $y1
-            . ' C ' . $x1 . ' ' . $medio . ', ' . $x2 . ' ' . $medio . ', ' . $x2 . ' ' . $y2 . '"></path>';
-    }
-
-    $niveles_ruta[$slug]['svg'] = implode('', $trazos);
-    $niveles_ruta[$slug]['completadas'] = count(array_filter(
-        $niv['lecciones'],
-        static fn (array $leccion): bool => $leccion['estado'] === 'completada'
-    ));
-    $niveles_ruta[$slug]['porcentaje'] = $total_niv > 0
-        ? (int) round(($niveles_ruta[$slug]['completadas'] / $total_niv) * 100)
-        : 0;
+    return 'img/lecciones/default.svg';
 }
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mi Camino de Aprendizaje · SEVA</title>
-    <script>document.documentElement.classList.add('js')</script>
-    <!-- Fuentes Web Accesibles -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Estilos Oficiales SEVA -->
-    <link rel="stylesheet" href="css/estilos.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi aprendizaje · SEVA</title>
+<script>document.documentElement.classList.add('js')</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+<style>
+    /* ---------- Cabecera de progreso ---------- */
+    .dash-hero{
+        position:relative; overflow:hidden;
+        display:grid; grid-template-columns:1.4fr auto; gap:1.5rem; align-items:center;
+        padding:2rem 2.1rem; border-radius:1.4rem; color:#F3F6FF;
+        background:radial-gradient(circle at 88% 8%, #0A4A8C 0%, var(--ink) 62%, #021A33 100%);
+        box-shadow:var(--sombra-card);
+    }
+    .dash-hero::before{
+        content:""; position:absolute; inset:0; opacity:.45; pointer-events:none;
+        background-image:radial-gradient(rgba(255,255,255,.08) 1px, transparent 1px);
+        background-size:24px 24px;
+    }
+    .dash-hero > *{ position:relative; }
+    .dash-hero h1{ color:#fff; font-size:clamp(1.7rem,3.6vw,2.4rem); margin:0 0 .5rem; }
+    .dash-hero p{ margin:0 0 1.2rem; color:#C9D6EC; max-width:52ch; line-height:1.55; }
+    .dash-hero .btn{ min-height:44px; display:inline-flex; align-items:center; gap:.45rem; }
+    .dash-ola{ display:inline-block; transform-origin:70% 80%; animation:ola-dash 1.6s ease-in-out .4s 2; }
+    @keyframes ola-dash{
+        0%,100%{ transform:rotate(0) }
+        25%{ transform:rotate(18deg) }
+        55%{ transform:rotate(-8deg) }
+        75%{ transform:rotate(12deg) }
+    }
+
+    .dash-progreso{
+        min-width:210px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18);
+        border-radius:1rem; padding:1.1rem 1.2rem; backdrop-filter:blur(4px);
+    }
+    .dash-progreso .fila{ display:flex; align-items:baseline; justify-content:space-between; gap:1rem; margin-bottom:.55rem; }
+    .dash-progreso .etq{ font:600 .82rem 'Inter',sans-serif; color:#C9D6EC; letter-spacing:.02em; text-transform:uppercase; }
+    .dash-progreso strong{ font:800 1.9rem 'Baloo 2',sans-serif; color:#fff; line-height:1; }
+    .dash-barra{ height:12px; border-radius:99px; background:rgba(255,255,255,.16); overflow:hidden; }
+    .dash-barra span{
+        display:block; height:100%; width:var(--pct,0%); border-radius:99px;
+        background:linear-gradient(90deg,#34C759 0%,#7BE495 100%);
+        transition:width 1.1s cubic-bezier(.2,.8,.2,1) .25s;
+    }
+    .dash-progreso small{ display:block; margin-top:.5rem; color:#C9D6EC; font-size:.8rem; }
+
+    /* ---------- Banner de minijuegos ---------- */
+    .dash-juegos{
+        position:relative; overflow:hidden;
+        display:grid; grid-template-columns:minmax(0,1fr) auto; gap:1.5rem; align-items:center;
+        margin-top:1.5rem; padding:1.4rem 1.6rem;
+        border:2px solid #FFD9A8; border-radius:1.2rem;
+        background:linear-gradient(120deg,#FFF3D6 0%,#FFE2BD 55%,#FFD6C9 100%);
+        box-shadow:var(--sombra-card);
+    }
+    .dash-juegos::after{
+        content:""; position:absolute; right:-40px; top:-60px; width:180px; height:180px;
+        border-radius:50%; background:rgba(255,255,255,.35); pointer-events:none;
+    }
+    .dash-juegos > *{ position:relative; }
+    .dash-juegos-etq{
+        display:inline-block; margin-bottom:.15rem;
+        font:700 .72rem 'Inter',sans-serif; letter-spacing:.08em;
+        text-transform:uppercase; color:#8A4B00;
+    }
+    .dash-juegos h2{
+        margin:0 0 .35rem; color:var(--ink);
+        font:800 clamp(1.3rem,2.6vw,1.7rem) 'Baloo 2',sans-serif;
+    }
+    .dash-juegos p{ margin:0 0 1rem; max-width:58ch; color:var(--text); line-height:1.5; }
+    .dash-juegos .btn{ min-height:44px; display:inline-flex; align-items:center; gap:.4rem; }
+    .dash-juegos-emoji{
+        font-size:clamp(3rem,6vw,4.5rem); line-height:1;
+        filter:drop-shadow(0 8px 12px rgba(122,75,0,.2));
+        animation:dash-flota 3.2s ease-in-out infinite;
+    }
+    @keyframes dash-flota{
+        0%,100%{ transform:translateY(0) rotate(-4deg) }
+        50%{ transform:translateY(-8px) rotate(4deg) }
+    }
+    @media (prefers-reduced-motion: reduce){
+        .dash-juegos-emoji{ animation:none; }
+    }
+
+    /* ---------- Barra de herramientas ---------- */
+    .dash-herr{ display:flex; flex-wrap:wrap; gap:1rem; align-items:center; justify-content:space-between; margin:2rem 0 1rem; }
+    .dash-herr h2{ font-size:1.45rem; margin:0; }
+    .dash-buscador{
+        width:100%; max-width:320px; min-height:44px; padding:.65rem 1rem;
+        border:2px solid var(--line); border-radius:99px; background:var(--paper);
+        font:500 .92rem 'Inter',sans-serif; color:var(--text);
+    }
+    .dash-buscador:focus{ outline:none; border-color:var(--azul); box-shadow:0 0 0 4px rgba(0,86,179,.14); }
+    .dash-filtros{ display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1.3rem; }
+    .dash-filtro{
+        min-height:44px; padding:.5rem 1rem; border-radius:99px; cursor:pointer;
+        border:2px solid var(--line); background:var(--paper); color:var(--text);
+        font:700 .85rem 'Inter',sans-serif; transition:background .15s, border-color .15s, color .15s;
+    }
+    .dash-filtro:hover{ border-color:var(--azul); color:var(--azul); }
+    .dash-filtro[aria-pressed="true"]{ background:var(--azul); border-color:var(--azul); color:#fff; }
+    .dash-resultados{ margin:0 0 1rem; color:var(--muted); font-size:.88rem; }
+
+    /* ---------- Grid de tarjetas ---------- */
+    .dash-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1.25rem; }
+    .dash-card{
+        display:flex; flex-direction:column; overflow:hidden; text-decoration:none; color:inherit;
+        background:var(--paper); border:2px solid var(--line); border-radius:1rem;
+        box-shadow:var(--sombra-card);
+        transition:transform .2s var(--rebote), box-shadow .2s, border-color .15s;
+    }
+    .dash-card:hover{ transform:translateY(-4px); box-shadow:var(--sombra-hover); border-color:var(--azul); }
+    .dash-card:focus-visible{ outline:3px solid var(--azul); outline-offset:3px; }
+    .dash-card[hidden]{ display:none; }
+    .dash-card.actual{ border-color:var(--azul); box-shadow:0 0 0 3px rgba(0,86,179,.12), var(--sombra-card); }
+    .dash-card.hecha{ border-color:#BFE5C9; }
+
+    .dash-media{ position:relative; aspect-ratio:16/10; background:var(--azul-cl); }
+    .dash-media img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .dash-media .dash-etq{
+        position:absolute; top:.65rem; left:.65rem;
+        padding:.28rem .6rem; border-radius:99px; background:rgba(255,255,255,.94);
+        color:var(--ink); font:700 .72rem 'Inter',sans-serif; letter-spacing:.02em;
+        box-shadow:0 2px 6px rgba(4,41,77,.16);
+    }
+    .dash-media .dash-check{
+        position:absolute; top:.65rem; right:.65rem; display:flex; align-items:center; gap:.25rem;
+        padding:.28rem .55rem; border-radius:99px; background:var(--verde); color:#fff;
+        font:700 .72rem 'Inter',sans-serif; box-shadow:0 2px 6px rgba(4,41,77,.18);
+    }
+    .dash-body{ display:flex; flex-direction:column; gap:.4rem; flex:1; padding:1rem 1.1rem 1.15rem; }
+    .dash-body h3{ margin:0; font-size:1.08rem; }
+    .dash-desc{
+        margin:0; color:var(--muted); font-size:.86rem; line-height:1.45;
+        display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+    }
+    .dash-cta{
+        margin-top:auto; padding-top:.55rem; display:inline-flex; align-items:center; gap:.35rem;
+        color:var(--azul); font-weight:700; font-size:.9rem;
+    }
+    .dash-card.actual .dash-cta{ color:var(--azul-oscuro); }
+    .dash-card.hecha .dash-cta{ color:var(--verde-oscuro); }
+    .dash-card.actual .dash-cta::after{ content:"→"; transition:transform .15s; }
+    .dash-card:hover .dash-cta::after{ transform:translateX(3px); }
+
+    .dash-vacio{
+        text-align:center; padding:2.4rem 1.2rem; border:2px dashed var(--line);
+        border-radius:1rem; background:var(--paper); color:var(--muted);
+    }
+    .dash-vacio .gran{ display:block; font-size:2.4rem; margin-bottom:.4rem; }
+    .dash-vacio h3{ margin:0 0 .3rem; color:var(--ink); }
+    .dash-vacio p{ margin:0; }
+
+    /* ---------- Recursos y herramientas ---------- */
+    .dash-recursos{ margin-top:2.4rem; }
+    .dash-recursos .dash-herr{ margin-top:0; }
+    .dash-recursos-grid{
+        display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1.25rem;
+    }
+    .recurso-card{
+        display:flex; align-items:flex-start; gap:1rem;
+        padding:1.15rem 1.2rem; text-decoration:none; color:inherit;
+        background:var(--paper); border:2px solid var(--line); border-left-width:5px;
+        border-radius:1rem; box-shadow:var(--sombra-card);
+        transition:transform .2s var(--rebote), box-shadow .2s, border-color .15s;
+    }
+    .recurso-card:hover{ transform:translateY(-3px); box-shadow:var(--sombra-hover); border-color:var(--azul); }
+    .recurso-card:focus-visible{ outline:3px solid var(--azul); outline-offset:3px; }
+    .recurso-card.recurso-camara{ border-left-color:var(--azul); }
+    .recurso-card.recurso-juegos{ border-left-color:var(--sol); }
+    .recurso-icono{
+        flex:0 0 auto; display:grid; place-items:center;
+        width:56px; height:56px; border-radius:.9rem; font-size:1.8rem; line-height:1;
+        background:var(--azul-cl);
+    }
+    .recurso-juegos .recurso-icono{ background:var(--sol-cl); }
+    .recurso-etq{
+        display:block; margin-bottom:.15rem;
+        font:700 .7rem 'Inter',sans-serif; letter-spacing:.07em;
+        text-transform:uppercase; color:var(--azul);
+    }
+    .recurso-juegos .recurso-etq{ color:#8A4B00; }
+    .recurso-texto h3{ margin:0 0 .25rem; font-size:1.05rem; }
+    .recurso-texto p{ margin:0 0 .5rem; color:var(--muted); font-size:.86rem; line-height:1.45; }
+    .recurso-cta{
+        display:inline-flex; align-items:center; gap:.3rem;
+        color:var(--azul); font-size:.88rem; font-weight:700;
+    }
+    .recurso-card:hover .recurso-cta{ color:var(--azul-oscuro); }
+
+    @media (max-width:760px){
+        .dash-hero{ grid-template-columns:1fr; padding:1.6rem 1.3rem; }
+        .dash-progreso{ min-width:0; }
+        .dash-herr{ align-items:flex-start; }
+        .dash-buscador{ max-width:none; }
+        .dash-juegos{ grid-template-columns:1fr; padding:1.25rem; }
+        .dash-juegos-emoji{ display:none; }
+        .dash-recursos-grid{ grid-template-columns:1fr; }
+    }
+</style>
 </head>
 <body>
-    <a href="#contenido-principal" class="skip-link">Saltar al contenido principal</a>
+<?php require __DIR__ . '/partials/topbar.php'; ?>
 
-    <!-- Encabezado Superior -->
-    <header class="topbar">
-        <a href="dashboard.php" class="marca" aria-label="Inicio SEVA - Sistema Educativo de Lengua de Señas">
-            <span class="punto" aria-hidden="true"></span>SEVA
-        </a>
+<main class="contenedor" id="contenido">
 
-        <div class="topbar-derecha">
-            <span class="chip chip-racha" title="Días seguidos practicando (guardado en este dispositivo)">
-                <span aria-hidden="true">🔥</span><b data-racha>0</b>
-                <span class="visually-hidden">días de racha</span>
-            </span>
-            <span class="chip" title="Puntos de experiencia guardados en este dispositivo">
-                <span aria-hidden="true">⭐</span><b data-xp>0</b> XP
-            </span>
+<?php if ($error_bd !== ''): ?>
+    <div class="aviso-error" role="alert" style="background:var(--danger-bg); color:var(--danger); border-radius:1rem; padding:1.1rem 1.3rem; margin-bottom:1.4rem;">
+        <strong style="display:block; font-family:'Baloo 2',sans-serif;">No pudimos cargar tus lecciones</strong>
+        <?= htmlspecialchars($error_bd) ?>
+    </div>
+<?php endif; ?>
 
-            <span class="saludo">Hola, <strong><?= htmlspecialchars($nombre) ?></strong></span>
-
-            <!-- Menú Desplegable Accesible -->
-            <div class="menu-opciones">
-                <button type="button" class="btn-hamburguesa" id="btn-opciones" aria-label="Abrir menú de usuario" aria-haspopup="true" aria-expanded="false" aria-controls="panel-opciones">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-                </button>
-
-                <div class="panel-opciones" id="panel-opciones" role="menu">
-                    <div class="encabezado-opciones">
-                        <span class="nombre-usuario"><?= htmlspecialchars($nombre) ?></span>
-                        <span class="correo-usuario"><?= htmlspecialchars($_SESSION['email'] ?? '') ?></span>
-                    </div>
-
-                    <a href="practica.php" class="opcion" role="menuitem">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/><path d="M8.5 15.5h.01M15.5 8.5h.01"/></svg>
-                        Practicar con juegos
-                    </a>
-                    <a href="camara/detector.php" class="opcion" role="menuitem">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                        Detector de manos
-                    </a>
-
-                    <hr class="separador-opciones">
-
-                    <a href="perfil.php" class="opcion" role="menuitem">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
-                        Mi perfil
-                    </a>
-                    <a href="configuracion.php" class="opcion" role="menuitem">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                        Configuración de cuenta
-                    </a>
-
-                    <hr class="separador-opciones">
-
-                    <a href="logout.php" class="opcion salir" role="menuitem">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
-                        Cerrar sesión
-                    </a>
-                </div>
-            </div>
-
-            <a href="logout.php" class="btn-salir-directo" title="Cerrar sesión">Salir</a>
+<?php if ($error_bd === ''): ?>
+    <section class="dash-hero" aria-labelledby="titulo-progreso">
+        <div>
+            <h1 id="titulo-progreso">¡Hola, <?= htmlspecialchars($primer) ?>! <span class="dash-ola" aria-hidden="true">👋</span></h1>
+            <p><?= htmlspecialchars($hero_subtitulo) ?></p>
+            <?php if ($siguiente_id !== null): ?>
+                <a class="btn btn-verde" href="leccion.php?id=<?= (int) $siguiente_id ?>">
+                    <?= $completadas === 0 ? 'Empezar lección' : 'Continuar lección' ?>
+                </a>
+            <?php else: ?>
+                <a class="btn btn-verde" href="practica.php">Repasar con juegos</a>
+            <?php endif; ?>
         </div>
-    </header>
 
-    <main class="contenedor" id="contenido-principal">
-        <?php if ($error_bd): ?>
-            <div class="alerta alerta-error" role="alert">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <div>
-                    <strong>Error de conexión</strong>
-                    <p style="margin:0;"><?= htmlspecialchars($error_bd) ?></p>
-                </div>
+        <div class="dash-progreso" role="group" aria-labelledby="etq-progreso">
+            <div class="fila">
+                <span class="etq" id="etq-progreso">Progreso general</span>
+                <strong><?= (int) $porcentaje ?>%</strong>
             </div>
-        <?php endif; ?>
-
-        <?php if (!$error_bd): ?>
-            <!-- 1. Héroe: saludo, siguiente paso y progreso -->
-            <?php
-                $anillo_circ = 2 * M_PI * 54;
-                $anillo_off = $anillo_circ * (1 - ((int) $porcentaje / 100));
-            ?>
-            <section class="hero" aria-labelledby="titulo-progreso">
-                <div>
-                    <p class="hero-eyebrow">Tu progreso</p>
-                    <h1 id="titulo-progreso">¡Hola, <?= htmlspecialchars($primer) ?>!</h1>
-                    <p class="hero-texto"><?= htmlspecialchars($hero_subtitulo) ?></p>
-                    <div class="hero-acciones">
-                        <?php if ($siguiente_id !== null): ?>
-                            <a href="leccion.php?id=<?= (int) $siguiente_id ?>" class="btn btn-primario">Continuar lección</a>
-                        <?php elseif (count($lecciones) > 0): ?>
-                            <a href="#titulo-camino" class="btn btn-primario">Repasar mis lecciones</a>
-                        <?php endif; ?>
-                        <a href="practica.php" class="btn btn-contorno">Practicar con juegos</a>
-                    </div>
-                </div>
-
-                <div class="anillo" role="progressbar" aria-valuenow="<?= (int) $porcentaje ?>" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso acumulado: <?= (int) $porcentaje ?> por ciento, <?= (int) $completadas ?> de <?= (int) $total ?> lecciones completadas">
-                    <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
-                        <circle class="pista-anillo" cx="60" cy="60" r="54"></circle>
-                        <circle class="valor-anillo" cx="60" cy="60" r="54" style="--circ: <?= round($anillo_circ, 2) ?>; --off: <?= round($anillo_off, 2) ?>;"></circle>
-                    </svg>
-                    <div class="anillo-centro" aria-hidden="true">
-                        <strong><?= (int) $porcentaje ?>%</strong>
-                        <span><?= (int) $completadas ?> de <?= (int) $total ?></span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 1b. Seña del día y accesos rápidos a práctica -->
-            <div class="modulos">
-                <section class="caja" aria-labelledby="titulo-sena-dia" data-reveal>
-                    <h2 id="titulo-sena-dia"><span aria-hidden="true">👋</span> Seña del día</h2>
-                    <?php if ($sena_dia !== null): ?>
-                        <div class="sena-dia">
-                            <?php if ($sena_archivo !== ''): ?>
-                                <img src="<?= htmlspecialchars($sena_archivo) ?>" alt="Tarjeta de referencia visual para la palabra <?= htmlspecialchars((string) $sena_dia['palabra']) ?>" width="96" height="96" loading="lazy">
-                            <?php endif; ?>
-                            <div>
-                                <strong><?= htmlspecialchars((string) $sena_dia['palabra']) ?></strong>
-                                <p><?= htmlspecialchars((string) ($sena_dia['descripcion'] ?? '')) ?></p>
-                            </div>
-                        </div>
-                    <?php else: ?>
-                        <p class="sub-progreso">La seña del día estará disponible cuando se cargue el vocabulario.</p>
-                    <?php endif; ?>
-                </section>
-
-                <section class="caja" aria-labelledby="titulo-juegos" data-reveal>
-                    <h2 id="titulo-juegos"><span aria-hidden="true">🎮</span> Practica jugando</h2>
-                    <div class="juegos">
-                        <a class="juego" href="practica.php?modo=quiz">
-                            <span class="emoji" aria-hidden="true">❓</span>
-                            <span class="juego-texto">Quiz<small>Elige la seña correcta</small></span>
-                        </a>
-                        <a class="juego" href="practica.php?modo=memoria">
-                            <span class="emoji" aria-hidden="true">🧠</span>
-                            <span class="juego-texto">Memoria<small>Empareja las cartas</small></span>
-                        </a>
-                        <a class="juego" href="practica.php?modo=alfabeto">
-                            <span class="emoji" aria-hidden="true">🔤</span>
-                            <span class="juego-texto">Alfabeto<small>Dactilología letra a letra</small></span>
-                        </a>
-                        <a class="juego" href="camara/detector.php">
-                            <span class="emoji" aria-hidden="true">📷</span>
-                            <span class="juego-texto">Cámara<small>Beta en revisión</small></span>
-                        </a>
-                    </div>
-                </section>
+            <div class="dash-barra" role="progressbar" aria-labelledby="etq-progreso"
+                 aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?= (int) $porcentaje ?>"
+                 aria-valuetext="<?= (int) $completadas ?> de <?= (int) $total ?> lecciones completadas">
+                <span style="--pct:<?= (int) $porcentaje ?>%"></span>
             </div>
+            <small><?= (int) $completadas ?> de <?= (int) $total ?> lecciones completadas</small>
+        </div>
+    </section>
 
-            <!-- 2. Ruta de Aprendizaje "Tu Camino" -->
-            <section class="seccion-camino" aria-labelledby="titulo-camino">
-                <!-- Barra de herramientas: Buscador y Pestañas de Nivel -->
-                <div class="barra-herramientas">
-                    <div class="contenedor-buscador">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                        <input type="text" id="buscador" placeholder="Buscar lección por título..." aria-label="Buscar lecciones en tiempo real">
-                    </div>
+    <section class="dash-juegos" aria-labelledby="titulo-juegos">
+        <div>
+            <span class="dash-juegos-etq">Minijuegos</span>
+            <h2 id="titulo-juegos">Practica jugando</h2>
+            <p>Refuerza lo aprendido con retos rápidos de quiz, memoria y alfabeto. Cada partida suma XP y te ayuda a mantener la racha.</p>
+            <a class="btn btn-primario" href="practica.php">Ir a los juegos <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="dash-juegos-emoji" aria-hidden="true">🎮</div>
+    </section>
 
-                    <!-- Filtros de nivel: grupo de botones, no pestañas (D17) -->
-                    <div class="filtros-camino" role="group" aria-label="Filtrar lecciones por nivel">
-                        <button type="button" class="btn-filtro activo" data-filtro="todos" aria-pressed="true">Todas</button>
-                        <button type="button" class="btn-filtro" data-filtro="basico" aria-pressed="false">Básico</button>
-                        <button type="button" class="btn-filtro" data-filtro="intermedio" aria-pressed="false">Intermedio</button>
-                        <button type="button" class="btn-filtro" data-filtro="avanzado" aria-pressed="false">Avanzado</button>
-                    </div>
-                </div>
+    <?php if ($total > 0): ?>
+        <div class="dash-herr">
+            <h2>Mis lecciones</h2>
+            <label class="visually-hidden" for="buscador">Buscar lección</label>
+            <input type="search" id="buscador" class="dash-buscador" placeholder="🔎 Buscar lección…" autocomplete="off">
+        </div>
 
-                <div class="encabezado-seccion-camino">
-                    <h2 id="titulo-camino">
-                        Tu Camino
-                        <span class="badge-contador" id="contador-visibles" role="status" aria-live="polite"><?= $total ?> lecciones</span>
-                    </h2>
-                </div>
+        <div class="dash-filtros" role="group" aria-label="Filtrar lecciones por nivel">
+            <button type="button" class="dash-filtro" data-nivel="todos" aria-pressed="true">Todas</button>
+            <?php foreach ($niveles as $clave => $etq): ?>
+                <button type="button" class="dash-filtro" data-nivel="<?= htmlspecialchars($clave) ?>" aria-pressed="false"><?= htmlspecialchars($etq) ?></button>
+            <?php endforeach; ?>
+        </div>
 
-                <?php if (count($lecciones) > 0): ?>
-                    <div class="ruta-aprendizaje" id="contenedor-lecciones">
-                        <?php foreach ($niveles_ruta as $slug => $niv): ?>
-                            <?php if (count($niv['lecciones']) === 0) { continue; } ?>
+        <p class="dash-resultados" id="dash-resultados" aria-live="polite"><?= (int) $total ?> lecciones</p>
 
-                            <section class="tramo-nivel tramo-<?= htmlspecialchars($slug) ?>" data-nivel="<?= htmlspecialchars($slug) ?>" aria-labelledby="titulo-nivel-<?= htmlspecialchars($slug) ?>">
-                                <header class="banner-nivel">
-                                    <span class="banner-nivel-icono"><?= $niv['icono'] ?></span>
-                                    <div class="banner-nivel-texto">
-                                        <h3 id="titulo-nivel-<?= htmlspecialchars($slug) ?>">Nivel <?= htmlspecialchars($niv['nombre']) ?></h3>
-                                        <p><?= htmlspecialchars($niv['lema']) ?> · <?= (int) $niv['completadas'] ?> de <?= count($niv['lecciones']) ?> completadas</p>
-                                    </div>
-                                    <span class="banner-nivel-pct" aria-hidden="true"><?= (int) $niv['porcentaje'] ?>%</span>
-                                </header>
-
-                                <div class="lienzo-camino">
-                                    <!-- Conectores curvos: decorativos, la secuencia se lee en el orden del DOM -->
-                                    <svg class="conectores-camino" viewBox="0 0 100 <?= count($niv['lecciones']) * 100 ?>" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-                                        <?= $niv['svg'] ?>
-                                    </svg>
-
-                                    <ol class="nodos-camino" role="list">
-                                    <?php foreach ($niv['lecciones'] as $i => $lec): ?>
-                                        <?php
-                                            $x = $patron_x[$i % 4];
-                                            $estado_texto = match ($lec['estado']) {
-                                                'completada' => 'Completada. Puedes repasarla cuando quieras.',
-                                                'actual'     => 'Disponible ahora. Es tu siguiente lección.',
-                                                default      => 'Bloqueada. Completa la lección anterior para desbloquearla.',
-                                            };
-                                            $aria_label = 'Lección ' . $lec['numero'] . ': ' . $lec['titulo'] . '. ' . $estado_texto;
-                                            $icono_badge = match ($lec['estado']) {
-                                                'completada' => '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="20 6 9 17 4 12"/></svg>',
-                                                'actual'     => '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
-                                                default      => '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
-                                            };
-                                        ?>
-                                        <li class="nodo-item"
-                                            data-nivel="<?= htmlspecialchars($slug) ?>"
-                                            data-titulo="<?= htmlspecialchars(mb_strtolower($lec['titulo'], 'UTF-8'), ENT_QUOTES, 'UTF-8') ?>"
-                                            data-estado="<?= htmlspecialchars($lec['estado']) ?>"
-                                            style="--x: <?= $x ?>%;">
-
-                                            <?php if ($lec['estado'] === 'bloqueada'): ?>
-                                                <span class="nodo" role="link" aria-disabled="true" aria-label="<?= htmlspecialchars($aria_label, ENT_QUOTES, 'UTF-8') ?>">
-                                                    <span class="nodo-circulo" aria-hidden="true">
-                                                        <?= $lec['numero'] ?>
-                                                        <span class="nodo-badge"><?= $icono_badge ?></span>
-                                                    </span>
-                                                    <span class="nodo-etiqueta">
-                                                        <span class="nodo-titulo"><?= htmlspecialchars($lec['titulo']) ?></span>
-                                                    </span>
-                                                </span>
-                                            <?php else: ?>
-                                                <a class="nodo" href="leccion.php?id=<?= (int) $lec['id'] ?>" aria-label="<?= htmlspecialchars($aria_label, ENT_QUOTES, 'UTF-8') ?>"<?= $lec['estado'] === 'actual' ? ' aria-current="step"' : '' ?>>
-                                                    <span class="nodo-circulo" aria-hidden="true">
-                                                        <?= $lec['numero'] ?>
-                                                        <span class="nodo-badge"><?= $icono_badge ?></span>
-                                                    </span>
-                                                    <span class="nodo-etiqueta">
-                                                        <?php if ($lec['estado'] === 'actual'): ?>
-                                                            <span class="nodo-etiqueta-estado">Siguiente</span>
-                                                        <?php endif; ?>
-                                                        <span class="nodo-titulo"><?= htmlspecialchars($lec['titulo']) ?></span>
-                                                    </span>
-                                                </a>
-                                            <?php endif; ?>
-                                        </li>
-                                    <?php endforeach; ?>
-                                    </ol>
-                                </div>
-                            </section>
-                        <?php endforeach; ?>
-                    </div>
-
-                    <!-- Mensaje para cuando ningún resultado coincida -->
-                    <div class="estado-vacio" id="sin-resultados" style="display:none;" role="status" aria-live="polite">
-                        <h3>No se encontraron lecciones</h3>
-                        <p>No hay lecciones que coincidan con los criterios de búsqueda o filtro seleccionados.</p>
-                    </div>
-                <?php else: ?>
-                    <div class="estado-vacio">
-                        <h3>Todavía no hay lecciones cargadas</h3>
-                        <p>Cuando se agreguen contenidos educativos en la base de datos, aparecerán en tu camino.</p>
-                    </div>
-                <?php endif; ?>
-            </section>
-        <?php endif; ?>
-    </main>
-
-    <script src="js/seva-ui.js"></script>
-    <script>
-        if (window.SEVA) {
-            SEVA.init(<?= (int) $usuario_id ?>);
-        }
-
-        // Filtrado en tiempo real del camino: buscador y botones de nivel.
-        const buscador = document.getElementById('buscador');
-        const botonesFiltro = document.querySelectorAll('.btn-filtro');
-        const tramos = document.querySelectorAll('.tramo-nivel');
-        const todosLosNodos = document.querySelectorAll('.nodo-item');
-        const sinResultados = document.getElementById('sin-resultados');
-        const contadorVisibles = document.getElementById('contador-visibles');
-        const PATRON_X = [50, 24, 50, 76];
-        let filtroNivelActual = 'todos';
-
-        // Redibuja los conectores SVG según los nodos visibles del tramo.
-        function dibujarConectores(tramo) {
-            const lista = tramo.querySelector('.nodos-camino');
-            const svg = tramo.querySelector('.conectores-camino');
-            if (!lista || !svg) {
-                return;
-            }
-
-            const visibles = Array.from(lista.querySelectorAll('.nodo-item')).filter(function (nodo) {
-                return nodo.style.display !== 'none';
-            });
-
-            visibles.forEach(function (nodo, indice) {
-                nodo.style.setProperty('--x', PATRON_X[indice % PATRON_X.length] + '%');
-            });
-
-            if (visibles.length < 2) {
-                svg.innerHTML = '';
-                svg.setAttribute('viewBox', '0 0 100 100');
-                return;
-            }
-
-            svg.setAttribute('viewBox', '0 0 100 ' + (visibles.length * 100));
-
-            let trazos = '';
-            for (let i = 0; i < visibles.length - 1; i++) {
-                const x1 = PATRON_X[i % PATRON_X.length];
-                const y1 = i * 100 + 25;
-                const x2 = PATRON_X[(i + 1) % PATRON_X.length];
-                const y2 = (i + 1) * 100 + 25;
-                const medio = (y1 + y2) / 2;
-                const estado = visibles[i + 1].dataset.estado || 'bloqueada';
-                const clase = estado === 'completada'
-                    ? 'conector-completado'
-                    : (estado === 'actual' ? 'conector-actual' : 'conector-bloqueado');
-
-                trazos += '<path class="conector-linea ' + clase + '" d="M ' + x1 + ' ' + y1
-                    + ' C ' + x1 + ' ' + medio + ', ' + x2 + ' ' + medio + ', ' + x2 + ' ' + y2 + '"></path>';
-            }
-
-            svg.innerHTML = trazos;
-        }
-
-        function aplicarFiltros() {
-            const termino = buscador ? buscador.value.trim().toLowerCase() : '';
-            let visibles = 0;
-
-            tramos.forEach(function (tramo) {
-                const nivel = tramo.dataset.nivel || '';
-                const coincideNivel = filtroNivelActual === 'todos' || nivel === filtroNivelActual;
-                let visiblesTramo = 0;
-
-                tramo.querySelectorAll('.nodo-item').forEach(function (nodo) {
-                    const titulo = nodo.dataset.titulo || '';
-                    const coincideTexto = termino === '' || titulo.includes(termino);
-                    const mostrar = coincideNivel && coincideTexto;
-
-                    nodo.style.display = mostrar ? '' : 'none';
-                    if (mostrar) {
-                        visiblesTramo++;
-                        visibles++;
-                    }
-                });
-
-                tramo.style.display = (coincideNivel && visiblesTramo > 0) ? '' : 'none';
-                if (visiblesTramo > 0) {
-                    dibujarConectores(tramo);
+        <div class="dash-grid" id="dash-grid">
+            <?php foreach ($lecciones as $l): ?>
+                <?php
+                $lid     = (int) $l['id'];
+                $hecha   = in_array($lid, $completados_ids, true);
+                $actual  = !$hecha && $siguiente_id === $lid;
+                $slug    = strtolower((string) ($l['nivel'] ?? 'basico'));
+                if (!isset($niveles[$slug])) {
+                    $slug = 'basico';
                 }
+                $nivel_txt = $niveles[$slug];
+                $imagen    = seva_imagen_leccion($l['ruta_imagen'] ?? '');
+                $clases    = 'dash-card' . ($hecha ? ' hecha' : '') . ($actual ? ' actual' : '');
+                $texto     = $l['titulo'] . ' ' . ($l['descripcion'] ?? '') . ' ' . $nivel_txt;
+                ?>
+                <a class="<?= $clases ?>" href="leccion.php?id=<?= $lid ?>"
+                   data-nivel="<?= htmlspecialchars($slug) ?>"
+                   data-texto="<?= htmlspecialchars($texto) ?>">
+                    <div class="dash-media">
+                        <img src="<?= htmlspecialchars($imagen) ?>" alt="Ilustración de la lección <?= htmlspecialchars($l['titulo']) ?>" loading="lazy" decoding="async">
+                        <span class="dash-etq"><?= htmlspecialchars($nivel_txt) ?></span>
+                        <?php if ($hecha): ?>
+                            <span class="dash-check">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                                Completada
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="dash-body">
+                        <h3><?= htmlspecialchars($l['titulo']) ?></h3>
+                        <?php if (!empty($l['descripcion'])): ?>
+                            <p class="dash-desc"><?= htmlspecialchars($l['descripcion']) ?></p>
+                        <?php endif; ?>
+                        <span class="dash-cta">
+                            <?= $hecha ? 'Repasar lección' : ($actual ? ($completadas === 0 ? 'Empezar' : 'Continuar') : 'Ver lección') ?>
+                            <?php if (!$actual): ?>
+                                <span aria-hidden="true">→</span>
+                            <?php endif; ?>
+                        </span>
+                    </div>
+                </a>
+            <?php endforeach; ?>
+        </div>
+
+        <div class="dash-vacio" id="dash-vacio" hidden>
+            <span class="gran" aria-hidden="true">🔍</span>
+            <h3>No encontramos esa lección</h3>
+            <p>Prueba con otra palabra o cambia el nivel.</p>
+        </div>
+    <?php else: ?>
+        <div class="dash-vacio">
+            <span class="gran" aria-hidden="true">📚</span>
+            <h3>Todavía no hay lecciones cargadas</h3>
+            <p>Cuando se agreguen contenidos a «contenidos_educativos», aparecerán aquí.</p>
+        </div>
+    <?php endif; ?>
+<?php endif; ?>
+
+<section class="dash-recursos" aria-labelledby="titulo-recursos">
+    <div class="dash-herr">
+        <h2 id="titulo-recursos">Recursos y herramientas</h2>
+    </div>
+    <div class="dash-recursos-grid">
+        <a class="recurso-card recurso-camara" href="camara/detector.php">
+            <span class="recurso-icono" aria-hidden="true">📷</span>
+            <div class="recurso-texto">
+                <span class="recurso-etq">Cámara + IA</span>
+                <h3>Detector de señas</h3>
+                <p>Activa tu cámara y comprueba en tiempo real si tu seña coincide con la letra objetivo.</p>
+                <span class="recurso-cta">Abrir detector <span aria-hidden="true">→</span></span>
+            </div>
+        </a>
+        <a class="recurso-card recurso-juegos" href="practica.php">
+            <span class="recurso-icono" aria-hidden="true">🎮</span>
+            <div class="recurso-texto">
+                <span class="recurso-etq">Minijuegos</span>
+                <h3>Practica jugando</h3>
+                <p>Quiz, memoria y alfabeto interactivo para repasar sin presión.</p>
+                <span class="recurso-cta">Jugar ahora <span aria-hidden="true">→</span></span>
+            </div>
+        </a>
+    </div>
+</section>
+
+</main>
+
+<script src="js/seva-ui.js"></script>
+<script>
+    if (window.SEVA) {
+        SEVA.init(<?= (int) $usuario_id ?>);
+        SEVA.menu();
+    }
+
+    /* Buscador + filtro por nivel (sin recargar la página) */
+    (function () {
+        var buscador = document.getElementById('buscador');
+        if (!buscador) return;
+
+        var tarjetas = Array.prototype.slice.call(document.querySelectorAll('.dash-card'));
+        var botones  = Array.prototype.slice.call(document.querySelectorAll('.dash-filtro'));
+        var contador = document.getElementById('dash-resultados');
+        var vacio    = document.getElementById('dash-vacio');
+        var nivel    = 'todos';
+
+        function normalizar(texto) {
+            return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        }
+
+        function aplicar() {
+            var consulta = normalizar(buscador.value.trim());
+            var visibles = 0;
+
+            tarjetas.forEach(function (tarjeta) {
+                var coincideNivel = nivel === 'todos' || tarjeta.dataset.nivel === nivel;
+                var coincideTexto = consulta === '' || normalizar(tarjeta.dataset.texto || '').indexOf(consulta) !== -1;
+                var visible = coincideNivel && coincideTexto;
+                tarjeta.hidden = !visible;
+                if (visible) visibles++;
             });
 
-            if (sinResultados) {
-                sinResultados.style.display = (visibles === 0 && todosLosNodos.length > 0) ? 'block' : 'none';
+            if (contador) {
+                contador.textContent = visibles + (visibles === 1 ? ' lección' : ' lecciones');
             }
-            if (contadorVisibles) {
-                contadorVisibles.textContent = visibles + (visibles === 1 ? ' lección' : ' lecciones');
+            if (vacio) {
+                vacio.hidden = visibles > 0;
             }
         }
 
-        if (buscador) {
-            buscador.addEventListener('input', aplicarFiltros);
-        }
+        buscador.addEventListener('input', aplicar);
 
-        botonesFiltro.forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                botonesFiltro.forEach(function (b) {
-                    b.classList.remove('activo');
-                    b.setAttribute('aria-pressed', 'false');
+        botones.forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                nivel = boton.dataset.nivel;
+                botones.forEach(function (b) {
+                    b.setAttribute('aria-pressed', b === boton ? 'true' : 'false');
                 });
-                this.classList.add('activo');
-                this.setAttribute('aria-pressed', 'true');
-                filtroNivelActual = this.dataset.filtro;
-                aplicarFiltros();
+                aplicar();
             });
         });
-
-        // Estado inicial: conectores alineados con el zigzag del servidor.
-        tramos.forEach(dibujarConectores);
-
-        // Menú accesible de opciones de usuario
-        const btnOpciones = document.getElementById('btn-opciones');
-        const panelOpciones = document.getElementById('panel-opciones');
-
-        if (btnOpciones && panelOpciones) {
-            btnOpciones.addEventListener('click', function (e) {
-                e.stopPropagation();
-                const abierto = panelOpciones.classList.toggle('abierto');
-                btnOpciones.setAttribute('aria-expanded', abierto ? 'true' : 'false');
-            });
-
-            document.addEventListener('click', function () {
-                panelOpciones.classList.remove('abierto');
-                btnOpciones.setAttribute('aria-expanded', 'false');
-            });
-
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') {
-                    panelOpciones.classList.remove('abierto');
-                    btnOpciones.setAttribute('aria-expanded', 'false');
-                    btnOpciones.focus();
-                }
-            });
-        }
-    </script>
+    })();
+</script>
 </body>
 </html>

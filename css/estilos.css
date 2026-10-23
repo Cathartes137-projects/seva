@@ -260,6 +260,50 @@ a:hover, a:focus {
     text-decoration: none;
 }
 
+/* Accesos rápidos visibles en la barra superior */
+.topbar-accesos {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.acceso-topbar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 44px;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid transparent;
+    border-radius: var(--radio-sm);
+    color: #fff;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.86rem;
+    font-weight: 600;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.acceso-topbar:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    text-decoration: none;
+}
+
+.acceso-topbar:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+    .acceso-topbar .acceso-texto {
+        display: none;
+    }
+
+    .acceso-topbar {
+        padding: 0.35rem 0.55rem;
+    }
+}
+
 /* Menú Desplegable Accesible */
 .menu-opciones {
     position: relative;
