@@ -9,6 +9,7 @@ seguridad_requiere_login();
 
 $usuario_id = $_SESSION['usuario_id'];
 $nombre     = $_SESSION['nombre'] ?? 'Estudiante';
+$primer     = explode(' ', trim($nombre))[0] ?: 'Estudiante';
 
 $error_bd = '';
 $lecciones = [];
@@ -69,6 +70,47 @@ foreach ($lecciones as $l) {
     if (!in_array((int) $l['id'], $completados_ids, true)) {
         $siguiente_id = (int) $l['id'];
         break;
+    }
+}
+
+// Título de la siguiente lección y mensaje del héroe (solo presentación).
+$siguiente_titulo = '';
+if ($siguiente_id !== null) {
+    foreach ($lecciones as $l) {
+        if ((int) $l['id'] === $siguiente_id) {
+            $siguiente_titulo = (string) $l['titulo'];
+            break;
+        }
+    }
+}
+
+if ($error_bd !== '') {
+    $hero_subtitulo = 'Revisa la conexión con la base de datos para continuar tu camino.';
+} elseif ($total === 0) {
+    $hero_subtitulo = 'Todavía no hay lecciones publicadas. Cuando se agreguen, aparecerán aquí.';
+} elseif ($siguiente_id !== null) {
+    $hero_subtitulo = 'Tu siguiente paso es «' . $siguiente_titulo . '». Avanza a tu ritmo y practica las veces que necesites.';
+} else {
+    $hero_subtitulo = '¡Completaste todas las lecciones! Repásalas cuando quieras y sigue practicando con los juegos.';
+}
+
+// Seña del día: se lee del JSON local y rota según el día del año.
+$sena_dia = null;
+$sena_archivo = '';
+$ruta_guia = __DIR__ . '/data/guia.json';
+if (is_file($ruta_guia)) {
+    $guia_datos = json_decode((string) file_get_contents($ruta_guia), true);
+    if (is_array($guia_datos)) {
+        $guia_datos = array_values(array_filter($guia_datos, static function ($g): bool {
+            return is_array($g) && !empty($g['palabra']);
+        }));
+        if (count($guia_datos) > 0) {
+            $sena_dia = $guia_datos[(int) date('z') % count($guia_datos)];
+            $ruta_rel = ltrim(str_replace('\\', '/', (string) ($sena_dia['archivo'] ?? '')), '/');
+            if ($ruta_rel !== '' && strpos($ruta_rel, '..') === false && is_file(__DIR__ . '/' . $ruta_rel)) {
+                $sena_archivo = $ruta_rel;
+            }
+        }
     }
 }
 
@@ -134,6 +176,7 @@ foreach ($niveles_ruta as $slug => $niv) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mi Camino de Aprendizaje · SEVA</title>
+    <script>document.documentElement.classList.add('js')</script>
     <!-- Fuentes Web Accesibles -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -151,6 +194,14 @@ foreach ($niveles_ruta as $slug => $niv) {
         </a>
 
         <div class="topbar-derecha">
+            <span class="chip chip-racha" title="Días seguidos practicando (guardado en este dispositivo)">
+                <span aria-hidden="true">🔥</span><b data-racha>0</b>
+                <span class="visually-hidden">días de racha</span>
+            </span>
+            <span class="chip" title="Puntos de experiencia guardados en este dispositivo">
+                <span aria-hidden="true">⭐</span><b data-xp>0</b> XP
+            </span>
+
             <span class="saludo">Hola, <strong><?= htmlspecialchars($nombre) ?></strong></span>
 
             <!-- Menú Desplegable Accesible -->
@@ -164,6 +215,17 @@ foreach ($niveles_ruta as $slug => $niv) {
                         <span class="nombre-usuario"><?= htmlspecialchars($nombre) ?></span>
                         <span class="correo-usuario"><?= htmlspecialchars($_SESSION['email'] ?? '') ?></span>
                     </div>
+
+                    <a href="practica.php" class="opcion" role="menuitem">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/><path d="M8.5 15.5h.01M15.5 8.5h.01"/></svg>
+                        Practicar con juegos
+                    </a>
+                    <a href="camara/detector.php" class="opcion" role="menuitem">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        Detector de manos
+                    </a>
+
+                    <hr class="separador-opciones">
 
                     <a href="perfil.php" class="opcion" role="menuitem">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
@@ -199,19 +261,79 @@ foreach ($niveles_ruta as $slug => $niv) {
         <?php endif; ?>
 
         <?php if (!$error_bd): ?>
-            <!-- 1. Tarjeta de Progreso General -->
-            <section class="panel-progreso" aria-labelledby="titulo-progreso">
-                <div class="fila-progreso">
-                    <span class="etiqueta" id="titulo-progreso">Progreso general</span>
-                    <span class="cifra" aria-label="<?= $porcentaje ?> por ciento completado"><?= $porcentaje ?>%</span>
+            <!-- 1. Héroe: saludo, siguiente paso y progreso -->
+            <?php
+                $anillo_circ = 2 * M_PI * 54;
+                $anillo_off = $anillo_circ * (1 - ((int) $porcentaje / 100));
+            ?>
+            <section class="hero" aria-labelledby="titulo-progreso">
+                <div>
+                    <p class="hero-eyebrow">Tu progreso</p>
+                    <h1 id="titulo-progreso">¡Hola, <?= htmlspecialchars($primer) ?>!</h1>
+                    <p class="hero-texto"><?= htmlspecialchars($hero_subtitulo) ?></p>
+                    <div class="hero-acciones">
+                        <?php if ($siguiente_id !== null): ?>
+                            <a href="leccion.php?id=<?= (int) $siguiente_id ?>" class="btn btn-primario">Continuar lección</a>
+                        <?php elseif (count($lecciones) > 0): ?>
+                            <a href="#titulo-camino" class="btn btn-primario">Repasar mis lecciones</a>
+                        <?php endif; ?>
+                        <a href="practica.php" class="btn btn-contorno">Practicar con juegos</a>
+                    </div>
                 </div>
-                <div class="barra" role="progressbar" aria-valuenow="<?= $porcentaje ?>" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso acumulado de lecciones">
-                    <div class="barra-relleno" style="width: <?= $porcentaje ?>%"></div>
+
+                <div class="anillo" role="progressbar" aria-valuenow="<?= (int) $porcentaje ?>" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso acumulado: <?= (int) $porcentaje ?> por ciento, <?= (int) $completadas ?> de <?= (int) $total ?> lecciones completadas">
+                    <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+                        <circle class="pista-anillo" cx="60" cy="60" r="54"></circle>
+                        <circle class="valor-anillo" cx="60" cy="60" r="54" style="--circ: <?= round($anillo_circ, 2) ?>; --off: <?= round($anillo_off, 2) ?>;"></circle>
+                    </svg>
+                    <div class="anillo-centro" aria-hidden="true">
+                        <strong><?= (int) $porcentaje ?>%</strong>
+                        <span><?= (int) $completadas ?> de <?= (int) $total ?></span>
+                    </div>
                 </div>
-                <p class="sub-progreso">
-                    <strong><?= $completadas ?></strong> de <strong><?= $total ?></strong> lecciones completadas. ¡Continúa practicando a tu ritmo!
-                </p>
             </section>
+
+            <!-- 1b. Seña del día y accesos rápidos a práctica -->
+            <div class="modulos">
+                <section class="caja" aria-labelledby="titulo-sena-dia" data-reveal>
+                    <h2 id="titulo-sena-dia"><span aria-hidden="true">👋</span> Seña del día</h2>
+                    <?php if ($sena_dia !== null): ?>
+                        <div class="sena-dia">
+                            <?php if ($sena_archivo !== ''): ?>
+                                <img src="<?= htmlspecialchars($sena_archivo) ?>" alt="Tarjeta de referencia visual para la palabra <?= htmlspecialchars((string) $sena_dia['palabra']) ?>" width="96" height="96" loading="lazy">
+                            <?php endif; ?>
+                            <div>
+                                <strong><?= htmlspecialchars((string) $sena_dia['palabra']) ?></strong>
+                                <p><?= htmlspecialchars((string) ($sena_dia['descripcion'] ?? '')) ?></p>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <p class="sub-progreso">La seña del día estará disponible cuando se cargue el vocabulario.</p>
+                    <?php endif; ?>
+                </section>
+
+                <section class="caja" aria-labelledby="titulo-juegos" data-reveal>
+                    <h2 id="titulo-juegos"><span aria-hidden="true">🎮</span> Practica jugando</h2>
+                    <div class="juegos">
+                        <a class="juego" href="practica.php?modo=quiz">
+                            <span class="emoji" aria-hidden="true">❓</span>
+                            <span class="juego-texto">Quiz<small>Elige la seña correcta</small></span>
+                        </a>
+                        <a class="juego" href="practica.php?modo=memoria">
+                            <span class="emoji" aria-hidden="true">🧠</span>
+                            <span class="juego-texto">Memoria<small>Empareja las cartas</small></span>
+                        </a>
+                        <a class="juego" href="practica.php?modo=alfabeto">
+                            <span class="emoji" aria-hidden="true">🔤</span>
+                            <span class="juego-texto">Alfabeto<small>Dactilología letra a letra</small></span>
+                        </a>
+                        <a class="juego" href="camara/detector.php">
+                            <span class="emoji" aria-hidden="true">📷</span>
+                            <span class="juego-texto">Cámara<small>Beta en revisión</small></span>
+                        </a>
+                    </div>
+                </section>
+            </div>
 
             <!-- 2. Ruta de Aprendizaje "Tu Camino" -->
             <section class="seccion-camino" aria-labelledby="titulo-camino">
@@ -331,7 +453,12 @@ foreach ($niveles_ruta as $slug => $niv) {
         <?php endif; ?>
     </main>
 
+    <script src="js/seva-ui.js"></script>
     <script>
+        if (window.SEVA) {
+            SEVA.init(<?= (int) $usuario_id ?>);
+        }
+
         // Filtrado en tiempo real del camino: buscador y botones de nivel.
         const buscador = document.getElementById('buscador');
         const botonesFiltro = document.querySelectorAll('.btn-filtro');

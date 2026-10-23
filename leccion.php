@@ -189,6 +189,7 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= htmlspecialchars($leccion['titulo']) ?> · SEVA</title>
+    <script>document.documentElement.classList.add('js')</script>
     <!-- Fuentes Web Accesibles -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -335,7 +336,7 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
 
             <div class="grid-practica">
                 <?php foreach ($leccion['vocabulario'] as $item): ?>
-                    <article class="tarjeta-seña" id="tarjeta-<?= htmlspecialchars($item['id']) ?>">
+                    <article class="tarjeta-seña" id="tarjeta-<?= htmlspecialchars($item['id']) ?>" data-reveal>
                         <div class="preview-seña">
                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
@@ -394,7 +395,27 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
         <p role="status" class="visually-hidden" id="anuncio-estado" aria-live="polite"></p>
     </main>
 
+    <!-- Modal de lección completada (solo se abre tras guardar el avance) -->
+    <div class="modal-fondo" id="modal-fin" role="dialog" aria-modal="true" aria-labelledby="modal-fin-titulo" aria-describedby="modal-fin-texto" aria-hidden="true">
+        <div class="modal">
+            <div class="gran-emoji" aria-hidden="true">🎉</div>
+            <h2 id="modal-fin-titulo">¡Lección completada!</h2>
+            <p id="modal-fin-texto">Tu avance quedó guardado. La siguiente lección ya está disponible en Tu Camino.</p>
+            <span class="xp-ganado">+20 XP de práctica</span>
+            <div class="acciones">
+                <a class="btn btn-primario" href="dashboard.php">Ver mi camino</a>
+                <a class="btn btn-contorno" href="practica.php">Seguir practicando</a>
+                <button type="button" class="btn btn-ghost" id="modal-fin-cerrar">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/seva-ui.js"></script>
     <script>
+        if (window.SEVA) {
+            SEVA.init(<?= (int) $usuario_id ?>);
+        }
+
         // Transcripción colapsable
         const btnTranscripcion = document.getElementById('btn-transcripcion');
         const panelTranscripcion = document.getElementById('panel-transcripcion');
@@ -469,6 +490,68 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
 
         cargarProgreso();
 
+        // Modal de finalización: foco, Escape y trampa de foco.
+        const modalFin = document.getElementById('modal-fin');
+        let ultimoFocoModal = null;
+
+        function abrirModalFin() {
+            if (!modalFin) return;
+            ultimoFocoModal = document.activeElement;
+            modalFin.classList.add('abierto');
+            modalFin.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-abierto');
+            const primero = modalFin.querySelector('a[href], button:not([disabled])');
+            if (primero) primero.focus();
+        }
+
+        function cerrarModalFin() {
+            if (!modalFin) return;
+            modalFin.classList.remove('abierto');
+            modalFin.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-abierto');
+            if (ultimoFocoModal && ultimoFocoModal !== document.body
+                && !ultimoFocoModal.disabled
+                && !modalFin.contains(ultimoFocoModal)
+                && document.contains(ultimoFocoModal)) {
+                ultimoFocoModal.focus();
+            } else {
+                const enlaceMigas = document.querySelector('.migas a');
+                if (enlaceMigas) enlaceMigas.focus();
+            }
+        }
+
+        if (modalFin) {
+            const btnCerrarModal = document.getElementById('modal-fin-cerrar');
+            if (btnCerrarModal) {
+                btnCerrarModal.addEventListener('click', cerrarModalFin);
+            }
+            modalFin.addEventListener('click', function (e) {
+                if (e.target === modalFin) cerrarModalFin();
+            });
+            modalFin.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    cerrarModalFin();
+                    return;
+                }
+                if (e.key === 'Tab') {
+                    const focos = Array.from(modalFin.querySelectorAll('a[href], button:not([disabled])'))
+                        .filter(function (el) { return el.offsetParent !== null; });
+                    if (focos.length === 0) return;
+                    const primero = focos[0];
+                    const ultimo = focos[focos.length - 1];
+                    if (e.shiftKey && document.activeElement === primero) {
+                        e.preventDefault();
+                        ultimo.focus();
+                    } else if (!e.shiftKey && document.activeElement === ultimo) {
+                        e.preventDefault();
+                        primero.focus();
+                    }
+                }
+            });
+        }
+
         // Envío interactivo para completar la lección
         const formCompletar = document.getElementById('form-completar');
         const btnCompletar = document.getElementById('btn-completar');
@@ -500,6 +583,11 @@ if ($nivel_clase !== 'intermedio' && $nivel_clase !== 'avanzado') {
                         if (anuncioEstado) {
                             anuncioEstado.textContent = 'La lección ha sido registrada como completada en tu perfil.';
                         }
+                        if (window.SEVA) {
+                            SEVA.confeti(160);
+                            SEVA.sumarXP(20);
+                        }
+                        window.setTimeout(abrirModalFin, 450);
                     } else {
                         enviandoNativo = true;
                         formCompletar.submit();

@@ -47,6 +47,20 @@
     --espacio: 1rem;
     --sombra-card: 0 4px 14px rgba(4, 41, 77, 0.08);
     --sombra-hover: 0 10px 24px rgba(4, 41, 77, 0.14);
+
+    /* Alias y tokens del sistema visual integrado (seva-mary V-2-2.1) */
+    --azul-osc: var(--azul-oscuro);
+    --azul-cl: #EAF2FF;
+    --verde-osc: var(--verde-oscuro);
+    --verde-cl: #E6F6EA;
+    --sol: #FFB400;
+    --sol-cl: #FFF4D6;
+    --rojo: #B02A3C;
+    --rojo-cl: #FDECEF;
+    --linea: var(--line);
+    --txt: var(--text);
+    --sombra: var(--sombra-card);
+    --rebote: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ---------- Reseteo y Base ---------- */
@@ -160,11 +174,11 @@ a:hover, a:focus {
 }
 
 .btn-secundario {
-    background-color: var(--verde);
+    background-color: var(--verde-oscuro);
     color: var(--blanco);
 }
 .btn-secundario:hover, .btn-secundario:focus {
-    background-color: var(--verde-oscuro);
+    background-color: #145A28;
     color: var(--blanco);
     text-decoration: none;
 }
@@ -1743,4 +1757,544 @@ html.reducir-movimiento *::after {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+}
+
+/* ==========================================================================
+   Componentes compartidos de la integración seva-mary V-2-2.1
+   (héroe, anillo de progreso, seña del día, juegos rápidos, chips, modal,
+   toasts, confeti y revelado). Se añaden al final para no alterar las reglas
+   existentes del camino, las lecciones ni la topbar.
+   ========================================================================== */
+
+/* ---------- Chips de racha y XP ---------- */
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 32px;
+    padding: 0.32rem 0.7rem;
+    border-radius: var(--radio-pill);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.chip b {
+    color: #FFFFFF;
+    font-size: 0.95rem;
+}
+
+.chip-racha {
+    background: rgba(255, 180, 0, 0.2);
+    border-color: rgba(255, 210, 122, 0.62);
+    color: #FFE2A8;
+}
+
+.chip-racha b {
+    color: #FFE2A8;
+}
+
+.chip.sube {
+    animation: seva-chip-sube 0.5s var(--rebote);
+}
+
+@keyframes seva-chip-sube {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.16) rotate(-3deg); }
+    100% { transform: scale(1); }
+}
+
+.topbar-derecha {
+    gap: 0.85rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* ---------- Héroe del dashboard ---------- */
+.hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(210px, 0.55fr);
+    gap: 2rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding: 2rem;
+    overflow: hidden;
+    border-radius: 1.35rem;
+    background: linear-gradient(135deg, #04294D 0%, #06386A 58%, #0056B3 130%);
+    box-shadow: 0 16px 36px rgba(4, 41, 77, 0.22);
+    color: #FFFFFF;
+}
+
+.hero::after {
+    content: "";
+    position: absolute;
+    right: -70px;
+    top: -90px;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    pointer-events: none;
+}
+
+.hero > * {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-eyebrow {
+    margin: 0 0 0.35rem;
+    color: #FFE2A8;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.hero h1 {
+    margin-bottom: 0.45rem;
+    color: #FFFFFF;
+    font-size: clamp(1.8rem, 4vw, 2.7rem);
+}
+
+.hero-texto {
+    max-width: 52ch;
+    margin: 0 0 1.2rem;
+    color: #DCE7F7;
+}
+
+.hero-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+}
+
+.hero .btn-contorno {
+    background: transparent;
+    border-color: #FFFFFF;
+    color: #FFFFFF;
+}
+
+.hero .btn-contorno:hover,
+.hero .btn-contorno:focus {
+    background: #FFFFFF;
+    border-color: #FFFFFF;
+    color: var(--ink);
+}
+
+/* ---------- Anillo de progreso ---------- */
+.anillo {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 172px;
+    max-width: 100%;
+    aspect-ratio: 1;
+    margin-inline: auto;
+}
+
+.anillo svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.anillo circle {
+    fill: none;
+    stroke-width: 13;
+}
+
+.anillo .pista-anillo {
+    stroke: rgba(255, 255, 255, 0.18);
+}
+
+.anillo .valor-anillo {
+    stroke: #7CF29B;
+    stroke-linecap: round;
+    stroke-dasharray: var(--circ);
+    stroke-dashoffset: var(--off);
+    animation: seva-anillo-carga 1.15s var(--rebote) both;
+}
+
+.anillo-centro {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #FFFFFF;
+}
+
+.anillo-centro strong {
+    color: #FFFFFF;
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 2.15rem;
+    line-height: 1;
+}
+
+.anillo-centro span {
+    margin-top: 0.2rem;
+    color: #DCE7F7;
+    font-size: 0.8rem;
+}
+
+@keyframes seva-anillo-carga {
+    from { stroke-dashoffset: var(--circ); }
+    to { stroke-dashoffset: var(--off); }
+}
+
+/* ---------- Seña del día y juegos rápidos ---------- */
+.modulos {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 1.2rem;
+    margin: 1.5rem 0 2rem;
+}
+
+.caja {
+    padding: 1.3rem;
+    border: 1px solid var(--line);
+    border-radius: 1.2rem;
+    background: var(--paper);
+    box-shadow: var(--sombra-card);
+}
+
+.caja h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.8rem;
+    font-size: 1.25rem;
+}
+
+.sena-dia {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.sena-dia img {
+    flex-shrink: 0;
+    width: 96px;
+    height: 96px;
+    padding: 0.4rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--azul-cl);
+    object-fit: contain;
+}
+
+.sena-dia strong {
+    display: block;
+    color: var(--ink);
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 1.2rem;
+}
+
+.sena-dia p {
+    margin: 0.15rem 0 0;
+    color: #4C5670;
+    font-size: 0.9rem;
+}
+
+.juegos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+}
+
+.juego {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 48px;
+    padding: 0.65rem 0.8rem;
+    border: 2px solid var(--line);
+    border-radius: 0.9rem;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.18s var(--rebote), border-color 0.18s, background 0.18s;
+}
+
+.juego:hover,
+.juego:focus {
+    border-color: var(--azul);
+    background: var(--azul-cl);
+    color: var(--azul-oscuro);
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+.juego .emoji {
+    flex-shrink: 0;
+    font-size: 1.2rem;
+}
+
+.juego .juego-texto {
+    display: block;
+    line-height: 1.2;
+}
+
+.juego .juego-texto small {
+    display: block;
+    margin-top: 0.1rem;
+    color: #4C5670;
+    font-size: 0.72rem;
+    font-weight: 500;
+}
+
+.juego:hover .juego-texto small,
+.juego:focus .juego-texto small {
+    color: var(--azul-oscuro);
+}
+
+/* ---------- Botones complementarios ---------- */
+.btn-verde {
+    background-color: var(--verde-oscuro);
+    color: #FFFFFF;
+}
+
+.btn-verde:hover,
+.btn-verde:focus {
+    background-color: #145A28;
+    color: #FFFFFF;
+    text-decoration: none;
+}
+
+.btn-ghost {
+    background-color: var(--paper);
+    border: 2px solid var(--line);
+    color: var(--azul);
+}
+
+.btn-ghost:hover,
+.btn-ghost:focus {
+    background-color: var(--azul-cl);
+    border-color: var(--azul);
+    color: var(--azul-oscuro);
+    text-decoration: none;
+}
+
+/* ---------- Revelado progresivo ---------- */
+html.js [data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.55s ease, transform 0.55s var(--rebote);
+}
+
+html.js [data-reveal].visto {
+    opacity: 1;
+    transform: none;
+}
+
+/* ---------- Toasts ---------- */
+.toasts {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 1.2rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 1rem;
+    pointer-events: none;
+}
+
+.toast {
+    max-width: min(92vw, 420px);
+    padding: 0.7rem 1rem;
+    border-radius: 0.75rem;
+    background: var(--verde-oscuro);
+    box-shadow: 0 12px 30px rgba(4, 41, 77, 0.28);
+    color: #FFFFFF;
+    font-size: 0.92rem;
+    font-weight: 700;
+    animation: seva-toast-in 0.3s var(--rebote);
+}
+
+.toast.error {
+    background: var(--rojo);
+}
+
+.toast.sale {
+    animation: seva-toast-out 0.3s ease forwards;
+}
+
+@keyframes seva-toast-in {
+    from { opacity: 0; transform: translateY(16px) scale(0.96); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes seva-toast-out {
+    to { opacity: 0; transform: translateY(10px); }
+}
+
+/* ---------- Confeti ---------- */
+canvas.confeti {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* ---------- Modal de lección completada ---------- */
+.modal-fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(4, 41, 77, 0.62);
+}
+
+.modal-fondo.abierto {
+    display: flex;
+    animation: seva-modal-fondo-in 0.2s ease;
+}
+
+.modal {
+    width: min(100%, 460px);
+    padding: 1.6rem;
+    border-radius: 1.25rem;
+    background: var(--paper);
+    box-shadow: 0 24px 60px rgba(4, 41, 77, 0.35);
+    color: var(--text);
+    text-align: center;
+    animation: seva-modal-in 0.35s var(--rebote);
+}
+
+.modal .gran-emoji {
+    font-size: 3rem;
+    line-height: 1;
+}
+
+.modal h2 {
+    margin: 0.5rem 0 0.3rem;
+    font-size: 1.5rem;
+}
+
+.modal p {
+    margin: 0 0 1rem;
+    color: #4C5670;
+}
+
+.modal .xp-ganado {
+    display: inline-block;
+    margin-bottom: 1rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: var(--radio-pill);
+    background: var(--sol-cl);
+    color: #6B4400;
+    font-weight: 800;
+}
+
+.modal .acciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+}
+
+body.modal-abierto {
+    overflow: hidden;
+}
+
+@keyframes seva-modal-fondo-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes seva-modal-in {
+    from { opacity: 0; transform: translateY(18px) scale(0.94); }
+    to { opacity: 1; transform: none; }
+}
+
+/* ---------- Ajustes responsive de los componentes nuevos ---------- */
+@media (max-width: 900px) {
+    .topbar-derecha .saludo {
+        display: none;
+    }
+}
+
+@media (max-width: 820px) {
+    .hero {
+        grid-template-columns: 1fr;
+        gap: 1.4rem;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .hero-acciones {
+        justify-content: center;
+    }
+
+    .anillo {
+        width: 142px;
+    }
+
+    .modulos {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .topbar-derecha .btn-salir-directo {
+        display: none;
+    }
+
+    .chip {
+        min-height: 30px;
+        padding: 0.28rem 0.55rem;
+        font-size: 0.78rem;
+    }
+
+    .sena-dia {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .juegos {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chip.sube,
+    .anillo .valor-anillo,
+    .toast,
+    .toast.sale,
+    .modal-fondo.abierto,
+    .modal {
+        animation: none;
+    }
+
+    html.js [data-reveal] {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+
+    .juego {
+        transition: none;
+    }
+
+    .juego:hover,
+    .juego:focus {
+        transform: none;
+    }
 }
