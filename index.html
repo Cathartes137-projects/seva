@@ -6,6 +6,8 @@
 <title>SEVA · Aprende Lengua de Señas, Conecta con el Mundo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/personaje-sevy.css">
+<link rel="stylesheet" href="css/detector-manos-ia.css">
 <style>
     :root{
         /* --- Identidad de marca SEVA (no tocar) --- */
@@ -913,6 +915,10 @@
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                             Ver cómo funciona
                         </button>
+                        <button class="btn btn-contorno-azul" data-sevy-trigger="tour" type="button" style="background:#eaf2ff; border-color:#0056b3; color:#0056b3;">
+                            <span style="font-size:1.15rem;">🤖</span>
+                            Tour con Seva
+                        </button>
                     </div>
 
                     <div class="prueba-social">
@@ -927,45 +933,60 @@
                 </div>
 
                 <!-- Tarjeta de demostración: elemento de firma (hand-tracking en vivo) -->
-                <div class="tarjeta-demo">
-                    <span class="chip-flotante-demo"><span class="punto-vivo"></span>EN VIVO</span>
-                    <div class="escena-demo">
-                        <svg viewBox="0 0 300 340" xmlns="http://www.w3.org/2000/svg">
-                            <!-- dos siluetas practicando lengua de señas -->
-                            <circle cx="100" cy="70" r="34" fill="#1E3763"/>
-                            <path d="M50 190 C50 140 72 110 100 110 C128 110 150 140 150 190 L150 210 L50 210 Z" fill="#1E3763"/>
-
-                            <circle cx="210" cy="90" r="30" fill="#274579"/>
-                            <path d="M168 200 C168 155 188 128 213 128 C238 128 258 155 258 200 L258 218 L168 218 Z" fill="#274579"/>
-
-                            <!-- mano señando (persona izquierda) -->
-                            <g class="punto-rastreo-grupo">
-                                <path d="M118 165 C130 158 142 158 148 168 C152 176 148 184 140 186 L155 178 C162 174 170 178 171 186 C172 193 167 199 160 200 L172 196 C179 194 186 198 187 205 C188 212 183 218 176 219 L150 226 C132 230 116 224 106 210 C98 199 100 184 112 175 Z"
-                                      fill="#FBEFE4" stroke="#28a745" stroke-width="2"/>
-                            </g>
-
-                            <!-- puntos de seguimiento IA -->
-                            <circle class="punto-rastreo" cx="120" cy="168" r="3" style="animation-delay:0s"/>
-                            <circle class="punto-rastreo" cx="145" cy="172" r="3" style="animation-delay:0.3s"/>
-                            <circle class="punto-rastreo" cx="168" cy="188" r="3" style="animation-delay:0.6s"/>
-                            <circle class="punto-rastreo" cx="180" cy="205" r="3" style="animation-delay:0.9s"/>
-                            <circle class="punto-rastreo" cx="150" cy="222" r="3" style="animation-delay:1.2s"/>
-
-                            <!-- líneas de conexión del esqueleto de mano -->
-                            <path d="M120 168 L145 172 L168 188 L180 205 L150 222" stroke="#7CF29B" stroke-width="1.4" fill="none" opacity="0.7" stroke-dasharray="3 3"/>
-                        </svg>
+                <div style="position:relative;">
+                    <div class="badge-hero-flotante" style="top:24px; left:-16px;">
+                        <span>🤟</span> <strong>98%</strong> Precisión IA
                     </div>
-                    <div class="linea-escaneo"></div>
+                    <div class="badge-hero-flotante" style="bottom:65px; right:-16px; animation-delay:1.8s;">
+                        <span>🤖</span> Tutor <strong>Seva</strong> en vivo
+                    </div>
 
-                    <div class="insignia-precision">
-                        <div class="icono-mano">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-4.53a2 2 0 0 1 3.06-2.58L8 15"/></svg>
+                    <!-- Tarjeta de demostración interactiva: Escáner IA con 2 manos y 21 puntos -->
+                    <div class="tarjeta-demo tarjeta-demo-funcional" id="tarjeta-demo-ia">
+                        <!-- Barra superior de controles del escáner -->
+                        <div class="barra-controles-scanner">
+                            <button class="btn-activar-camara" id="btn-activar-camara-ia" type="button" aria-label="Iniciar cámara IA">
+                                📹 Iniciar Cámara IA
+                            </button>
+                            <button class="btn-modo-simulacion" id="btn-modo-simulacion-ia" type="button" title="Probar simulación de 2 manos con 21 puntos">
+                                🎮 Simular 2 Manos
+                            </button>
                         </div>
-                        <div class="texto">
-                            <strong>Seña Correcta</strong>
-                            <div class="fila-precision">
-                                <div class="barra-precision"><div class="barra-precision-relleno" id="barra-precision"></div></div>
-                                <span class="valor-precision" id="valor-precision">98%</span>
+
+                        <!-- Indicador de estado de manos -->
+                        <div class="badge-manos-detectadas" id="badge-manos-estado" style="display:none;">
+                            <span class="punto-sensor"></span> 🟢 2 Manos Detectadas (42 pts)
+                        </div>
+
+                        <!-- Láser de escaneo activo -->
+                        <div class="laser-escaner-camara" id="laser-escaner-camara"></div>
+
+                        <!-- Capa de video de cámara y canvas de 21 puntos -->
+                        <div class="contenedor-camara-ia">
+                            <video id="video-camara-ia" playsinline muted></video>
+                            <canvas id="canvas-salida-ia"></canvas>
+                        </div>
+
+                        <!-- Placeholder amigable cuando la cámara está inactiva -->
+                        <div class="placeholder-camara-off" id="placeholder-camara-off">
+                            <div class="icono-scan-pulso">🤟</div>
+                            <h4>Escáner de Señas IA</h4>
+                            <p>Detecta tus <strong>2 manos</strong> y rastrea los <strong>21 puntos anatómicos</strong> para leer tus señas en vivo.</p>
+                            <button class="btn btn-verde btn-activar-camara" type="button" onclick="document.getElementById('btn-activar-camara-ia').click();" style="padding:0.75rem 1.4rem;">
+                                📹 Activar mi cámara
+                            </button>
+                        </div>
+
+                        <!-- Tarjeta inferior con seña leída y precisión en tiempo real -->
+                        <div class="insignia-precision" id="insignia-precision-ia">
+                            <div class="icono-seña-detectada" id="icono-seña-leida">🤟</div>
+                            <div class="info-seña-detectada">
+                                <strong id="texto-seña-leida">Te quiero (ILY)</strong>
+                                <div class="subtexto-manos" id="subtexto-manos-leidas">Rastreando 21 puntos clave</div>
+                                <div class="fila-precision-ia">
+                                    <div class="barra-precision-ia"><div class="barra-precision-ia-relleno" id="barra-precision-relleno-ia" style="width:98%;"></div></div>
+                                    <span class="valor-precision-ia" id="valor-precision-ia">98%</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -985,6 +1006,7 @@
                         <div class="icono-curso" style="background:var(--azul-claro); color:var(--azul-seva);">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                         </div>
+                        <span style="font-size:0.75rem; font-weight:700; color:var(--azul-seva); background:var(--azul-claro); padding:3px 10px; border-radius:20px; display:inline-block; margin-bottom:8px;">27 letras · Seguimiento IA</span>
                         <h3>Alfabeto dactilológico</h3>
                         <p>Domina cada letra con seguimiento de manos en tiempo real y práctica guiada.</p>
                         <a href="login.php" class="enlace-curso">Empezar curso
@@ -996,6 +1018,7 @@
                         <div class="icono-curso" style="background:var(--verde-claro); color:#1c7a37;">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                         </div>
+                        <span style="font-size:0.75rem; font-weight:700; color:#1c7a37; background:var(--verde-claro); padding:3px 10px; border-radius:20px; display:inline-block; margin-bottom:8px;">24 señas · Conversación</span>
                         <h3>Saludos y presentaciones</h3>
                         <p>Aprende a saludar, presentarte y mantener una conversación cotidiana.</p>
                         <a href="login.php" class="enlace-curso">Empezar curso
@@ -1007,6 +1030,7 @@
                         <div class="icono-curso" style="background:#FFF3DE; color:#B8791B;">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
                         </div>
+                        <span style="font-size:0.75rem; font-weight:700; color:#b8791b; background:#fff3de; padding:3px 10px; border-radius:20px; display:inline-block; margin-bottom:8px;">Vocabulario cotidiano</span>
                         <h3>Números y familia</h3>
                         <p>Vocabulario esencial para contar, describir y hablar de tus seres queridos.</p>
                         <a href="login.php" class="enlace-curso">Empezar curso
@@ -1218,15 +1242,24 @@
     }, { threshold: 0.3 });
     statsObs.observe(document.querySelector('.fila-stats'));
 
-    /* ---------- Precisión "en vivo" del hand-tracking (elemento de firma) ---------- */
+    /* ---------- Precisión "en vivo" del hand-tracking ---------- */
     const valorPrecision = document.getElementById('valor-precision');
     const barraPrecision = document.getElementById('barra-precision');
-    setInterval(function(){
-        const nuevo = Math.floor(95 + Math.random() * 5); // 95–99
-        valorPrecision.textContent = nuevo + '%';
-        barraPrecision.style.width = nuevo + '%';
-    }, 2600);
+    if (valorPrecision && barraPrecision) {
+        setInterval(function(){
+            const nuevo = Math.floor(95 + Math.random() * 5); // 95–99
+            valorPrecision.textContent = nuevo + '%';
+            barraPrecision.style.width = nuevo + '%';
+        }, 2600);
+    }
 })();
 </script>
+<!-- Bibliotecas de Visión Artificial MediaPipe Hands (Google) -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+<!-- Módulos de Seva y Detector IA -->
+<script src="js/detector-manos-ia.js"></script>
+<script src="js/personaje-sevy.js"></script>
 </body>
 </html>

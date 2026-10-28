@@ -1,42 +1,22 @@
 <?php
 require 'conexion.php';
-require 'seguridad.php';
-
-seguridad_iniciar_sesion();
 
 $error = '';
-$exito = false;
+$exito = '';
 $nombre_val = '';
 $email_val = '';
 
-if (csrf_error_en_url()) {
-    $error = 'La solicitud expiró o no es válida. Inténtalo de nuevo.';
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Toda petición POST exige un token CSRF válido (D05)
-    seguridad_validar_csrf('registro.php');
-
     $nombre     = trim($_POST['nombre'] ?? '');
     $email      = trim($_POST['email'] ?? '');
     $contrasena = $_POST['password'] ?? '';
     $confirmar  = $_POST['confirmar'] ?? '';
 
-    // Conservar datos ingresados para evitar reescritura
-    $nombre_val = htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8');
-    $email_val  = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
+    $nombre_val = htmlspecialchars($nombre, ENT_QUOTES);
+    $email_val  = htmlspecialchars($email, ENT_QUOTES);
 
-    if (honeypot_accionado()) {
-        // Bot detectado: se simula el éxito sin crear la cuenta (D10)
-        error_log('SEVA honeypot activado en registro desde IP ' . seguridad_ip_cliente());
-        $exito = true;
-        $nombre_val = '';
-        $email_val = '';
-    } elseif ($nombre === '' || $email === '' || $contrasena === '') {
+    if ($nombre === '' || $email === '' || $contrasena === '') {
         $error = 'Todos los campos son obligatorios.';
-    } elseif (mb_strlen($nombre, 'UTF-8') < 3 || mb_strlen($nombre, 'UTF-8') > 100) {
-        // Validación en servidor (D22): el límite no puede depender del navegador
-        $error = 'El nombre debe tener entre 3 y 100 caracteres.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'El correo electrónico no es válido.';
     } elseif (strlen($contrasena) < 8) {
@@ -48,12 +28,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$email]);
 
         if ($stmt->fetch()) {
-            $error = 'Ya existe una cuenta registrada con ese correo electrónico.';
+            $error = 'Ya existe una cuenta con ese correo.';
         } else {
             $hash = password_hash($contrasena, PASSWORD_DEFAULT);
             $stmt = $pdo->prepare('INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)');
             $stmt->execute([$nombre, $email, $hash]);
-            $exito = true;
+            $exito = 'Registro exitoso. Ya puedes iniciar sesión.';
             $nombre_val = '';
             $email_val = '';
         }
@@ -90,16 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-family:'Inter', sans-serif;
         color:var(--text);
         background:var(--paper);
-    }
-    /* Campo trampa anti-bots: fuera de pantalla, invisible para personas
-       y lectores de pantalla (D10). */
-    .hp-trampa{
-        position:absolute;
-        left:-9999px;
-        top:auto;
-        width:1px;
-        height:1px;
-        overflow:hidden;
     }
     .layout{
         display:grid;
@@ -265,69 +235,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-size:0.95rem;
     }
     .alerta{
-        padding:0.9rem 1.1rem;
+        padding:0.8rem 1rem;
         border-radius:0.7rem;
-        font-size:0.92rem;
+        font-size:0.9rem;
         margin-bottom:1.3rem;
-        display:flex;
-        align-items:flex-start;
-        gap:0.75rem;
     }
-    .alerta.error{
-        background:var(--danger-bg);
-        color:var(--danger);
-        border:1.5px solid rgba(214, 70, 91, 0.35);
-    }
-    .alerta.exito{
-        background:var(--success-bg);
-        color:var(--verde-oscuro);
-        border:1.5px solid var(--verde-seva);
-        flex-direction:column;
-        align-items:stretch;
-        gap:0.7rem;
-        padding:1.2rem;
-    }
-    .alerta.exito .alerta-header{
-        display:flex;
-        align-items:center;
-        gap:0.6rem;
-        font-weight:700;
-        font-size:1.05rem;
-        color:var(--verde-oscuro);
-    }
-    .alerta.exito p{
-        margin:0;
-        font-size:0.95rem;
-        line-height:1.4;
-        color:var(--text);
-    }
-    .btn-enlace-login{
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        min-height:44px;
-        padding:0.75rem 1.25rem;
-        background:var(--verde-seva);
-        color:#ffffff !important;
-        font-weight:700;
-        font-size:0.95rem;
-        text-decoration:none;
-        border-radius:0.7rem;
-        margin-top:0.4rem;
-        transition:background 0.15s ease, transform 0.1s ease;
-        text-align:center;
-    }
-    .btn-enlace-login:hover{
-        background:var(--verde-oscuro);
-        text-decoration:none;
-    }
-    .btn-enlace-login:active{
-        transform:translateY(1px);
-    }
-    .btn-enlace-login:focus-visible{
-        outline:3px solid var(--azul-seva);
-        outline-offset:2px;
-    }
+    .alerta.error{ background:var(--danger-bg); color:var(--danger); }
+    .alerta.exito{ background:var(--success-bg); color:var(--success); }
 
     .campo{ margin-bottom:1.15rem; }
     .campo label{
@@ -339,7 +253,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     .campo input{
         width:100%;
-        min-height:44px;
         padding:0.75rem 0.95rem;
         border:1.5px solid var(--line);
         border-radius:0.7rem;
@@ -352,11 +265,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .campo input:focus{
         outline:none;
         border-color:var(--azul-seva);
-        box-shadow:0 0 0 3px rgba(0,86,179,0.18);
-    }
-    .campo input:focus-visible{
-        outline:3px solid var(--azul-seva);
-        outline-offset:2px;
+        box-shadow:0 0 0 4px rgba(0,86,179,0.14);
     }
     .campo small{
         display:block;
@@ -368,7 +277,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     .btn-crear{
         width:100%;
-        min-height:44px;
         padding:0.85rem;
         border:none;
         border-radius:0.7rem;
@@ -380,9 +288,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         cursor:pointer;
         margin-top:0.4rem;
         transition:background 0.15s ease, transform 0.1s ease;
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
     }
     .btn-crear:hover{ background:var(--azul-oscuro); }
     .btn-crear:active{ transform:translateY(1px); }
@@ -394,21 +299,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-size:0.9rem;
         color:var(--muted);
     }
-    .pie a{
-        color:var(--verde-oscuro);
-        font-weight:600;
-        text-decoration:none;
-        display:inline-flex;
-        align-items:center;
-        min-height:44px;
-        padding:0.25rem 0.5rem;
-        border-radius:0.4rem;
-    }
+    .pie a{ color:var(--verde-oscuro); font-weight:600; text-decoration:none; }
     .pie a:hover{ text-decoration:underline; }
-    .pie a:focus-visible{
-        outline:3px solid var(--azul-seva);
-        outline-offset:2px;
-    }
 
     @media (max-width: 860px){
         .layout{ grid-template-columns:1fr; }
@@ -474,36 +366,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="sub">Empieza a aprender lengua de señas hoy mismo.</p>
 
             <?php if ($error): ?>
-                <div class="alerta error" role="alert" aria-live="assertive">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0; margin-top:1px;">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                    <span><?= htmlspecialchars($error) ?></span>
-                </div>
+                <div class="alerta error"><?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
 
             <?php if ($exito): ?>
-                <div class="alerta exito" role="status" aria-live="polite">
-                    <div class="alerta-header">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                        </svg>
-                        <span>¡Registro completado con éxito!</span>
-                    </div>
-                    <p>Redirigiendo al inicio de sesión en 3 segundos...</p>
-                    <a href="login.php" class="btn-enlace-login" id="btn-login-manual">Ir al inicio de sesión ahora</a>
-                </div>
+                <div class="alerta exito"><?= htmlspecialchars($exito) ?></div>
             <?php endif; ?>
 
             <form method="POST" action="registro.php" id="form-registro" novalidate>
-                <?= csrf_campo() ?>
-                <?= honeypot_campo() ?>
                 <div class="campo">
                     <label for="nombre">Nombre completo</label>
-                    <input type="text" id="nombre" name="nombre" value="<?= $nombre_val ?>" minlength="3" maxlength="100" autocomplete="name" required>
+                    <input type="text" id="nombre" name="nombre" value="<?= $nombre_val ?>" required>
                 </div>
 
                 <div class="campo">
@@ -561,12 +434,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             e.preventDefault();
         }
     });
-
-    <?php if ($exito): ?>
-    setTimeout(function(){
-        window.location.href = 'login.php';
-    }, 3000);
-    <?php endif; ?>
 </script>
 </body>
 </html>

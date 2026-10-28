@@ -1,11 +1,11 @@
 <?php
+session_start();
 require 'conexion.php';
-require 'seguridad.php';
 
-seguridad_iniciar_sesion();
-
-// Validación estricta de sesión de usuario
-seguridad_requiere_login();
+if (!isset($_SESSION['usuario_id'])) {
+    header('Location: login.php');
+    exit;
+}
 
 $usuario_id = $_SESSION['usuario_id'];
 $nombre     = $_SESSION['nombre'] ?? 'Estudiante';
@@ -18,273 +18,481 @@ $porcentaje = 0;
 $completados_ids = [];
 
 try {
-    // Consulta extendida con nivel y orden para la ruta gamificada
-    $stmt_lec = $pdo->query('SELECT id, titulo, descripcion, ruta_imagen, ruta_video, nivel, orden FROM contenidos_educativos ORDER BY orden ASC, id ASC');
-    $lecciones = $stmt_lec->fetchAll();
-    $total = count($lecciones);
+    $lecciones = $pdo->query('SELECT id, titulo, ruta_imagen FROM contenidos_educativos ORDER BY id')->fetchAll();
+    $total = $pdo->query('SELECT COUNT(*) AS c FROM contenidos_educativos')->fetch()['c'];
 
-    $stmt_comp = $pdo->prepare('SELECT COUNT(*) AS c FROM progreso_usuario WHERE usuario_id = ? AND completado = 1');
-    $stmt_comp->execute([$usuario_id]);
-    $completadas = (int) $stmt_comp->fetch()['c'];
+    $stmt = $pdo->prepare('SELECT COUNT(*) AS c FROM progreso_usuario WHERE usuario_id = ? AND completado = 1');
+    $stmt->execute([$usuario_id]);
+    $completadas = $stmt->fetch()['c'];
 
     $porcentaje = $total > 0 ? round(($completadas / $total) * 100) : 0;
 
-    $stmt_ids = $pdo->prepare('SELECT contenido_id FROM progreso_usuario WHERE usuario_id = ? AND completado = 1');
-    $stmt_ids->execute([$usuario_id]);
-    $completados_ids = array_column($stmt_ids->fetchAll(), 'contenido_id');
+    $stmt = $pdo->prepare('SELECT contenido_id FROM progreso_usuario WHERE usuario_id = ? AND completado = 1');
+    $stmt->execute([$usuario_id]);
+    $completados_ids = array_column($stmt->fetchAll(), 'contenido_id');
 } catch (PDOException $e) {
+    // No interrumpimos la página con un fatal error: mostramos un aviso claro
+    // y registramos el detalle técnico solo en el log del servidor.
     error_log('Dashboard - error de base de datos: ' . $e->getMessage());
-    $error_bd = 'No se pudieron cargar las lecciones. Verifica la conexión a la base de datos de SEVA.';
+    $error_bd = 'No se pudieron cargar las lecciones. Verifica que las tablas "contenidos_educativos" y "progreso_usuario" existan en la base de datos.';
 }
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mi Camino de Aprendizaje · SEVA</title>
-    <!-- Fuentes Web Accesibles -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Estilos Oficiales SEVA -->
-    <link rel="stylesheet" href="css/estilos.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi aprendizaje · Señas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    :root{
+        --ink:#161B33;
+        --paper:#FFFFFF;
+        --bg:#FAF9FF;
+        --coral:#FF6B54;
+        --coral-dark:#E5543F;
+        --gold:#FFB84D;
+        --teal:#3FC1B0;
+        --text:#1B1F3B;
+        --muted:#7A80A0;
+        --line:#E9E6F5;
+        --danger:#D6465B;
+        --danger-bg:#FDECEF;
+    }
+    *{ box-sizing:border-box; }
+    body{
+        margin:0;
+        font-family:'Inter', sans-serif;
+        color:var(--text);
+        background:var(--bg);
+    }
+
+    .topbar{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:1.1rem 2rem;
+        background:var(--ink);
+        color:#fff;
+    }
+    .marca{
+        display:flex;
+        align-items:center;
+        gap:0.6rem;
+        font-family:'Baloo 2', sans-serif;
+        font-weight:700;
+        font-size:1.2rem;
+    }
+    .marca .punto{
+        width:9px;height:9px;border-radius:50%;
+        background:var(--coral);
+        display:inline-block;
+    }
+    .topbar-derecha{
+        display:flex;
+        align-items:center;
+        gap:1.4rem;
+        font-size:0.95rem;
+    }
+    .topbar-derecha .saludo{ color:#C7C9E6; }
+    .topbar-derecha .saludo strong{ color:#fff; }
+    .topbar-derecha a{
+        color:#fff;
+        text-decoration:none;
+        font-weight:600;
+        padding:0.45rem 0.9rem;
+        border:1.5px solid rgba(255,255,255,0.3);
+        border-radius:0.6rem;
+        transition:background 0.15s ease;
+    }
+    .topbar-derecha a:hover{ background:rgba(255,255,255,0.1); }
+
+    .contenedor{
+        max-width:1080px;
+        margin:0 auto;
+        padding:2.2rem 1.5rem 3.5rem;
+    }
+
+    .aviso-error{
+        background:var(--danger-bg);
+        color:var(--danger);
+        border-radius:0.9rem;
+        padding:1.1rem 1.3rem;
+        margin-bottom:1.6rem;
+        font-size:0.95rem;
+        line-height:1.5;
+    }
+    .aviso-error strong{ display:block; margin-bottom:0.2rem; font-family:'Baloo 2', sans-serif; }
+
+    .panel-progreso{
+        background:var(--paper);
+        border:1px solid var(--line);
+        border-radius:1rem;
+        padding:1.4rem 1.6rem;
+        margin-bottom:1.8rem;
+    }
+    .fila-progreso{
+        display:flex;
+        justify-content:space-between;
+        align-items:baseline;
+        margin-bottom:0.7rem;
+    }
+    .fila-progreso .etiqueta{
+        font-family:'Baloo 2', sans-serif;
+        font-weight:700;
+        font-size:1.05rem;
+    }
+    .fila-progreso .cifra{
+        font-family:'Space Mono', monospace;
+        font-weight:700;
+        color:var(--coral-dark);
+        font-size:1.1rem;
+    }
+    .barra{
+        height:0.9rem;
+        border-radius:1rem;
+        background:var(--line);
+        overflow:hidden;
+    }
+    .barra-relleno{
+        height:100%;
+        border-radius:1rem;
+        background:linear-gradient(90deg, var(--coral) 0%, var(--gold) 100%);
+        transition:width 0.4s ease;
+    }
+    .sub-progreso{
+        margin:0.6rem 0 0;
+        font-size:0.85rem;
+        color:var(--muted);
+    }
+
+    #buscador{
+        width:100%;
+        max-width:340px;
+        padding:0.75rem 1rem;
+        border:1.5px solid var(--line);
+        border-radius:0.7rem;
+        font-family:'Inter', sans-serif;
+        font-size:0.95rem;
+        margin-bottom:1.6rem;
+        background:var(--paper);
+    }
+    #buscador:focus{
+        outline:none;
+        border-color:var(--coral);
+        box-shadow:0 0 0 4px rgba(255,107,84,0.14);
+    }
+
+    .grid-lecciones{
+        display:grid;
+        grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
+        gap:1.4rem;
+    }
+    .tarjeta{
+        background:var(--paper);
+        border:1px solid var(--line);
+        border-radius:1rem;
+        overflow:hidden;
+        display:flex;
+        flex-direction:column;
+        transition:transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .tarjeta:hover{
+        transform:translateY(-4px);
+        box-shadow:0 12px 24px -12px rgba(22,27,51,0.25);
+    }
+    .tarjeta img{
+        width:100%;
+        height:150px;
+        object-fit:cover;
+        background:var(--line);
+    }
+    .tarjeta-cuerpo{
+        padding:1.1rem 1.2rem 1.3rem;
+        display:flex;
+        flex-direction:column;
+        flex:1;
+    }
+    .tarjeta-cuerpo h3{
+        font-family:'Baloo 2', sans-serif;
+        font-size:1.05rem;
+        margin:0 0 0.6rem;
+        color:var(--ink);
+    }
+    .insignia{
+        align-self:flex-start;
+        font-family:'Space Mono', monospace;
+        font-size:0.7rem;
+        font-weight:700;
+        text-transform:uppercase;
+        letter-spacing:0.05em;
+        color:#0F1329;
+        background:var(--teal);
+        padding:0.25rem 0.6rem;
+        border-radius:0.4rem;
+        margin-bottom:0.7rem;
+    }
+    .btn-ver{
+        margin-top:auto;
+        border:none;
+        background:var(--coral);
+        color:#fff;
+        font-weight:700;
+        font-family:'Inter', sans-serif;
+        padding:0.65rem;
+        border-radius:0.6rem;
+        cursor:pointer;
+        transition:background 0.15s ease;
+    }
+    .btn-ver:hover{ background:var(--coral-dark); }
+    .btn-ver:focus-visible{ outline:3px solid var(--gold); outline-offset:2px; }
+
+    .estado-vacio{
+        text-align:center;
+        padding:3rem 1.5rem;
+        border:1.5px dashed var(--line);
+        border-radius:1rem;
+        color:var(--muted);
+    }
+    .estado-vacio h3{
+        font-family:'Baloo 2', sans-serif;
+        color:var(--ink);
+        margin:0 0 0.4rem;
+    }
+
+    @media (max-width: 560px){
+        .topbar{ padding:1rem 1.2rem; flex-wrap:wrap; gap:0.6rem; }
+        .topbar-derecha{ gap:0.8rem; }
+    }
+
+    /* ---------- Menú hamburguesa (configuración y opciones) ---------- */
+    .menu-opciones{
+        position:relative;
+    }
+    .btn-hamburguesa{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        width:40px;
+        height:40px;
+        padding:0;
+        background:transparent;
+        border:1.5px solid rgba(255,255,255,0.3);
+        border-radius:0.6rem;
+        color:#fff;
+        cursor:pointer;
+        transition:background 0.15s ease, border-color 0.15s ease;
+    }
+    .btn-hamburguesa:hover{ background:rgba(255,255,255,0.1); }
+    .btn-hamburguesa svg{ display:block; }
+
+    .panel-opciones{
+        position:absolute;
+        top:calc(100% + 0.6rem);
+        right:0;
+        width:250px;
+        background:var(--paper);
+        color:var(--text);
+        border:1px solid var(--line);
+        border-radius:0.9rem;
+        box-shadow:0 16px 32px -14px rgba(22,27,51,0.3);
+        padding:0.6rem;
+        display:none;
+        z-index:80;
+    }
+    .panel-opciones.abierto{ display:block; }
+
+    .panel-opciones .encabezado-opciones{
+        padding:0.5rem 0.6rem 0.7rem;
+        border-bottom:1px solid var(--line);
+        margin-bottom:0.4rem;
+    }
+    .panel-opciones .encabezado-opciones .nombre-usuario{
+        display:block;
+        font-family:'Baloo 2', sans-serif;
+        font-weight:700;
+        font-size:0.95rem;
+        color:var(--ink);
+    }
+    .panel-opciones .encabezado-opciones .correo-usuario{
+        display:block;
+        font-size:0.78rem;
+        color:var(--muted);
+        margin-top:0.1rem;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+    }
+
+    .panel-opciones .opcion{
+        display:flex;
+        align-items:center;
+        gap:0.7rem;
+        width:100%;
+        padding:0.6rem 0.6rem;
+        border:none;
+        background:none;
+        border-radius:0.6rem;
+        font-family:'Inter', sans-serif;
+        font-size:0.9rem;
+        font-weight:600;
+        color:var(--text);
+        text-decoration:none;
+        cursor:pointer;
+        text-align:left;
+    }
+    .panel-opciones .opcion svg{ flex-shrink:0; color:var(--muted); }
+    .panel-opciones .opcion:hover{ background:var(--bg); }
+    .panel-opciones .opcion:hover svg{ color:var(--coral-dark); }
+
+    .panel-opciones .separador-opciones{
+        border:none;
+        border-top:1px solid var(--line);
+        margin:0.4rem 0.2rem;
+    }
+
+    .panel-opciones .opcion.salir{ color:var(--danger); }
+    .panel-opciones .opcion.salir svg{ color:var(--danger); }
+    .panel-opciones .opcion.salir:hover{ background:var(--danger-bg); }
+</style>
 </head>
 <body>
-    <a href="#contenido-principal" class="skip-link">Saltar al contenido principal</a>
+<header class="topbar">
+    <div class="marca"><span class="punto"></span>Señas</div>
+    <div class="topbar-derecha">
+        <span class="saludo">Hola, <strong><?= htmlspecialchars($nombre) ?></strong></span>
 
-    <!-- Encabezado Superior -->
-    <header class="topbar">
-        <a href="dashboard.php" class="marca" aria-label="Inicio SEVA - Sistema Educativo de Lengua de Señas">
-            <span class="punto" aria-hidden="true"></span>SEVA
-        </a>
+        <div class="menu-opciones">
+            <button type="button" class="btn-hamburguesa" id="btn-opciones" aria-label="Abrir menú de opciones" aria-haspopup="true" aria-expanded="false" aria-controls="panel-opciones">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            </button>
 
-        <div class="topbar-derecha">
-            <span class="saludo">Hola, <strong><?= htmlspecialchars($nombre) ?></strong></span>
-
-            <!-- Menú Desplegable Accesible -->
-            <div class="menu-opciones">
-                <button type="button" class="btn-hamburguesa" id="btn-opciones" aria-label="Abrir menú de usuario" aria-haspopup="true" aria-expanded="false" aria-controls="panel-opciones">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-                </button>
-
-                <div class="panel-opciones" id="panel-opciones" role="menu">
-                    <div class="encabezado-opciones">
-                        <span class="nombre-usuario"><?= htmlspecialchars($nombre) ?></span>
-                        <span class="correo-usuario"><?= htmlspecialchars($_SESSION['email'] ?? '') ?></span>
-                    </div>
-
-                    <a href="perfil.php" class="opcion" role="menuitem">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
-                        Mi perfil
-                    </a>
-                    <a href="configuracion.php" class="opcion" role="menuitem">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                        Configuración de cuenta
-                    </a>
-
-                    <hr class="separador-opciones">
-
-                    <a href="logout.php" class="opcion salir" role="menuitem">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
-                        Cerrar sesión
-                    </a>
+            <div class="panel-opciones" id="panel-opciones" role="menu">
+                <div class="encabezado-opciones">
+                    <span class="nombre-usuario"><?= htmlspecialchars($nombre) ?></span>
+                    <span class="correo-usuario"><?= htmlspecialchars($_SESSION['email'] ?? '') ?></span>
                 </div>
-            </div>
 
-            <a href="logout.php" class="btn-salir-directo" title="Cerrar sesión">Salir</a>
+                <a href="practica.php" class="opcion" role="menuitem">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="4"/><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/></svg>
+                    Practicar (juegos)
+                </a>
+                <a href="perfil.php" class="opcion" role="menuitem">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+                    Mi perfil
+                </a>
+                <a href="configuracion.php" class="opcion" role="menuitem">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Configuración de cuenta
+                </a>
+                <a href="#" class="opcion" role="menuitem">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+                    Ayuda y soporte
+                </a>
+
+                <hr class="separador-opciones">
+
+                <a href="login.php?salir=1" class="opcion salir" role="menuitem">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+                    Cerrar sesión
+                </a>
+            </div>
         </div>
-    </header>
 
-    <main class="contenedor" id="contenido-principal">
-        <?php if ($error_bd): ?>
-            <div class="alerta alerta-error" role="alert">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <div>
-                    <strong>Error de conexión</strong>
-                    <p style="margin:0;"><?= htmlspecialchars($error_bd) ?></p>
+        <a href="login.php?salir=1">Salir</a>
+    </div>
+</header>
+
+<div class="contenedor">
+
+    <?php if ($error_bd): ?>
+        <div class="aviso-error">
+            <strong>No pudimos cargar tus lecciones</strong>
+            <?= htmlspecialchars($error_bd) ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if (!$error_bd): ?>
+        <div class="panel-progreso">
+            <div class="fila-progreso">
+                <span class="etiqueta">Progreso general</span>
+                <span class="cifra"><?= $porcentaje ?>%</span>
+            </div>
+            <div class="barra">
+                <div class="barra-relleno" style="width: <?= $porcentaje ?>%"></div>
+            </div>
+            <p class="sub-progreso"><?= $completadas ?> de <?= $total ?> lecciones completadas.</p>
+        </div>
+
+        <?php if (count($lecciones) > 0): ?>
+            <input type="text" id="buscador" placeholder="Buscar lección...">
+
+            <div class="grid-lecciones" id="contenedor-lecciones">
+                <?php foreach ($lecciones as $l): ?>
+                <?php $hecha = in_array($l['id'], $completados_ids); ?>
+                <div class="tarjeta tarjeta-leccion">
+                    <img src="<?= htmlspecialchars($l['ruta_imagen'] ?: 'img/lecciones/default.jpg') ?>" alt="">
+                    <div class="tarjeta-cuerpo">
+                        <?php if ($hecha): ?>
+                            <span class="insignia">Completada</span>
+                        <?php endif; ?>
+                        <h3 class="titulo-leccion"><?= htmlspecialchars($l['titulo']) ?></h3>
+                        <button class="btn-ver" data-id="<?= $l['id'] ?>">Ver lección</button>
+                    </div>
                 </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div class="estado-vacio">
+                <h3>Todavía no hay lecciones cargadas</h3>
+                <p>Cuando se agreguen contenidos a "contenidos_educativos", aparecerán aquí.</p>
             </div>
         <?php endif; ?>
+    <?php endif; ?>
 
-        <?php if (!$error_bd): ?>
-            <!-- 1. Tarjeta de Progreso General -->
-            <section class="panel-progreso" aria-labelledby="titulo-progreso">
-                <div class="fila-progreso">
-                    <span class="etiqueta" id="titulo-progreso">Progreso general</span>
-                    <span class="cifra" aria-label="<?= $porcentaje ?> por ciento completado"><?= $porcentaje ?>%</span>
-                </div>
-                <div class="barra" role="progressbar" aria-valuenow="<?= $porcentaje ?>" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso acumulado de lecciones">
-                    <div class="barra-relleno" style="width: <?= $porcentaje ?>%"></div>
-                </div>
-                <p class="sub-progreso">
-                    <strong><?= $completadas ?></strong> de <strong><?= $total ?></strong> lecciones completadas. ¡Continúa practicando a tu ritmo!
-                </p>
-            </section>
+</div>
 
-            <!-- 2. Ruta de Aprendizaje "Tu Camino" -->
-            <section class="seccion-camino" aria-labelledby="titulo-camino">
-                <!-- Barra de herramientas: Buscador y Pestañas de Nivel -->
-                <div class="barra-herramientas">
-                    <div class="contenedor-buscador">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                        <input type="text" id="buscador" placeholder="Buscar lección por título..." aria-label="Buscar lecciones en tiempo real">
-                    </div>
-
-                    <!-- Filtros de nivel: grupo de botones, no pestañas (D17) -->
-                    <div class="filtros-camino" role="group" aria-label="Filtrar lecciones por nivel">
-                        <button type="button" class="btn-filtro activo" data-filtro="todos" aria-pressed="true">Todas</button>
-                        <button type="button" class="btn-filtro" data-filtro="basico" aria-pressed="false">Básico</button>
-                        <button type="button" class="btn-filtro" data-filtro="intermedio" aria-pressed="false">Intermedio</button>
-                        <button type="button" class="btn-filtro" data-filtro="avanzado" aria-pressed="false">Avanzado</button>
-                    </div>
-                </div>
-
-                <div class="encabezado-seccion-camino">
-                    <h2 id="titulo-camino">
-                        Tu Camino
-                        <span class="badge-contador" id="contador-visibles" role="status" aria-live="polite"><?= $total ?> disponibles</span>
-                    </h2>
-                </div>
-
-                <?php if (count($lecciones) > 0): ?>
-                    <div class="grid-lecciones" id="contenedor-lecciones">
-                        <?php foreach ($lecciones as $l): ?>
-                            <?php
-                                $hecha = in_array($l['id'], $completados_ids);
-                                $nivel_raw = strtolower($l['nivel'] ?? 'basico');
-                                $nivel_nom = ($nivel_raw === 'intermedio') ? 'Intermedio' : (($nivel_raw === 'avanzado') ? 'Avanzado' : 'Básico');
-                                // Fallback (D14): se usa el placeholder SVG cuando la ruta está vacía,
-                                // es insegura o el archivo no existe en disco (8 imágenes ausentes).
-                                $ruta_img = ltrim(str_replace('\\', '/', (string) ($l['ruta_imagen'] ?? '')), '/');
-                                if ($ruta_img === '' || strpos($ruta_img, '..') !== false
-                                    || !is_file(__DIR__ . '/' . $ruta_img)) {
-                                    $ruta_img = 'img/lecciones/default.svg';
-                                }
-                                $img_src = htmlspecialchars($ruta_img, ENT_QUOTES, 'UTF-8');
-                            ?>
-                            <article class="tarjeta-leccion" data-nivel="<?= htmlspecialchars($nivel_raw) ?>" data-titulo="<?= htmlspecialchars(strtolower($l['titulo'])) ?>">
-                                <div class="portada-leccion">
-                                    <span class="insignia-nivel nivel-<?= htmlspecialchars($nivel_raw) ?>"><?= $nivel_nom ?></span>
-                                    
-                                    <?php if ($hecha): ?>
-                                        <span class="insignia-completada" aria-label="Lección completada">
-                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-                                            Completada
-                                        </span>
-                                    <?php endif; ?>
-
-                                    <img src="<?= $img_src ?>" alt="Portada de la lección: <?= htmlspecialchars($l['titulo']) ?>" loading="lazy" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22300%22%20height%3D%22165%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20300%20165%22%20preserveAspectRatio%3D%22none%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23E8EEF5%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20fill%3D%22%230056b3%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22bold%22%20font-size%3D%2216%22%20text-anchor%3D%22middle%22%20dy%3D%22.3em%22%3ESEVA%20LSE%3C%2Ftext%3E%3C%2Fsvg%3E'">
-                                </div>
-
-                                <div class="tarjeta-cuerpo">
-                                    <h3 class="titulo-leccion"><?= htmlspecialchars($l['titulo']) ?></h3>
-                                    <p class="descripcion-leccion">
-                                        <?= htmlspecialchars(!empty($l['descripcion']) ? $l['descripcion'] : 'Práctica interactiva de Lengua de Señas.') ?>
-                                    </p>
-                                    <a href="leccion.php?id=<?= (int)$l['id'] ?>" class="btn btn-primario btn-ver" aria-label="Ver lección: <?= htmlspecialchars($l['titulo']) ?>">
-                                        Ver lección
-                                    </a>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
-
-                    <!-- Mensaje para cuando ningún resultado coincida -->
-                    <div class="estado-vacio" id="sin-resultados" style="display:none;" role="status" aria-live="polite">
-                        <h3>No se encontraron lecciones</h3>
-                        <p>No hay lecciones que coincidan con los criterios de búsqueda o filtro seleccionados.</p>
-                    </div>
-                <?php else: ?>
-                    <div class="estado-vacio">
-                        <h3>Todavía no hay lecciones cargadas</h3>
-                        <p>Cuando se agreguen contenidos educativos en la base de datos, aparecerán en tu camino.</p>
-                    </div>
-                <?php endif; ?>
-            </section>
-        <?php endif; ?>
-    </main>
-
-    <script>
-        // Filtrado en tiempo real: buscador y botones de nivel (D17)
-        const buscador = document.getElementById('buscador');
-        const botonesFiltro = document.querySelectorAll('.btn-filtro');
-        const tarjetas = document.querySelectorAll('.tarjeta-leccion');
-        const sinResultados = document.getElementById('sin-resultados');
-        const contadorVisibles = document.getElementById('contador-visibles');
-        let filtroNivelActual = 'todos';
-
-        function aplicarFiltros() {
-            const termino = buscador ? buscador.value.trim().toLowerCase() : '';
-            let visibles = 0;
-
-            tarjetas.forEach(function (tarjeta) {
-                const titulo = tarjeta.dataset.titulo || '';
-                const nivel = tarjeta.dataset.nivel || '';
-
-                const coincideTexto = termino === '' || titulo.includes(termino);
-                const coincideNivel = filtroNivelActual === 'todos' || nivel === filtroNivelActual;
-
-                if (coincideTexto && coincideNivel) {
-                    tarjeta.style.display = '';
-                    visibles++;
-                } else {
-                    tarjeta.style.display = 'none';
-                }
-            });
-
-            if (sinResultados) {
-                sinResultados.style.display = (visibles === 0 && tarjetas.length > 0) ? 'block' : 'none';
-            }
-            if (contadorVisibles) {
-                contadorVisibles.textContent = visibles + (visibles === 1 ? ' disponible' : ' disponibles');
-            }
-        }
-
-        if (buscador) {
-            buscador.addEventListener('input', aplicarFiltros);
-        }
-
-        botonesFiltro.forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                botonesFiltro.forEach(function (b) {
-                    b.classList.remove('activo');
-                    b.setAttribute('aria-pressed', 'false');
-                });
-                this.classList.add('activo');
-                this.setAttribute('aria-pressed', 'true');
-                filtroNivelActual = this.dataset.filtro;
-                aplicarFiltros();
+<script>
+    const buscador = document.getElementById('buscador');
+    if (buscador) {
+        buscador.addEventListener('input', function () {
+            const texto = this.value.toLowerCase();
+            document.querySelectorAll('.tarjeta-leccion').forEach(function (tarjeta) {
+                const titulo = tarjeta.querySelector('.titulo-leccion').textContent.toLowerCase();
+                tarjeta.style.display = titulo.includes(texto) ? '' : 'none';
             });
         });
+    }
 
-        // Menú accesible de opciones de usuario
-        const btnOpciones = document.getElementById('btn-opciones');
-        const panelOpciones = document.getElementById('panel-opciones');
+    document.querySelectorAll('.btn-ver').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            window.location.href = 'leccion.php?id=' + this.dataset.id;
+        });
+    });
 
-        if (btnOpciones && panelOpciones) {
-            btnOpciones.addEventListener('click', function (e) {
-                e.stopPropagation();
-                const abierto = panelOpciones.classList.toggle('abierto');
-                btnOpciones.setAttribute('aria-expanded', abierto ? 'true' : 'false');
-            });
+    // Menú hamburguesa de opciones (configuración, perfil, ayuda, cerrar sesión)
+    const btnOpciones = document.getElementById('btn-opciones');
+    const panelOpciones = document.getElementById('panel-opciones');
+    if (btnOpciones && panelOpciones) {
+        btnOpciones.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const abierto = panelOpciones.classList.toggle('abierto');
+            btnOpciones.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+        });
 
-            document.addEventListener('click', function () {
+        document.addEventListener('click', function () {
+            panelOpciones.classList.remove('abierto');
+            btnOpciones.setAttribute('aria-expanded', 'false');
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
                 panelOpciones.classList.remove('abierto');
                 btnOpciones.setAttribute('aria-expanded', 'false');
-            });
-
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') {
-                    panelOpciones.classList.remove('abierto');
-                    btnOpciones.setAttribute('aria-expanded', 'false');
-                    btnOpciones.focus();
-                }
-            });
-        }
-    </script>
+            }
+        });
+    }
+</script>
 </body>
 </html>
