@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 330" width="600" height="330" role="img" aria-labelledby="tituloPortada">
+  <title id="tituloPortada">Portada genérica de lección SEVA · Lengua de Señas Colombiana</title>
+
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EAF2FB"/>
+      <stop offset="100%" stop-color="#DCE9F7"/>
+    </linearGradient>
+    <linearGradient id="mano" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FBEFE4"/>
+    </linearGradient>
+    <pattern id="puntos" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.6" fill="#0056b3" opacity="0.12"/>
+    </pattern>
+  </defs>
+
+  <rect width="600" height="330" fill="url(#fondo)"/>
+  <rect width="600" height="330" fill="url(#puntos)"/>
+
+  <!-- Círculos decorativos -->
+  <circle cx="512" cy="70" r="86" fill="#0056b3" opacity="0.08"/>
+  <circle cx="92" cy="286" r="64" fill="#28a745" opacity="0.10"/>
+
+  <!-- Mano estilizada en seña -->
+  <g transform="translate(300 168)">
+    <g transform="rotate(-8)">
+      <path d="M-58 62 C-72 24 -72 -18 -60 -46 C-55 -58 -42 -60 -35 -50 C-30 -43 -31 -34 -34 -26 L-38 -50
+               C-40 -62 -30 -70 -20 -67 C-12 -64 -8 -55 -10 -45 L-12 -58
+               C-14 -70 -4 -78 6 -74 C14 -71 18 -62 16 -52 L14 -36
+               C12 -24 22 -16 32 -20 C42 -24 50 -16 48 -6 L42 30
+               C36 62 14 82 -12 88 C-36 93 -52 84 -58 62 Z"
+            fill="url(#mano)" stroke="#0056b3" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M-40 8 C-28 2 -16 0 -4 2" fill="none" stroke="#28a745" stroke-width="4" stroke-linecap="round" opacity="0.75"/>
+      <path d="M-44 26 C-30 20 -14 18 2 20" fill="none" stroke="#28a745" stroke-width="4" stroke-linecap="round" opacity="0.55"/>
+    </g>
+    <circle cx="52" cy="-58" r="7" fill="#28a745" opacity="0.9"/>
+    <circle cx="-64" cy="-70" r="5" fill="#0056b3" opacity="0.55"/>
+  </g>
+
+  <!-- Texto de marca -->
+  <text x="300" y="286" text-anchor="middle"
+        font-family="Inter, Segoe UI, Arial, sans-serif" font-size="24" font-weight="700"
+        fill="#0056b3" letter-spacing="3">SEVA · LSC</text>
+  <text x="300" y="312" text-anchor="middle"
+        font-family="Inter, Segoe UI, Arial, sans-serif" font-size="14" font-weight="500"
+        fill="#5B6B85" letter-spacing="1.2">Lección de Lengua de Señas Colombiana</text>
+</svg>

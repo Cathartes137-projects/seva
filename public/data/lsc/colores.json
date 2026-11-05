@@ -1,0 +1,142 @@
+[
+  {
+    "nombre": "Morado",
+    "archivo": "images/colores/morado.png",
+    "con_movimiento": true,
+    "descripcion": "Mano abierta frente a la boca.",
+    "instruccion_movimiento": "Mueve los dedos tocando los labios con un pequeño movimiento, como indican las flechas."
+  },
+  {
+    "nombre": "Negro",
+    "archivo": "images/colores/negro.png",
+    "con_movimiento": true,
+    "descripcion": "Dedo índice sobre la ceja.",
+    "instruccion_movimiento": "Deslízalo hacia un lado de la frente, siguiendo la flecha."
+  },
+  {
+    "nombre": "Oscuro",
+    "archivo": "images/colores/oscuro.png",
+    "con_movimiento": true,
+    "descripcion": "Manos abiertas a los lados de la cara, palmas al frente.",
+    "instruccion_movimiento": "Bájalas girando hacia afuera y abajo, siguiendo las flechas."
+  },
+  {
+    "nombre": "Opaco",
+    "archivo": "images/colores/opaco.png",
+    "con_movimiento": true,
+    "descripcion": "Una mano cerca de la boca; la otra frente al pecho con los dedos recogidos.",
+    "instruccion_movimiento": "La mano del pecho sube en zigzag, siguiendo la flecha."
+  },
+  {
+    "nombre": "Púrpura",
+    "archivo": "images/colores/purpura.png",
+    "con_movimiento": true,
+    "descripcion": "Dedo índice sobre los labios.",
+    "instruccion_movimiento": "Haz un pequeño movimiento de rozamiento, siguiendo las flechas."
+  },
+  {
+    "nombre": "Plateado",
+    "archivo": "images/colores/plateado.png",
+    "con_movimiento": true,
+    "descripcion": "Mano abierta frente a la boca, dedos separados.",
+    "instruccion_movimiento": "Mueve los dedos suavemente sobre los labios."
+  },
+  {
+    "nombre": "Transparente",
+    "archivo": "images/colores/transparente.png",
+    "con_movimiento": true,
+    "descripcion": "Ambas manos abiertas a los lados, dedos separados.",
+    "instruccion_movimiento": "Mueve los dedos y baja las manos hacia el pecho, siguiendo las flechas."
+  },
+  {
+    "nombre": "Verde",
+    "archivo": "images/colores/verde.png",
+    "con_movimiento": true,
+    "descripcion": "Dedos índice y medio en V cerca del hombro.",
+    "instruccion_movimiento": "Haz un pequeño círculo, siguiendo la flecha."
+  },
+  {
+    "nombre": "Color",
+    "archivo": "images/colores/color.png",
+    "con_movimiento": true,
+    "descripcion": "Mano abierta frente a la boca.",
+    "instruccion_movimiento": "Mueve los dedos tocando los labios con un pequeño movimiento."
+  },
+  {
+    "nombre": "Amarillo",
+    "archivo": "images/colores/amarillo.png",
+    "con_movimiento": true,
+    "descripcion": "Mano abierta junto al hombro, dedos separados.",
+    "instruccion_movimiento": "Mueve los dedos suavemente, siguiendo las flechas."
+  },
+  {
+    "nombre": "Azul",
+    "archivo": "images/colores/azul.png",
+    "con_movimiento": true,
+    "descripcion": "Mano con el pulgar y el meñique extendidos (forma Y).",
+    "instruccion_movimiento": "Muévela de lado a lado, siguiendo la flecha."
+  },
+  {
+    "nombre": "Anaranjado",
+    "archivo": "images/colores/anaranjado.png",
+    "con_movimiento": true,
+    "descripcion": "Mano cerca de la mejilla y la boca.",
+    "instruccion_movimiento": "Haz un movimiento circular, siguiendo la flecha."
+  },
+  {
+    "nombre": "Blanco",
+    "archivo": "images/colores/blanco.png",
+    "con_movimiento": true,
+    "descripcion": "Una mano frente al pecho.",
+    "instruccion_movimiento": "Lleva la otra hacia arriba y afuera con un arco, siguiendo la flecha."
+  },
+  {
+    "nombre": "Brillante",
+    "archivo": "images/colores/brillante.png",
+    "con_movimiento": true,
+    "descripcion": "Ambas manos abiertas a los lados.",
+    "instruccion_movimiento": "Mueve las muñecas en zigzag, siguiendo las flechas."
+  },
+  {
+    "nombre": "Café",
+    "archivo": "images/colores/cafe.png",
+    "con_movimiento": true,
+    "descripcion": "Mano abierta cerca del rostro.",
+    "instruccion_movimiento": "Haz un pequeño movimiento hacia adelante y atrás, siguiendo la flecha."
+  },
+  {
+    "nombre": "Claro",
+    "archivo": "images/colores/claro.png",
+    "con_movimiento": true,
+    "descripcion": "Ambas manos abiertas a los lados, palmas al frente.",
+    "instruccion_movimiento": "Llévalas hacia arriba y afuera, siguiendo las flechas."
+  },
+  {
+    "nombre": "Colorear",
+    "archivo": "images/colores/colorear.png",
+    "con_movimiento": true,
+    "descripcion": "Índices de ambas manos enfrentados.",
+    "instruccion_movimiento": "Frota el índice de una mano con el de la otra, subiendo y bajando según las flechas."
+  },
+  {
+    "nombre": "Dorado",
+    "archivo": "images/colores/dorado.png",
+    "con_movimiento": true,
+    "descripcion": "Una mano frente al cuerpo en puño.",
+    "instruccion_movimiento": "La otra se mueve hacia un lado en ondas, siguiendo la flecha."
+  },
+  {
+    "nombre": "Fosforescente",
+    "archivo": "images/colores/fosforescente.png",
+    "con_movimiento": true,
+    "descripcion": "Una mano abierta junto a la mejilla; el índice de la otra toca el rostro.",
+    "instruccion_movimiento": "Acerca la mano siguiendo la flecha."
+  },
+  {
+    "nombre": "Gris",
+    "archivo": "images/colores/gris.png",
+    "con_movimiento": true,
+    "descripcion": "Dedo índice extendido hacia arriba.",
+    "instruccion_movimiento": "Haz un pequeño círculo en el aire, siguiendo la flecha."
+  }
+]

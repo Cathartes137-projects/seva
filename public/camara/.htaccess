@@ -1,0 +1,20 @@
+# =============================================================================
+# SEVA - Aislamiento del módulo de cámara (fase de integración)
+# =============================================================================
+# La CSP global del proyecto bloquea jsDelivr y el acceso a la cámara. Estas
+# reglas se aplican SOLO dentro de /seva/camara/ y no relajan el resto del
+# sitio. La lógica de MediaPipe se conserva sin cambios; los ajustes de
+# detección se harán en la fase dedicada a la cámara.
+# =============================================================================
+
+<IfModule mod_headers.c>
+    # Solo esta carpeta puede solicitar cámara. Micrófono y geolocalización
+    # siguen bloqueados.
+    Header always set Permissions-Policy "camera=(self), microphone=(), geolocation=()"
+
+    # CSP acotada al módulo:
+    #   - jsDelivr: hands.js, camera_utils.js y los binarios wasm del modelo.
+    #   - wasm-unsafe-eval: compilación de WebAssembly de MediaPipe.
+    #   - worker-src blob: workers internos de MediaPipe.
+    Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; script-src 'self' 'unsafe-inline' blob: https://cdn.jsdelivr.net 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: data: https://cdn.jsdelivr.net; worker-src 'self' blob:"
+</IfModule>

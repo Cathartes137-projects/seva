@@ -1,0 +1,142 @@
+[
+  {
+    "palabra": "Morado",
+    "archivo": "img/colores/morado.png",
+    "con_movimiento": true,
+    "descripcion": "Coloca las yemas de los dedos frente a la boca y realiza un movimiento suave de vaivén.",
+    "instruccion_movimiento": "Ondula suavemente los dedos frente a los labios."
+  },
+  {
+    "palabra": "Negro",
+    "archivo": "img/colores/negro.png",
+    "con_movimiento": false,
+    "descripcion": "Apunta con el dedo índice hacia la sien o costado de la frente.",
+    "instruccion_movimiento": ""
+  },
+  {
+    "palabra": "Oscuro",
+    "archivo": "img/colores/oscuro.png",
+    "con_movimiento": true,
+    "descripcion": "Con ambas palmas abiertas hacia el frente, cruza las manos tapando levemente el campo visual.",
+    "instruccion_movimiento": "Mueve ambas manos en semicírculo hacia el centro como oscureciendo."
+  },
+  {
+    "palabra": "Opaco",
+    "archivo": "img/colores/opaco.png",
+    "con_movimiento": true,
+    "descripcion": "Coloca el puño cerrado frente a la boca y realiza dos toques hacia abajo.",
+    "instruccion_movimiento": "Baja la mano en dos tiempos marcados."
+  },
+  {
+    "palabra": "Púrpura",
+    "archivo": "img/colores/purpura.png",
+    "con_movimiento": true,
+    "descripcion": "Frota suavemente el dedo índice doblado o la punta de los dedos sobre la barbilla.",
+    "instruccion_movimiento": "Giro circular leve en la barbilla."
+  },
+  {
+    "palabra": "Plateado",
+    "archivo": "img/colores/plateado.png",
+    "con_movimiento": true,
+    "descripcion": "Con la palma semicerrada frente a la boca, abre la mano suavemente hacia el frente.",
+    "instruccion_movimiento": "Abre los dedos desde la boca proyectando brillo."
+  },
+  {
+    "palabra": "Transparente",
+    "archivo": "img/colores/transparente.png",
+    "con_movimiento": true,
+    "descripcion": "Con ambas manos abiertas al frente, vibra los dedos mientras desciendes los brazos.",
+    "instruccion_movimiento": "Mueve los dedos en olas bajando ambas manos."
+  },
+  {
+    "palabra": "Verde",
+    "archivo": "img/colores/verde.png",
+    "con_movimiento": true,
+    "descripcion": "Forma una V con los dedos índice y medio y realiza un giro circular de muñeca.",
+    "instruccion_movimiento": "Gira la muñeca en círculo en el sentido de las agujas del reloj."
+  },
+  {
+    "palabra": "Color",
+    "archivo": "img/colores/color.png",
+    "con_movimiento": true,
+    "descripcion": "Mueve las yemas de los dedos alternadamente frente a la barbilla.",
+    "instruccion_movimiento": "Ondulación rápida de las yemas rozando suavemente la barbilla."
+  },
+  {
+    "palabra": "Amarillo",
+    "archivo": "img/colores/amarillo.png",
+    "con_movimiento": true,
+    "descripcion": "Extiende la mano derecha abierta hacia el frente y mueve los dedos como rayos de sol.",
+    "instruccion_movimiento": "Vibra los dedos de un lado a otro con la palma al frente."
+  },
+  {
+    "palabra": "Azul",
+    "archivo": "img/colores/azul.png",
+    "con_movimiento": true,
+    "descripcion": "Forma la seña de la letra Y o meñique extendido y sacude la mano lateralmente.",
+    "instruccion_movimiento": "Movimiento oscilante de lado a lado con el pulgar o meñique hacia arriba."
+  },
+  {
+    "palabra": "Anaranjado",
+    "archivo": "img/colores/anaranjado.png",
+    "con_movimiento": true,
+    "descripcion": "Coloca la mano cerca de la mejilla o lóbulo de la oreja simulando exprimir una naranja.",
+    "instruccion_movimiento": "Abre y cierra el puño dos veces cerca del rostro."
+  },
+  {
+    "palabra": "Blanco",
+    "archivo": "img/colores/blanco.png",
+    "con_movimiento": true,
+    "descripcion": "Señala tu diente o rostro y luego desliza el dedo hacia el pecho en diagonal.",
+    "instruccion_movimiento": "Traza una línea diagonal desde la mejilla hacia el pecho."
+  },
+  {
+    "palabra": "Brillante",
+    "archivo": "img/colores/brillante.png",
+    "con_movimiento": true,
+    "descripcion": "Con ambas manos a la altura de los hombros, abre y vibra los dedos subiendo hacia afuera.",
+    "instruccion_movimiento": "Expande las manos hacia afuera haciendo centelleo con los dedos."
+  },
+  {
+    "palabra": "Café",
+    "archivo": "img/colores/cafe.png",
+    "con_movimiento": false,
+    "descripcion": "Forma una C con el índice y pulgar apoyándola contra la mejilla.",
+    "instruccion_movimiento": ""
+  },
+  {
+    "palabra": "Claro",
+    "archivo": "img/colores/claro.png",
+    "con_movimiento": true,
+    "descripcion": "Inicia con las manos cerradas al pecho y ábrelas hacia arriba y afuera con las palmas abiertas.",
+    "instruccion_movimiento": "Abre las palmas hacia arriba expandiendo luz."
+  },
+  {
+    "palabra": "Colorear",
+    "archivo": "img/colores/colorear.png",
+    "con_movimiento": true,
+    "descripcion": "Con el brazo izquierdo extendido, simula colorear o frotar con el índice derecho de arriba a abajo.",
+    "instruccion_movimiento": "Movimiento de vaivén vertical con el dedo índice."
+  },
+  {
+    "palabra": "Dorado",
+    "archivo": "img/colores/dorado.png",
+    "con_movimiento": true,
+    "descripcion": "Señala la oreja (arete de oro) y luego desliza la mano hacia el frente en onda.",
+    "instruccion_movimiento": "Ondula la mano hacia adelante con soltura."
+  },
+  {
+    "palabra": "Fosforescente",
+    "archivo": "img/colores/fosforescente.png",
+    "con_movimiento": true,
+    "descripcion": "Toca suavemente cerca de los ojos con los índices y extiéndelos hacia afuera como luces.",
+    "instruccion_movimiento": "Proyecta los dedos hacia adelante como destellos."
+  },
+  {
+    "palabra": "Gris",
+    "archivo": "img/colores/gris.png",
+    "con_movimiento": true,
+    "descripcion": "Apunta con el índice hacia arriba cerca de la frente y realiza un pequeño giro circular.",
+    "instruccion_movimiento": "Giro circular horizontal sobre la cabeza."
+  }
+]

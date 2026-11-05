@@ -1,0 +1,165 @@
+[
+  {
+    "nombre": "Hola informal",
+    "archivo": "images/senas/hola-informal.png",
+    "con_movimiento": true,
+    "descripcion": "Mano cerca de la frente con el índice extendido.",
+    "instruccion_movimiento": "Haz un pequeño arco hacia adelante."
+  },
+  {
+    "nombre": "Invitar",
+    "archivo": "images/senas/invitar.png",
+    "con_movimiento": true,
+    "descripcion": "Manos planas con las palmas hacia arriba.",
+    "instruccion_movimiento": "Tráelas hacia el cuerpo."
+  },
+  {
+    "nombre": "Lo siento",
+    "archivo": "images/senas/lo-siento.png",
+    "con_movimiento": true,
+    "descripcion": "Mano plana con los dedos juntos sobre el pecho.",
+    "instruccion_movimiento": "Haz un suave círculo sobre el pecho."
+  },
+  {
+    "nombre": "Nombre",
+    "archivo": "images/senas/nombre.png",
+    "con_movimiento": true,
+    "descripcion": "Dedo índice extendido.",
+    "instruccion_movimiento": "Haz un movimiento corto hacia abajo."
+  },
+  {
+    "nombre": "Preguntar",
+    "archivo": "images/senas/preguntar.png",
+    "con_movimiento": true,
+    "descripcion": "Dedos índices cerca de la boca.",
+    "instruccion_movimiento": "Muévelos ligeramente hacia afuera y abajo."
+  },
+  {
+    "nombre": "Por favor",
+    "archivo": "images/senas/por-favor.png",
+    "con_movimiento": false,
+    "descripcion": "Palma abierta con los dedos juntos, sobre el centro del pecho."
+  },
+  {
+    "nombre": "Qué gusto",
+    "archivo": "images/senas/que-gusto.png",
+    "con_movimiento": true,
+    "descripcion": "Una mano plana con la palma hacia arriba.",
+    "instruccion_movimiento": "Se mueve hacia adentro y arriba, encontrando la otra mano."
+  },
+  {
+    "nombre": "Saludo",
+    "archivo": "images/senas/saludo.png",
+    "con_movimiento": true,
+    "descripcion": "Palmas cara a cara con los dedos entrelazados.",
+    "instruccion_movimiento": "Gira las manos suavemente."
+  },
+  {
+    "nombre": "Seña",
+    "archivo": "images/senas/sena.png",
+    "con_movimiento": false,
+    "descripcion": "Manos ahuecadas, cerca una de la otra."
+  },
+  {
+    "nombre": "Soy de",
+    "archivo": "images/senas/soy-de.png",
+    "con_movimiento": true,
+    "descripcion": "Dedo índice apoyado contra el pecho.",
+    "instruccion_movimiento": "El otro índice se mueve hacia afuera."
+  },
+  {
+    "nombre": "Vine aquí",
+    "archivo": "images/senas/vine-aqui.png",
+    "con_movimiento": true,
+    "descripcion": "Palmas hacia abajo.",
+    "instruccion_movimiento": "Bájalas deliberadamente al nivel de la cintura y para."
+  },
+  {
+    "nombre": "Vivir",
+    "archivo": "images/senas/vivir.png",
+    "con_movimiento": true,
+    "descripcion": "Manos planas frente al cuerpo.",
+    "instruccion_movimiento": "Suben del pecho a la barbilla."
+  },
+  {
+    "nombre": "Presentación",
+    "archivo": "images/senas/presentacion.png",
+    "con_movimiento": true,
+    "descripcion": "Palmas planas, cara a cara, a la altura de la cintura.",
+    "instruccion_movimiento": "Bájalas."
+  },
+  {
+    "nombre": "Adiós",
+    "archivo": "images/senas/adios.png",
+    "con_movimiento": true,
+    "descripcion": "Mano plana cerca de la frente, con la palma hacia el cuerpo.",
+    "instruccion_movimiento": "Saluda de lado a lado."
+  },
+  {
+    "nombre": "Apellido",
+    "archivo": "images/senas/apellido.png",
+    "con_movimiento": true,
+    "descripcion": "Dedos índice y medio extendidos.",
+    "instruccion_movimiento": "Toca la frente dos veces."
+  },
+  {
+    "nombre": "Bienvenido",
+    "archivo": "images/senas/bienvenido.png",
+    "con_movimiento": false,
+    "descripcion": "Una mano plana con la palma hacia arriba, junto a la otra mano plana con la palma hacia arriba."
+  },
+  {
+    "nombre": "Buenos días",
+    "archivo": "images/senas/buenos-dias.png",
+    "con_movimiento": true,
+    "descripcion": "Mano plana cerca de la barbilla.",
+    "instruccion_movimiento": "Bájala para unirse con la otra mano plana."
+  },
+  {
+    "nombre": "Nosotros",
+    "archivo": "images/senas/nosotros.png",
+    "con_movimiento": true,
+    "descripcion": "Manos ahuecadas con los dedos entrelazados, frente al pecho.",
+    "instruccion_movimiento": "Gira las manos."
+  },
+  {
+    "nombre": "Buenas tardes",
+    "archivo": "images/senas/buenas-tardes.png",
+    "con_movimiento": true,
+    "descripcion": "Mano plana cerca de la barbilla.",
+    "instruccion_movimiento": "Bájala para unirse con la otra mano plana a la altura del pecho."
+  },
+  {
+    "nombre": "Conocerse",
+    "archivo": "images/senas/conocerse.png",
+    "con_movimiento": false,
+    "descripcion": "Manos planas y ahuecadas con las palmas frente a frente."
+  },
+  {
+    "nombre": "Nos vemos",
+    "archivo": "images/senas/nos-vemos.png",
+    "con_movimiento": false,
+    "descripcion": "Manos cerca del pecho, palmas cara a cara, dedos ahuecados."
+  },
+  {
+    "nombre": "Buenas noches",
+    "archivo": "images/senas/buenas-noches.png",
+    "con_movimiento": true,
+    "descripcion": "Dedos índice y medio extendidos de una mano, sobre la otra mano plana y ahuecada.",
+    "instruccion_movimiento": "Baja los dedos hacia la otra mano."
+  },
+  {
+    "nombre": "Gracias",
+    "archivo": "images/senas/gracias.png",
+    "con_movimiento": true,
+    "descripcion": "Mano plana con los dedos juntos, junto a la barbilla.",
+    "instruccion_movimiento": "Muévela hacia adelante y abajo desde la barbilla."
+  },
+  {
+    "nombre": "Hola formal",
+    "archivo": "images/senas/hola-formal.png",
+    "con_movimiento": true,
+    "descripcion": "Mano plana cerca de la frente, con la palma hacia el cuerpo.",
+    "instruccion_movimiento": "Haz un arco fuerte hacia adelante."
+  }
+]

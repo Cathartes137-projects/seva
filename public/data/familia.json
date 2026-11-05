@@ -1,0 +1,140 @@
+[
+  {
+    "palabra": "Mujer",
+    "archivo": "img/familia/mujer.png",
+    "con_movimiento": true,
+    "descripcion": "Una mano junto a la mejilla baja en arco siguiendo la flecha; la otra queda en puño al frente."
+  },
+  {
+    "palabra": "Nieto - Nieta",
+    "archivo": "img/familia/nieto_nieta.png",
+    "con_movimiento": true,
+    "descripcion": "Mano cerca de la boca/barbilla que se desplaza en curva hacia afuera (flecha)."
+  },
+  {
+    "palabra": "Novio - Novia",
+    "archivo": "img/familia/novio_novia.png",
+    "con_movimiento": false,
+    "descripcion": "Ambos puños frente al pecho, uno junto al otro, tocándose."
+  },
+  {
+    "palabra": "Nuera",
+    "archivo": "img/familia/nuera.png",
+    "con_movimiento": true,
+    "descripcion": "Puño levantado a un lado del cuerpo con un pequeño giro de muñeca."
+  },
+  {
+    "palabra": "Papá",
+    "archivo": "img/familia/papa.png",
+    "con_movimiento": false,
+    "descripcion": "Dedo índice apoyado sobre los labios, cerca de la nariz."
+  },
+  {
+    "palabra": "Padrastro",
+    "archivo": "img/familia/padrastro.png",
+    "con_movimiento": true,
+    "descripcion": "1) Índice junto a la nariz (papá). 2) La otra mano gira hacia abajo en arco."
+  },
+  {
+    "palabra": "Primo - Prima",
+    "archivo": "img/familia/primo_prima.png",
+    "con_movimiento": true,
+    "descripcion": "Manos frente al pecho; una baja y toca la otra siguiendo la flecha."
+  },
+  {
+    "palabra": "Sobrino - Sobrina",
+    "archivo": "img/familia/sobrino_sobrina.png",
+    "con_movimiento": true,
+    "descripcion": "Manos frente al pecho; una forma un círculo con los dedos sobre la otra."
+  },
+  {
+    "palabra": "Suegra - Suegro",
+    "archivo": "img/familia/suegra_suegro.png",
+    "con_movimiento": true,
+    "descripcion": "1) Mano abierta, palma al frente, a un lado de la cara. 2) La otra mano en pulgar, abajo."
+  },
+  {
+    "palabra": "Tío - Tía",
+    "archivo": "img/familia/tio_tia.png",
+    "con_movimiento": false,
+    "descripcion": "Mano plana sobre el pecho y la otra mano debajo, a la altura del abdomen."
+  },
+  {
+    "palabra": "Yerno",
+    "archivo": "img/familia/yerno.png",
+    "con_movimiento": false,
+    "descripcion": "Mano en forma de «Y» (pulgar y meñique extendidos) a la altura del hombro."
+  },
+  {
+    "palabra": "Familia",
+    "archivo": "img/familia/familia.png",
+    "con_movimiento": true,
+    "descripcion": "Mano en «L» (índice y pulgar) que se mueve de lado a lado (flecha ↔)."
+  },
+  {
+    "palabra": "Abuelo",
+    "archivo": "img/familia/abuelo.png",
+    "con_movimiento": true,
+    "descripcion": "Mano junto a la mejilla/oreja con un movimiento corto y suave."
+  },
+  {
+    "palabra": "Amigo",
+    "archivo": "img/familia/amigo.png",
+    "con_movimiento": true,
+    "descripcion": "Dos manos: la 1 baja con la flecha y la 2 queda debajo, encontrándose."
+  },
+  {
+    "palabra": "Bebé",
+    "archivo": "img/familia/bebe.png",
+    "con_movimiento": true,
+    "descripcion": "Brazos cruzados frente al pecho, meciéndolos de lado a lado con la cabeza inclinada."
+  },
+  {
+    "palabra": "Cuñado",
+    "archivo": "img/familia/cunado.png",
+    "con_movimiento": true,
+    "descripcion": "Mano elevada con los dedos como pellizco, girando suavemente."
+  },
+  {
+    "palabra": "Esposo - Esposa",
+    "archivo": "img/familia/esposo_esposa.png",
+    "con_movimiento": false,
+    "descripcion": "Una mano con los cinco dedos abiertos al lado del rostro."
+  },
+  {
+    "palabra": "Hermano - Hermana",
+    "archivo": "img/familia/hermano_hermana.png",
+    "con_movimiento": true,
+    "descripcion": "Ambas manos horizontales frente al abdomen, con un movimiento corto lateral."
+  },
+  {
+    "palabra": "Hijo - Hija",
+    "archivo": "img/familia/hijo_hija.png",
+    "con_movimiento": true,
+    "descripcion": "Mano en la boca que baja en curva hacia afuera (flecha)."
+  },
+  {
+    "palabra": "Hombre",
+    "archivo": "img/familia/hombre.png",
+    "con_movimiento": false,
+    "descripcion": "Mano junto a la nariz que se desplaza hacia el lado de la flecha."
+  },
+  {
+    "palabra": "Mamá",
+    "archivo": "img/familia/mama.png",
+    "con_movimiento": false,
+    "descripcion": "Mano abierta apoyada sobre el pecho."
+  },
+  {
+    "palabra": "Madrastra",
+    "archivo": "img/familia/madrastra.png",
+    "con_movimiento": true,
+    "descripcion": "Brazo cruzado sobre el pecho; la otra mano marca el 2 y gira siguiendo la flecha."
+  },
+  {
+    "palabra": "Madrina - Padrino",
+    "archivo": "img/familia/madrina_padrino.png",
+    "con_movimiento": false,
+    "descripcion": "Mano cerca de la mejilla con un toque suave."
+  }
+]
