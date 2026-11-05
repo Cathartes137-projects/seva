@@ -6,7 +6,7 @@
 -- Idempotente: puede ejecutarse varias veces sin error (MariaDB 10.4+).
 --
 -- Uso:
---   mysql -u root -h 127.0.0.1 -P 3306 seva_educativo < DataBase/migrations/004_vocabulario_lsc.sql
+--   mysql -u root -h 127.0.0.1 -P 3306 sevaeducativo < DataBase/migrations/004_vocabulario_lsc.sql
 -- =============================================================================
 
 ALTER TABLE `vocabulario_senas`

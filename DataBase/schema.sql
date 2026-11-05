@@ -5,9 +5,9 @@
 -- Compatible con MariaDB 10.4+ / MySQL 8.0+
 -- =============================================================================
 -- Uso:
---   mysql -u root -h 127.0.0.1 -e "CREATE DATABASE seva_educativo CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
---   mysql -u root -h 127.0.0.1 seva_educativo < DataBase/schema.sql
---   mysql -u root -h 127.0.0.1 seva_educativo < DataBase/seed_demo.sql   -- datos de demostración
+--   mysql -u root -h 127.0.0.1 -e "CREATE DATABASE sevaeducativo CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
+--   mysql -u root -h 127.0.0.1 sevaeducativo < DataBase/schema.sql
+--   mysql -u root -h 127.0.0.1 sevaeducativo < DataBase/seed_demo.sql   -- datos de demostración
 -- =============================================================================
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";

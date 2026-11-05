@@ -76,7 +76,7 @@
 | `docs/PLAN_REMEDIACION.md` | Plan de remediación y criterios de aceptación |
 | `docs/AUDITORIA/*` | Esta auditoría |
 | `docs/repomix-output.xml` | Volcado histórico del código (artefacto de documentación) |
-| `docs/seva_educativo.json` | Metadatos del proyecto |
+| `docs/sevaeducativo.json` | Metadatos del proyecto |
 | `docs/.antigravityrules.md`, `docs/README.md` | Reglas de trabajo y descripción |
 
 ---
@@ -108,7 +108,7 @@ flowchart TD
         CON[conexion.php]
     end
 
-    DB[(MariaDB<br/>seva_educativo)]
+    DB[(MariaDB<br/>sevaeducativo)]
 
     CON --> DB
     SEG --> CON

@@ -1,0 +1,44 @@
+[
+  {
+    "palabra": "Lunes",
+    "archivo": "img/dias/lunes.png",
+    "con_movimiento": true,
+    "descripcion": "Mano en «L» que se mueve de lado a lado (flecha ↔)."
+  },
+  {
+    "palabra": "Martes",
+    "archivo": "img/dias/martes.png",
+    "con_movimiento": true,
+    "descripcion": "Mano frente al hombro que baja siguiendo la flecha."
+  },
+  {
+    "palabra": "Miércoles",
+    "archivo": "img/dias/miercoles.png",
+    "con_movimiento": true,
+    "descripcion": "Mano que gira en círculo horizontal sobre la otra."
+  },
+  {
+    "palabra": "Jueves",
+    "archivo": "img/dias/jueves.png",
+    "con_movimiento": true,
+    "descripcion": "Una mano con dedos en pinza gira la muñeca; la otra queda abajo."
+  },
+  {
+    "palabra": "Viernes",
+    "archivo": "img/dias/viernes.png",
+    "con_movimiento": true,
+    "descripcion": "Mano en «V» (índice y medio) que se mueve de lado a lado (↔)."
+  },
+  {
+    "palabra": "Sábado",
+    "archivo": "img/dias/sabado.png",
+    "con_movimiento": false,
+    "descripcion": "Mano horizontal con el índice apuntando hacia afuera, cruzando el pecho."
+  },
+  {
+    "palabra": "Domingo",
+    "archivo": "img/dias/domingo.png",
+    "con_movimiento": false,
+    "descripcion": "Mano frente a la cara/nariz, con un gesto de cruz hacia la frente."
+  }
+]

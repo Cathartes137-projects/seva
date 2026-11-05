@@ -47,14 +47,14 @@ El cliente `mysql.exe` requiere `-h 127.0.0.1` (no resuelve `localhost` por IPv6
 | `conexion.php` | 20 líneas | Conexión PDO |
 | `db.php` | 16 líneas | **Conexión mysqli legacy (archivo muerto)** |
 | `css/estilos.css` | 34 variables CSS | Design tokens globales |
-| `DataBase/seva_educativo.sql` | 226 líneas | Volcado de esquema y datos |
+| `DataBase/sevaeducativo.sql` | 226 líneas | Volcado de esquema y datos |
 | `img/interfaz/logo_seva.jpg` | 119 KB | Logotipo |
 | `img/lecciones/*.jpg` | 4 archivos | alfabeto, colores, numeros, saludos |
 | `docs/MEMORIA_PROYECTO.md` | 9506 B | Fuente de verdad (corrupta) |
 | `docs/.antigravityrules.md` | 1683 B | Reglas de trabajo |
 | `docs/PLAN_REMEDIACION.md` | 268 líneas | Plan aprobado |
 | `docs/repomix-output.xml` | 52 KB | Duplicación de código |
-| `docs/seva_educativo.json` | 4748 B | Metadatos |
+| `docs/sevaeducativo.json` | 4748 B | Metadatos |
 | `docs/README.md` | 2 líneas | Descripción mínima |
 
 ### 2.2 Grafo de dependencias PHP
@@ -88,7 +88,7 @@ Todas las páginas llaman `session_start()` con guarda `session_status() === PHP
 
 ---
 
-## 3. Estado de la base de datos (seva_educativo)
+## 3. Estado de la base de datos (sevaeducativo)
 
 ### 3.1 Tablas y volumen
 

@@ -8,7 +8,7 @@
 --
 -- Uso:
 --   mysql -u root -h 127.0.0.1 -P 3306 --default-character-set=utf8mb4 \
---     seva_educativo < DataBase/migrations/005_leccion_saludos_lsc.sql
+--     sevaeducativo < DataBase/migrations/005_leccion_saludos_lsc.sql
 -- =============================================================================
 
 START TRANSACTION;

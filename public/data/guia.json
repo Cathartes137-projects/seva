@@ -1,0 +1,146 @@
+[
+  {
+    "palabra": "Hola informal",
+    "archivo": "img/guia/hola_informal.png",
+    "con_movimiento": true,
+    "descripcion": "Coloca la mano cerca de la frente, con el índice extendido, y haz un pequeño arco hacia adelante."
+  },
+  {
+    "palabra": "Invitar",
+    "archivo": "img/guia/invitar.png",
+    "con_movimiento": true,
+    "descripcion": "Con ambas manos planas y las palmas hacia arriba, tráelas hacia el cuerpo."
+  },
+  {
+    "palabra": "Lo siento",
+    "archivo": "img/guia/lo_siento.png",
+    "con_movimiento": true,
+    "descripcion": "Con la mano plana y los dedos juntos, haz un suave círculo sobre el pecho."
+  },
+  {
+    "palabra": "Nombre",
+    "archivo": "img/guia/nombre.png",
+    "con_movimiento": true,
+    "descripcion": "Con el dedo índice extendido, haz un movimiento corto hacia abajo."
+  },
+  {
+    "palabra": "Preguntar",
+    "archivo": "img/guia/preguntar.png",
+    "con_movimiento": true,
+    "descripcion": "Lleva los dedos índices cerca de la boca y muévelos ligeramente hacia afuera y abajo."
+  },
+  {
+    "palabra": "Por favor",
+    "archivo": "img/guia/por_favor.png",
+    "con_movimiento": false,
+    "descripcion": "Apoya la palma abierta, con los dedos juntos, sobre el centro del pecho."
+  },
+  {
+    "palabra": "Qué gusto",
+    "archivo": "img/guia/que_gusto.png",
+    "con_movimiento": true,
+    "descripcion": "Con la mano plana y la palma hacia arriba, muévela hacia adentro y arriba, encontrando la otra mano."
+  },
+  {
+    "palabra": "Saludo",
+    "archivo": "img/guia/saludo.png",
+    "con_movimiento": true,
+    "descripcion": "Coloca las palmas cara a cara con los dedos entrelazados y gira suavemente las manos."
+  },
+  {
+    "palabra": "Seña",
+    "archivo": "img/guia/sena.png",
+    "con_movimiento": false,
+    "descripcion": "Forma las manos ahuecadas y colócalas cerca una de la otra, frente al pecho."
+  },
+  {
+    "palabra": "Soy de",
+    "archivo": "img/guia/soy_de.png",
+    "con_movimiento": true,
+    "descripcion": "Con el dedo índice contra el pecho, mueve el otro índice hacia afuera."
+  },
+  {
+    "palabra": "Vine aquí",
+    "archivo": "img/guia/vine_aqui.png",
+    "con_movimiento": true,
+    "descripcion": "Con las palmas hacia abajo, baja deliberadamente ambas manos hasta el nivel de la cintura y detente."
+  },
+  {
+    "palabra": "Vivir",
+    "archivo": "img/guia/vivir.png",
+    "con_movimiento": true,
+    "descripcion": "Con ambas manos planas frente al cuerpo, súbelas desde el pecho hasta la barbilla."
+  },
+  {
+    "palabra": "Presentación",
+    "archivo": "img/guia/presentacion.png",
+    "con_movimiento": true,
+    "descripcion": "Con las palmas planas, cara a cara, a la altura de la cintura, baja ambas manos."
+  },
+  {
+    "palabra": "Adiós",
+    "archivo": "img/guia/adios.png",
+    "con_movimiento": true,
+    "descripcion": "Con la mano plana cerca de la frente y la palma hacia el cuerpo, saluda de lado a lado."
+  },
+  {
+    "palabra": "Apellido",
+    "archivo": "img/guia/apellido.png",
+    "con_movimiento": true,
+    "descripcion": "Con los dedos índice y medio extendidos, toca la frente dos veces."
+  },
+  {
+    "palabra": "Bienvenido",
+    "archivo": "img/guia/bienvenido.png",
+    "con_movimiento": false,
+    "descripcion": "Con una mano plana y la palma hacia arriba, únela junto a la otra mano plana."
+  },
+  {
+    "palabra": "Buenos días",
+    "archivo": "img/guia/buenos_dias.png",
+    "con_movimiento": true,
+    "descripcion": "Con la mano plana cerca de la barbilla, baja para unirte con la otra mano plana."
+  },
+  {
+    "palabra": "Nosotros",
+    "archivo": "img/guia/nosotros.png",
+    "con_movimiento": true,
+    "descripcion": "Con ambas manos ahuecadas y los dedos entrelazados, gíralas frente al pecho."
+  },
+  {
+    "palabra": "Buenas tardes",
+    "archivo": "img/guia/buenas_tardes.png",
+    "con_movimiento": true,
+    "descripcion": "Con la mano plana cerca de la barbilla, baja para unirte con la otra mano plana a la altura del pecho."
+  },
+  {
+    "palabra": "Conocerse",
+    "archivo": "img/guia/conocerse.png",
+    "con_movimiento": false,
+    "descripcion": "Con ambas manos planas y ahuecadas, coloca las palmas frente a frente."
+  },
+  {
+    "palabra": "Nos vemos",
+    "archivo": "img/guia/nos_vemos.png",
+    "con_movimiento": false,
+    "descripcion": "Con las manos ahuecadas cerca del pecho, coloca las palmas cara a cara."
+  },
+  {
+    "palabra": "Buenas noches",
+    "archivo": "img/guia/buenas_noches.png",
+    "con_movimiento": true,
+    "descripcion": "Con los dedos índice y medio extendidos, baja ambas manos hacia abajo y hacia la barbilla."
+  },
+  {
+    "palabra": "Gracias",
+    "archivo": "img/guia/gracias.png",
+    "con_movimiento": true,
+    "descripcion": "Con la mano plana y los dedos juntos, muévela hacia adelante y abajo desde la barbilla."
+  },
+  {
+    "palabra": "Hola formal",
+    "archivo": "img/guia/hola_formal.png",
+    "con_movimiento": true,
+    "descripcion": "Con la mano plana cerca de la frente y la palma hacia el cuerpo, haz un arco fuerte hacia el costado (como un saludo militar)."
+  }
+]

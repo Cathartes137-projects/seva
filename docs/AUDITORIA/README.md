@@ -107,7 +107,7 @@ Get-ChildItem *.php | ForEach-Object { & 'C:\xampp\php\php.exe' -l $_.FullName }
 curl.exe -I http://localhost/seva/login.php
 
 # Base de datos
-mysql -u root seva_educativo -e "SHOW TABLES;"
+mysql -u root sevaeducativo -e "SHOW TABLES;"
 ```
 
 Las pruebas completas, con comandos y salidas esperadas, están en

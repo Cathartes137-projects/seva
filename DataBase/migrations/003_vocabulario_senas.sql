@@ -6,7 +6,7 @@
 -- Idempotente: puede ejecutarse varias veces sin error.
 --
 -- Uso:
---   mysql -u root -h 127.0.0.1 seva_educativo < DataBase/migrations/003_vocabulario_senas.sql
+--   mysql -u root -h 127.0.0.1 sevaeducativo < DataBase/migrations/003_vocabulario_senas.sql
 --   mysql -u root -h 127.0.0.1 seva_educativo_test < DataBase/migrations/003_vocabulario_senas.sql
 --
 -- Nota: esta migración solo crea la estructura. Los datos de demostración se

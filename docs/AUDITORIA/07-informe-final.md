@@ -4,7 +4,7 @@
 **Fase:** 7 (D20) · **Fecha:** 2026-10-21
 **Rama:** `fix/auditoria-defectos`
 **Referencia inicial:** `docs/AUDITORIA/00-linea-base.md` (Fase 0, estado PRE)
-**Referencia final:** árbol de trabajo auditado + base `seva_educativo` (MariaDB 10.4.32)
+**Referencia final:** árbol de trabajo auditado + base `sevaeducativo` (MariaDB 10.4.32)
 
 ---
 

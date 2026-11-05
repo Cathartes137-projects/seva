@@ -3,7 +3,7 @@
 **Proyecto:** SEVA — Sistema Educativo de Lengua de Señas
 **Fase:** 7 (D20) · **Fecha:** 2026-10-21
 **Fuente funcional:** `docs/MEMORIA_PROYECTO.md`
-**Fuente técnica:** código en `35747b6` + `seva_educativo` (MariaDB 10.4.32)
+**Fuente técnica:** código en `35747b6` + `sevaeducativo` (MariaDB 10.4.32)
 
 > **Nota sobre la fuente:** la MEMORIA está parcialmente corrupta (D19: celdas vacías,
 > texto de terminal y referencias sin nombre). Las filas se reconstruyeron por sección
@@ -105,7 +105,7 @@ cd C:\xampp\htdocs\seva
 # Código citado
 Select-String -Path *.php -Pattern 'seguridad_validar_csrf|password_needs_rehash|aria-pressed'
 # Modelo de datos
-mysql -u root seva_educativo -e "SHOW TABLES; SELECT * FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA='seva_educativo' AND REFERENCED_TABLE_NAME IS NOT NULL;"
+mysql -u root sevaeducativo -e "SHOW TABLES; SELECT * FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA='sevaeducativo' AND REFERENCED_TABLE_NAME IS NOT NULL;"
 # Conteo de evidencias
 (Select-String -Path *.php,css\*.css -Pattern ':focus-visible' -AllMatches | ForEach-Object { $_.Matches.Count } | Measure-Object -Sum).Sum
 ```

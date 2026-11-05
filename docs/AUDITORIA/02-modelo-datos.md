@@ -2,7 +2,7 @@
 
 **Proyecto:** SEVA — Sistema Educativo de Lengua de Señas
 **Fase:** 7 (D20) · **Fecha:** 2026-10-21
-**Motor:** MariaDB 10.4.32 · **Base:** `seva_educativo`
+**Motor:** MariaDB 10.4.32 · **Base:** `sevaeducativo`
 **Método:** reconstrucción desde `information_schema` y `SHOW CREATE TABLE`, contrastada con `DataBase/schema.sql`
 
 ---
@@ -270,10 +270,10 @@ WHERE u.id_usuario IS NULL;  -- 0
 ```sql
 SHOW CREATE TABLE usuarios;
 SELECT TABLE_NAME, ENGINE, TABLE_COLLATION, TABLE_ROWS
-FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'seva_educativo';
+FROM information_schema.TABLES WHERE TABLE_SCHEMA = 'sevaeducativo';
 SELECT TABLE_NAME, CONSTRAINT_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME
 FROM information_schema.KEY_COLUMN_USAGE
-WHERE TABLE_SCHEMA = 'seva_educativo' AND REFERENCED_TABLE_NAME IS NOT NULL;
+WHERE TABLE_SCHEMA = 'sevaeducativo' AND REFERENCED_TABLE_NAME IS NOT NULL;
 SELECT TABLE_NAME, INDEX_NAME, COLUMN_NAME
-FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = 'seva_educativo';
+FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = 'sevaeducativo';
 ```

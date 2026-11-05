@@ -86,7 +86,7 @@
 | Secreto en el árbol actual | `Select-String -Path *.php,*.sql,DataBase\*.sql -Pattern 'admin12358'` | **0 coincidencias** |
 | Secreto en el historial | `git log --oneline -S'admin12358' --all` | Presente en 5 commits (`b2dd24a`, `649c2ea`, `627afd5`, `13c4de4`, `b136804`) |
 | Archivo vulnerable eliminado | `Test-Path db.php` | `False` |
-| Dump vulnerable eliminado | `git ls-files DataBase/seva_educativo.sql` | Sin resultados |
+| Dump vulnerable eliminado | `git ls-files DataBase/sevaeducativo.sql` | Sin resultados |
 | Seed actual | `DataBase/seed_demo.sql:41-42` | Bcrypt; `admin@example.com / Seva.Admin.2026` |
 
 ### 4.2 Decisión aplicada (confirmada en el plan)

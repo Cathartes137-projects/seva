@@ -1,0 +1,170 @@
+[
+  {
+    "letra": "A",
+    "archivo": "img/alfabeto/letra_A.png",
+    "con_movimiento": false,
+    "descripcion": "Cierra la mano formando un puño y extiende el pulgar hacia un costado, pegado al lado de los demás dedos (no hacia arriba)."
+  },
+  {
+    "letra": "B",
+    "archivo": "img/alfabeto/letra_B.png",
+    "con_movimiento": false,
+    "descripcion": "Extiende los cuatro dedos juntos y rectos hacia arriba, con la palma hacia el frente, y dobla el pulgar cruzándolo por delante de la palma."
+  },
+  {
+    "letra": "C",
+    "archivo": "img/alfabeto/letra_C.png",
+    "con_movimiento": false,
+    "descripcion": "Curva todos los dedos y el pulgar formando la silueta de la letra C, dejando un espacio abierto entre el pulgar y el índice."
+  },
+  {
+    "letra": "D",
+    "archivo": "img/alfabeto/letra_D.png",
+    "con_movimiento": false,
+    "descripcion": "Levanta el dedo índice estirado hacia arriba y une la punta del pulgar con las puntas del anular y meñique, formando un pequeño círculo debajo del índice."
+  },
+  {
+    "letra": "E",
+    "archivo": "img/alfabeto/letra_E.png",
+    "con_movimiento": false,
+    "descripcion": "Dobla los cuatro dedos hacia la palma (como un puño flojo) dejando las puntas visibles por arriba, y coloca el pulgar recogido contra ellos."
+  },
+  {
+    "letra": "F",
+    "archivo": "img/alfabeto/letra_F.png",
+    "con_movimiento": false,
+    "descripcion": "Levanta el dedo índice estirado; dobla el pulgar y los dedos medio, anular y meñique hacia la palma, apoyando el pulgar por delante de ellos."
+  },
+  {
+    "letra": "G",
+    "archivo": "img/alfabeto/letra_G.png",
+    "con_movimiento": true,
+    "descripcion": "Extiende el dedo índice apuntando hacia el costado (no hacia arriba), con los demás dedos cerrados. Realiza un pequeño giro de muñeca hacia arriba, como indica la flecha.",
+    "instruccion_movimiento": "Gira levemente la punta del índice hacia arriba/afuera."
+  },
+  {
+    "letra": "H",
+    "archivo": "img/alfabeto/letra_H.png",
+    "con_movimiento": true,
+    "descripcion": "Extiende el índice y el medio juntos hacia el costado, con el pulgar y los demás dedos recogidos. Baja levemente la mano siguiendo la dirección de la flecha.",
+    "instruccion_movimiento": "Mueve la mano hacia abajo en un pequeño arco, sin separar los dedos."
+  },
+  {
+    "letra": "I",
+    "archivo": "img/alfabeto/letra_I.png",
+    "con_movimiento": false,
+    "descripcion": "Cierra los dedos índice, medio y anular hacia la palma, y extiende el meñique y el pulgar hacia afuera."
+  },
+  {
+    "letra": "J",
+    "archivo": "img/alfabeto/letra_J.png",
+    "con_movimiento": true,
+    "descripcion": "Extiende el dedo índice hacia abajo con los demás dedos cerrados y el pulgar apoyado al costado. Traza en el aire la forma de una letra J.",
+    "instruccion_movimiento": "Dibuja con el índice el trazo de una J: baja, gira hacia la derecha y sube."
+  },
+  {
+    "letra": "K",
+    "archivo": "img/alfabeto/letra_K.png",
+    "con_movimiento": false,
+    "descripcion": "Extiende el índice hacia arriba y el pulgar hacia el costado, formando una escuadra; los demás dedos permanecen cerrados."
+  },
+  {
+    "letra": "L",
+    "archivo": "img/alfabeto/letra_L.png",
+    "con_movimiento": false,
+    "descripcion": "Extiende el índice hacia arriba y el pulgar hacia el costado formando una 'L', con el medio, anular y meñique doblados hacia la palma."
+  },
+  {
+    "letra": "M",
+    "archivo": "img/alfabeto/letra_M.png",
+    "con_movimiento": false,
+    "descripcion": "Cierra la mano en puño y esconde el pulgar debajo de los dedos índice, medio y anular."
+  },
+  {
+    "letra": "N",
+    "archivo": "img/alfabeto/letra_N.png",
+    "con_movimiento": false,
+    "descripcion": "Cierra la mano en puño y esconde el pulgar debajo únicamente de los dedos índice y medio (diferencia con la M, que cubre tres dedos)."
+  },
+  {
+    "letra": "Ñ",
+    "archivo": "img/alfabeto/letra_Ñ.png",
+    "con_movimiento": true,
+    "descripcion": "Forma la misma mano que la N (puño con el pulgar bajo el índice y el medio) y realiza un movimiento ondulado de lado a lado, imitando la virgulilla (~) de la Ñ.",
+    "instruccion_movimiento": "Mueve la muñeca en zigzag/ondulación de izquierda a derecha."
+  },
+  {
+    "letra": "O",
+    "archivo": "img/alfabeto/letra_O.png",
+    "con_movimiento": false,
+    "descripcion": "Une la punta del pulgar con las puntas de todos los demás dedos formando un círculo cerrado, como la forma de la letra O."
+  },
+  {
+    "letra": "P",
+    "archivo": "img/alfabeto/letra_P.png",
+    "con_movimiento": false,
+    "descripcion": "Con la muñeca girada hacia abajo, extiende el índice apuntando al suelo mientras el pulgar toca el dedo medio; los demás dedos quedan recogidos."
+  },
+  {
+    "letra": "Q",
+    "archivo": "img/alfabeto/letra_Q.png",
+    "con_movimiento": false,
+    "descripcion": "Junta las puntas de todos los dedos con la del pulgar apuntando hacia abajo, como pellizcando algo."
+  },
+  {
+    "letra": "R",
+    "archivo": "img/alfabeto/letra_R.png",
+    "con_movimiento": false,
+    "descripcion": "Cruza el dedo índice sobre el medio (como al 'cruzar los dedos'), manteniendo el anular y el meñique doblados y el pulgar recogido."
+  },
+  {
+    "letra": "S",
+    "archivo": "img/alfabeto/letra_S.png",
+    "con_movimiento": true,
+    "descripcion": "Extiende el índice hacia arriba con los demás dedos cerrados (similar a la D/F) y realiza un pequeño giro o vaivén con la punta del dedo, trazando una S.",
+    "instruccion_movimiento": "Gira suavemente la muñeca dibujando una pequeña curva en forma de S."
+  },
+  {
+    "letra": "T",
+    "archivo": "img/alfabeto/letra_T.png",
+    "con_movimiento": false,
+    "descripcion": "Extiende juntos los dedos medio, anular y meñique hacia arriba, mientras el índice y el pulgar se tocan formando un pequeño círculo al frente."
+  },
+  {
+    "letra": "U",
+    "archivo": "img/alfabeto/letra_U.png",
+    "con_movimiento": false,
+    "descripcion": "Extiende el índice y el meñique hacia arriba (como 'cuernos'), manteniendo el medio y el anular doblados y el pulgar recogido."
+  },
+  {
+    "letra": "V",
+    "archivo": "img/alfabeto/letra_V.png",
+    "con_movimiento": false,
+    "descripcion": "Extiende el índice y el medio hacia arriba separados en forma de V, con el anular, meñique y pulgar recogidos."
+  },
+  {
+    "letra": "W",
+    "archivo": "img/alfabeto/letra_W.png",
+    "con_movimiento": false,
+    "descripcion": "Extiende el índice, medio y anular hacia arriba separados entre sí, con el meñique y el pulgar recogidos."
+  },
+  {
+    "letra": "X",
+    "archivo": "img/alfabeto/letra_X.png",
+    "con_movimiento": false,
+    "descripcion": "Dobla el dedo índice formando un gancho, manteniendo los demás dedos cerrados y el pulgar apoyado al costado."
+  },
+  {
+    "letra": "Y",
+    "archivo": "img/alfabeto/letra_Y.png",
+    "con_movimiento": false,
+    "descripcion": "Extiende el pulgar y el meñique hacia los extremos (signo de 'hang loose'), manteniendo el índice, medio y anular doblados."
+  },
+  {
+    "letra": "Z",
+    "archivo": "img/alfabeto/letra_Z.png",
+    "con_movimiento": true,
+    "descripcion": "Extiende el índice y el medio juntos apuntando al frente, con los demás dedos cerrados, y traza en el aire la forma de la letra Z.",
+    "instruccion_movimiento": "Dibuja con los dedos una Z: línea horizontal, diagonal y otra horizontal."
+  }
+]

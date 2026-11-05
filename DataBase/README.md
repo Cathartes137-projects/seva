@@ -18,13 +18,13 @@ Scripts versionados del esquema y de los datos de demostración.
 
 ```bash
 # 1. Crear la base de datos
-mysql -u root -h 127.0.0.1 -e "CREATE DATABASE seva_educativo CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
+mysql -u root -h 127.0.0.1 -e "CREATE DATABASE sevaeducativo CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
 
 # 2. Importar la estructura
-mysql -u root -h 127.0.0.1 seva_educativo < DataBase/schema.sql
+mysql -u root -h 127.0.0.1 sevaeducativo < DataBase/schema.sql
 
 # 3. (Opcional) Cargar datos de demostración
-mysql -u root -h 127.0.0.1 seva_educativo < DataBase/seed_demo.sql
+mysql -u root -h 127.0.0.1 sevaeducativo < DataBase/seed_demo.sql
 ```
 
 ### Actualizar una base de datos existente
@@ -32,9 +32,9 @@ mysql -u root -h 127.0.0.1 seva_educativo < DataBase/seed_demo.sql
 Aplica las migraciones en orden (son idempotentes):
 
 ```bash
-mysql -u root -h 127.0.0.1 seva_educativo < DataBase/migrations/001_intentos_login.sql
-mysql -u root -h 127.0.0.1 seva_educativo < DataBase/migrations/002_recuperacion_password.sql
-mysql -u root -h 127.0.0.1 seva_educativo < DataBase/migrations/003_vocabulario_senas.sql
+mysql -u root -h 127.0.0.1 sevaeducativo < DataBase/migrations/001_intentos_login.sql
+mysql -u root -h 127.0.0.1 sevaeducativo < DataBase/migrations/002_recuperacion_password.sql
+mysql -u root -h 127.0.0.1 sevaeducativo < DataBase/migrations/003_vocabulario_senas.sql
 ```
 
 > Tras aplicar `003_vocabulario_senas.sql` en una base existente, carga el bloque
@@ -70,5 +70,5 @@ Cambiar obligatoriamente en cualquier despliegue real.
 Los volcados con datos reales quedan fuera del repositorio (ver `.gitignore`):
 
 ```bash
-mysqldump -u root -h 127.0.0.1 --databases seva_educativo > backup_seva.sql
+mysqldump -u root -h 127.0.0.1 --databases sevaeducativo > backup_seva.sql
 ```

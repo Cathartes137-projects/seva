@@ -1,7 +1,7 @@
 [
 {"type":"header","version":"5.2.1","comment":"Export to JSON plugin for PHPMyAdmin"},
-{"type":"database","name":"seva_educativo"},
-{"type":"table","name":"contenidos_educativos","database":"seva_educativo","data":
+{"type":"database","name":"sevaeducativo"},
+{"type":"table","name":"contenidos_educativos","database":"sevaeducativo","data":
 [
 {"id":"1","titulo":"Alfabeto dactilológico","descripcion":"Aprende a deletrear cada letra del abecedario con las manos.","ruta_imagen":"img\/lecciones\/alfabeto.jpg","ruta_video":"video\/alfabeto.mp4","nivel":"basico","orden":"1","fecha_creacion":"2026-08-04 14:11:08"},
 {"id":"2","titulo":"Saludos y presentaciones","descripcion":"Hola, buenos días, ¿cómo estás?, mucho gusto.","ruta_imagen":"img\/lecciones\/saludos.jpg","ruta_video":"video\/saludos.mp4","nivel":"basico","orden":"2","fecha_creacion":"2026-08-04 14:11:08"},
@@ -17,24 +17,24 @@
 {"id":"12","titulo":"Verbos comunes","descripcion":"Comer, dormir, trabajar, estudiar, jugar, viajar.","ruta_imagen":"img\/lecciones\/verbos.jpg","ruta_video":"video\/verbos.mp4","nivel":"avanzado","orden":"12","fecha_creacion":"2026-08-04 14:11:08"}
 ]
 }
-,{"type":"table","name":"cursos","database":"seva_educativo","data":
+,{"type":"table","name":"cursos","database":"sevaeducativo","data":
 [
 
 ]
 }
-,{"type":"table","name":"palabras_repasadas","database":"seva_educativo","data":
+,{"type":"table","name":"palabras_repasadas","database":"sevaeducativo","data":
 [
 
 ]
 }
-,{"type":"table","name":"progreso_usuario","database":"seva_educativo","data":
+,{"type":"table","name":"progreso_usuario","database":"sevaeducativo","data":
 [
 {"id":"1","usuario_id":"1234567900","contenido_id":"1","completado":"1","fecha_completado":"2026-08-04 14:11:08"},
 {"id":"2","usuario_id":"1234567900","contenido_id":"2","completado":"1","fecha_completado":"2026-08-04 14:11:08"},
 {"id":"3","usuario_id":"1234567900","contenido_id":"3","completado":"1","fecha_completado":"2026-08-04 14:11:08"}
 ]
 }
-,{"type":"table","name":"usuarios","database":"seva_educativo","data":
+,{"type":"table","name":"usuarios","database":"sevaeducativo","data":
 [
 {"id_usuario":"1234567899","nombre":"Admin","email":"nosemeocurrenada@gmail.com","password":"admin12358","fecha_registro":"2026-07-23 17:39:34"},
 {"id_usuario":"1234567900","nombre":"Edwin Camacho navarro","email":"edwin1234@gmail.com","password":"$2y$10$v11rirE3RDlB5kt98w3pCeL5U7MzmnptpENL73tXs3UBPWDZwGA.i","fecha_registro":"2026-08-03 16:03:35"},

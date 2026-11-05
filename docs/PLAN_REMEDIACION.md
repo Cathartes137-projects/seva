@@ -106,7 +106,7 @@ git push -u origin fix/auditoria-defectos
 
 ### Fase 0 — Preparación y línea base
 **Alcance:** backups y captura del estado previo, sin tocar código de producción.
-- Backup de BD: `mysqldump -u root seva_educativo > backup_seva_pre_auditoria.sql` (fuera del repo).
+- Backup de BD: `mysqldump -u root sevaeducativo > backup_seva_pre_auditoria.sql` (fuera del repo).
 - BD de pruebas: `seva_educativo_test` con `utf8mb4`.
 - Capturar: `php -l` de los 9 PHP, inventario de endpoints, `curl -I` de cabeceras actuales, prueba manual de flujos (login, registro, lección, perfil, configuración).
 - **Salida:** `docs/AUDITORIA/00-linea-base.md`.
@@ -158,7 +158,7 @@ git push -u origin fix/auditoria-defectos
 - `img/lecciones/default.svg` (placeholder vectorial) + actualización del fallback de `dashboard.php`.
 - `video/.gitkeep` + `video/README.md`; el código ya mitiga con `file_exists`.
 - **Regresión:** misma respuesta para correo existente/inexistente; token de un solo uso y caducidad verificadas.
-- **Evidencia (2026-10-21):** `php -l` sin errores en los 6 PHP tocados; migración `002` aplicada a `seva_educativo` y `seva_educativo_test`; con `APP_ENV=production` los cuerpos de respuesta para correo existente e inexistente son idénticos (y sin enlace en pantalla); token reutilizado, caducado y POST sin CSRF rechazados; login con la contraseña nueva correcto; las 8 tarjetas del dashboard usan `default.svg` sin 404 y `leccion.php` valida portada y video en disco.
+- **Evidencia (2026-10-21):** `php -l` sin errores en los 6 PHP tocados; migración `002` aplicada a `sevaeducativo` y `seva_educativo_test`; con `APP_ENV=production` los cuerpos de respuesta para correo existente e inexistente son idénticos (y sin enlace en pantalla); token reutilizado, caducado y POST sin CSRF rechazados; login con la contraseña nueva correcto; las 8 tarjetas del dashboard usan `default.svg` sin 404 y `leccion.php` valida portada y video en disco.
 
 ### Fase 6 — Datos, contenido y ARIA (D16, D17, D18, D22) — ✅ completada (2026-10-21)
 - Tabla `vocabulario_senas (id, contenido_id FK, palabra, descripcion, orden)` + seed de la lección 2; `leccion.php` consulta la tabla con fallback al contenido actual.
@@ -166,7 +166,7 @@ git push -u origin fix/auditoria-defectos
 - Seed con IDs normalizados 1..n y AUTO_INCREMENT coherente.
 - Validación servidor del nombre en `registro.php` (`mb_strlen` 3–100).
 - **Regresión:** vocabulario distinto por lección; filtros accesibles con teclado.
-- **Evidencia (2026-10-21):** `php -l` sin errores; migración `003` aplicada a `seva_educativo` y `seva_educativo_test` con 50 señas en las 12 lecciones (4 por lección, 6 en «Saludos»); import limpio en base desechable con IDs `1..12`, usuarios `1..2` y `AUTO_INCREMENT` 13/3/51 (D18 ya cubierto por el seed de F1); las lecciones 1, 2, 5 y 12 muestran tarjetas distintas y se probó el estado vacío; dashboard con `role="group"`, 4 `aria-pressed` y 0 `role="tab"/aria-selected`; registro rechaza 2 y 101 caracteres y acepta 3 (multibyte) y 100.
+- **Evidencia (2026-10-21):** `php -l` sin errores; migración `003` aplicada a `sevaeducativo` y `seva_educativo_test` con 50 señas en las 12 lecciones (4 por lección, 6 en «Saludos»); import limpio en base desechable con IDs `1..12`, usuarios `1..2` y `AUTO_INCREMENT` 13/3/51 (D18 ya cubierto por el seed de F1); las lecciones 1, 2, 5 y 12 muestran tarjetas distintas y se probó el estado vacío; dashboard con `role="group"`, 4 `aria-pressed` y 0 `role="tab"/aria-selected`; registro rechaza 2 y 101 caracteres y acepta 3 (multibyte) y 100.
 
 ### Fase 7 — Auditoría de ingeniería inversa (D20) — ✅ completada (2026-10-21)
 Reconstrucción del sistema desde sus artefactos + verificación antes/después:

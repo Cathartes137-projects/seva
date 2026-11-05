@@ -5,7 +5,7 @@
 -- Idempotente: puede ejecutarse varias veces sin error.
 --
 -- Uso:
---   mysql -u root -h 127.0.0.1 seva_educativo < DataBase/migrations/001_intentos_login.sql
+--   mysql -u root -h 127.0.0.1 sevaeducativo < DataBase/migrations/001_intentos_login.sql
 -- =============================================================================
 
 CREATE TABLE IF NOT EXISTS `intentos_login` (

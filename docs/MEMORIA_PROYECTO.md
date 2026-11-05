@@ -8,7 +8,7 @@
 > Este documento fue reconstruido durante la Fase 8 a partir del original, que
 > contenía caracteres corruptos al inicio, salida de terminal en §3.2 y citas
 > vacías en tablas, campos, funciones y esquemas. Las afirmaciones técnicas se
-> contrastaron con el código y con la base de datos `seva_educativo`.
+> contrastaron con el código y con la base de datos `sevaeducativo`.
 
 ---
 
@@ -44,7 +44,7 @@ El proyecto **SEVA** (**Sistema Educativo de Lengua de Señas**) es una platafor
 ### 2.1 Componentes del Stack
 * **Servidor Web**: Apache 2.4+ / Nginx con soporte para reescritura de URLs y cabeceras de seguridad (`mod_headers` y `mod_rewrite` en Apache).
 * **Backend**: **PHP 8.2** utilizando exclusivamente **PDO** (PHP Data Objects) con la codificación **`utf8mb4`**, consultas preparadas y `PDO::ATTR_EMULATE_PREPARES = false`. La antigua conexión MySQLi (`db.php`) fue eliminada en la Fase 1.
-* **Base de Datos**: **MariaDB 10.4+ / MySQL 8.0+** con el esquema relacional **`seva_educativo`** (8 tablas InnoDB, 5 claves foráneas y 20 índices).
+* **Base de Datos**: **MariaDB 10.4+ / MySQL 8.0+** con el esquema relacional **`sevaeducativo`** (8 tablas InnoDB, 5 claves foráneas y 20 índices).
 * **Frontend**: HTML5 semántico, CSS3 estructurado mediante variables CSS para la personalización de temas (*Design Tokens*) e interacciones ligeras en JavaScript Vanilla.
 * **Seguridad**: módulo central **`seguridad.php`** (sesión, CSRF, rate limiting, rehash y honeypot) y **`.htaccess`** (cabeceras, CSP, HTTPS/HSTS condicional y bloqueo de archivos sensibles).
 * **Dependencias**: sin framework ni Composer; el despliegue solo requiere PHP, Apache y MariaDB.
@@ -90,7 +90,7 @@ detallan en `docs/AUDITORIA/01-inventario.md`.
 
 Los diagramas de secuencia completos están en `docs/AUDITORIA/03-flujos.md`.
 
-### 3.2 Esquema Relacional de la Base de Datos (`seva_educativo`)
+### 3.2 Esquema Relacional de la Base de Datos (`sevaeducativo`)
 
 El esquema actualizado consta de **8 tablas relacionales** administradas con el motor **InnoDB** y codificación **`utf8mb4_general_ci`**:
 
@@ -209,7 +209,7 @@ Los 23 defectos del plan quedan **cerrados**: 22 resueltos y D04 mitigado por la
 
 ### 6.2 Pasos de Instalación Local (Entorno de Desarrollo)
 1. **Clonar el repositorio**: Configurar el directorio del proyecto en el servidor web.
-2. **Configurar la Base de Datos**: Crear la base de datos **`seva_educativo`** en MariaDB/MySQL e importar `DataBase/schema.sql` y, opcionalmente, `DataBase/seed_demo.sql`. Las migraciones incrementales están en `DataBase/migrations/`.
+2. **Configurar la Base de Datos**: Crear la base de datos **`sevaeducativo`** en MariaDB/MySQL e importar `DataBase/schema.sql` y, opcionalmente, `DataBase/seed_demo.sql`. Las migraciones incrementales están en `DataBase/migrations/`.
 3. **Configurar la Conexión en PHP (`conexion.php`)**: Definir `DB_HOST`, `DB_NAME`, `DB_USER` y `DB_PASS` por variables de entorno. Usar PDO con `PDO::ERRMODE_EXCEPTION`, `PDO::ATTR_DEFAULT_FETCH_MODE = PDO::FETCH_ASSOC` y `PDO::ATTR_EMULATE_PREPARES = false`.
 4. **Estructura de Carpetas Multimedia**: Asegurar la presencia de `img/lecciones/` (con `default.svg`) y `video/`.
 5. **Iniciar el Servidor de Pruebas**: Arrancar Apache en XAMPP y abrir `http://localhost/seva/`, o ejecutar `php -S localhost:8000 -t .` desde la raíz del proyecto.
