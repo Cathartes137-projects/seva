@@ -1,10 +1,9 @@
 <?php
 // =============================================================================
-// camara/detector.php - Reto por cámara: Alfabeto Dactilológico LSC
+// camara/detector.php - Reto por cámara: detección de señas con MediaPipe
 // =============================================================================
-// Práctica asistida con MediaPipe Hands. La evaluación se basa en reglas
-// geométricas sobre los 21 landmarks y no sustituye la valoración de un
-// intérprete de LSC.
+// La evaluación se basa en reglas geométricas sobre los 21 landmarks de MediaPipe
+// y no sustituye la valoración de un intérprete de Lengua de Señas Colombiana.
 // =============================================================================
 
 require __DIR__ . '/../../config/conexion.php';
@@ -21,618 +20,155 @@ $usuario_id = (int) $_SESSION['usuario_id'];
 $nombre     = $_SESSION['nombre'] ?? 'Estudiante';
 $base       = '../';
 
-$secuencia = ['A', 'B', 'C', 'L', 'I'];
+// ---------------- Parámetros dinámicos (Task 1a) ----------------
+$leccion_id = isset($_GET['id'])  ? (int) $_GET['id']  : 1;
+$seña       = isset($_GET['seña']) ? mb_strtolower(trim($_GET['seña']), 'UTF-8') : null;
 
-$descripcionesFallback = [
-    'A' => 'Cierra la mano formando un puño y extiende el pulgar hacia un costado, pegado al lado de los demás dedos (no hacia arriba).',
-    'B' => 'Extiende los cuatro dedos juntos y rectos hacia arriba, con la palma hacia el frente, y dobla el pulgar cruzándolo por delante de la palma.',
-    'C' => 'Curva todos los dedos y el pulgar formando la silueta de la letra C, dejando un espacio abierto entre el pulgar y el índice.',
-    'L' => 'Extiende el índice hacia arriba y el pulgar hacia el costado formando una L, con el medio, anular y meñique doblados hacia la palma.',
-    'I' => 'Cierra los dedos índice, medio y anular hacia la palma, y extiende el meñique y el pulgar hacia afuera.',
-];
+$contenido_id = isset($_GET['id']) ? (int) $_GET['id'] : 1;
+$retoSenas = [];
+$leccion_titulo = 'Reto por cámara';
+$leccion_xp     = 10;
+$leccion_tupla  = 0;
 
-$mapaVocabulario = [];
-try {
-    $marcadores = implode(',', array_fill(0, count($secuencia), '?'));
-    $stmt = $pdo->prepare(
-        "SELECT palabra, imagen, descripcion
-         FROM vocabulario_senas
-         WHERE contenido_id = 1 AND palabra IN ($marcadores)"
-    );
-    $stmt->execute($secuencia);
-    foreach ($stmt as $fila) {
-        $mapaVocabulario[(string) $fila['palabra']] = $fila;
+// ---- ?seña= (señal específica) ----
+if ($seña) {
+    $stmt = $pdo->prepare("SELECT id, palabra AS sena, imagen, descripcion FROM vocabulario_senas WHERE LOWER(palabra) = ? ORDER BY id");
+    $stmt->execute([$seña]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($row) {
+        $retoSenas = [[ 'id' => (int) $row['id'], 'sena' => $row['sena'], 'imagen' => $row['imagen'] ?? '', 'descripcion' => $row['descripcion'] ?? '']];
+        $leccion_id = 1;
+        $leccion_titulo = 'Práctica de seña: ' . $row['sena'];
+        $leccion_xp = 10;
     }
-} catch (PDOException $e) {
-    error_log('Reto cámara - no se pudo cargar el vocabulario: ' . $e->getMessage());
+// ---- ?id=X (lección) ----
+} elseif (isset($_GET['id'])) {
+    $contenido_id = (int) $_GET['id'];
+    $stmt = $pdo->prepare("SELECT id, palabra AS sena, imagen, descripcion FROM vocabulario_senas WHERE contenido_id = $contenido_id ORDER BY id ASC");
+    $stmt->execute();
+    $retoSenas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (!empty($retoSenas)) {
+        $leccion_id = $contenido_id;
+        $leccion_titulo = 'Reto por cámara · Lección ' . $leccion_id;
+        $leccion_xp = 10;
+    } else {
+        // Fallback: señas básicas si no hay datos en BD
+        $retoSenas = [
+            [ 'id' => 1, 'sena' => 'A', 'imagen' => '../img/lecciones/seva_sello_placeholder.png', 'descripcion' => 'Letra A del alfabeto en Lengua de Señas Colombiana.' ],
+        ];
+        $leccion_id = 1;
+        $leccion_titulo = 'Reto por cámara · Lección 1';
+        $leccion_xp = 10;
+    }
+// ---- Default: id=1 ----
+} else {
+    $contenido_id = 1;
+    $stmt = $pdo->prepare("SELECT id, palabra AS sena, imagen, descripcion FROM vocabulario_senas WHERE contenido_id = $contenido_id ORDER BY id ASC");
+    $stmt->execute();
+    $retoSenas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (!empty($retoSenas)) {
+        $leccion_id = 1;
+        $leccion_titulo = 'Reto por cámara · Lección 1';
+        $leccion_xp = 10;
+    } else {
+        $retoSenas = [
+            [ 'id' => 1, 'sena' => 'A', 'imagen' => '../img/lecciones/seva_sello_placeholder.png', 'descripcion' => 'Letra A del alfabeto en Lengua de Señas Colombiana.' ],
+        ];
+        $leccion_id = 1;
+        $leccion_titulo = 'Reto por cámara · Lección 1';
+        $leccion_xp = 10;
+    }
 }
 
-$retoLetras = [];
-foreach ($secuencia as $letra) {
-    $fila = $mapaVocabulario[$letra] ?? null;
-    $ruta = $fila['imagen'] ?? ('img/lsc/alfabeto/letra_' . $letra . '.png');
-    $ruta = ltrim(str_replace('\\', '/', (string) $ruta), '/');
+$primeraSena = !empty($retoSenas) ? $retoSenas[0] : [ 'sena' => 'A', 'imagen' => '../img/lecciones/seva_sello_placeholder.png', 'descripcion' => '' ];
 
-    if ($ruta === '' || strpos($ruta, '..') !== false || !is_file(__DIR__ . '/../' . $ruta)) {
-        $ruta = 'img/lecciones/default.svg';
-    }
-
-    $retoLetras[] = [
-        'letra'       => $letra,
-        'imagen'      => '../' . $ruta,
-        'descripcion' => (string) ($fila['descripcion'] ?? $descripcionesFallback[$letra]),
-    ];
-}
+$leccion_tupla = count($retoSenas);
 ?>
 <!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reto por cámara · Alfabeto LSC · SEVA</title>
+<title>Reto por cámara · <?= htmlspecialchars($leccion_titulo, ENT_QUOTES, 'UTF-8') ?> · SEVA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/estilos.css">
 <style>
-    .reto {
-        max-width: 1240px;
-        margin: 0 auto;
-        padding: 1.5rem;
-    }
-
-    .reto-hero {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 1.25rem;
-        padding: 1.5rem 1.6rem;
-        border-radius: 1.2rem;
-        color: #fff;
-        background: linear-gradient(135deg, var(--ink), #123b63);
-        box-shadow: var(--sombra);
-    }
-
-    .reto-volver {
-        display: inline-flex;
-        align-items: center;
-        gap: .45rem;
-        min-height: 44px;
-        color: #d7e7ff;
-        font-weight: 700;
-        text-decoration: none;
-    }
-
-    .reto-volver:hover {
-        color: #fff;
-        text-decoration: underline;
-    }
-
-    .reto-eyebrow {
-        margin: .55rem 0 .15rem;
-        color: #8ed0ff;
-        font: 700 .72rem 'Space Mono', monospace;
-        letter-spacing: .12em;
-        text-transform: uppercase;
-    }
-
-    .reto-hero h1 {
-        margin: .15rem 0 .35rem;
-        color: #fff;
-        font-size: clamp(1.7rem, 4vw, 2.6rem);
-    }
-
-    .reto-hero p {
-        max-width: 62ch;
-        margin: 0;
-        color: #c9d6ec;
-        line-height: 1.55;
-    }
-
-    .reto-stats {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        gap: .55rem;
-    }
-
-    .reto-stat {
-        min-width: 88px;
-        padding: .55rem .75rem;
-        border: 1px solid rgba(255, 255, 255, .18);
-        border-radius: .8rem;
-        background: rgba(255, 255, 255, .1);
-    }
-
-    .reto-stat span {
-        display: block;
-        color: #c9d6ec;
-        font: 700 .68rem 'Inter', sans-serif;
-        letter-spacing: .08em;
-        text-transform: uppercase;
-    }
-
-    .reto-stat strong {
-        color: #fff;
-        font: 800 1.3rem 'Baloo 2', sans-serif;
-    }
-
-    .reto-grid {
-        display: grid;
-        grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
-        gap: 1rem;
-        margin-top: 1rem;
-    }
-
-    .reto-panel {
-        padding: 1rem;
-        border: 1px solid var(--line);
-        border-radius: 1rem;
-        background: #fff;
-        box-shadow: var(--sombra);
-    }
-
-    .reto-panel-cabecera {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: .75rem;
-        margin-bottom: .8rem;
-    }
-
-    .reto-panel-cabecera h2 {
-        margin: 0;
-        color: var(--ink);
-        font-size: 1.2rem;
-    }
-
-    .reto-paso,
-    .reto-estado {
-        display: inline-flex;
-        align-items: center;
-        min-height: 32px;
-        padding: .2rem .65rem;
-        border-radius: 99px;
-        font-size: .78rem;
-        font-weight: 700;
-    }
-
-    .reto-paso {
-        color: #0b4d8f;
-        background: #e8f2ff;
-    }
-
-    .reto-estado {
-        color: #31506f;
-        background: #eef4f8;
-    }
-
-    .reto-estado[data-tipo="exito"] {
-        color: #146c3a;
-        background: #e1f7e9;
-    }
-
-    .reto-estado[data-tipo="error"] {
-        color: #9b1c1c;
-        background: #fde8e8;
-    }
-
-    .reto-letra {
-        display: grid;
-        grid-template-columns: minmax(150px, 220px) minmax(0, 1fr);
-        gap: 1rem;
-        align-items: center;
-    }
-
-    .reto-letra img {
-        width: 100%;
-        max-height: 300px;
-        object-fit: contain;
-        padding: .5rem;
-        border: 1px solid var(--line);
-        border-radius: .85rem;
-        background: #f4f8ff;
-    }
-
-    .reto-letra-texto {
-        min-width: 0;
-    }
-
-    .reto-letra-eyebrow {
-        margin: 0;
-        color: var(--muted);
-        font-size: .78rem;
-        font-weight: 700;
-        letter-spacing: .08em;
-        text-transform: uppercase;
-    }
-
-    .reto-letra-grande {
-        margin: .05rem 0 .4rem;
-        color: var(--azul);
-        font: 800 clamp(3rem, 8vw, 5rem) 'Baloo 2', sans-serif;
-        line-height: .95;
-    }
-
-    .reto-descripcion {
-        margin: 0;
-        color: var(--text);
-        line-height: 1.55;
-    }
-
-    .reto-progreso-linea {
-        margin-top: 1rem;
-    }
-
-    .reto-barra {
-        height: 12px;
-        overflow: hidden;
-        border-radius: 99px;
-        background: var(--line);
-    }
-
-    .reto-barra span {
-        display: block;
-        width: 0;
-        height: 100%;
-        border-radius: 99px;
-        background: linear-gradient(90deg, var(--azul), var(--verde-oscuro));
-        transition: width .18s ease;
-    }
-
-    .reto-coincidencia {
-        display: flex;
-        justify-content: space-between;
-        gap: .75rem;
-        margin: .45rem 0 0;
-        color: var(--muted);
-        font-size: .82rem;
-    }
-
-    .reto-coincidencia strong {
-        color: var(--ink);
-    }
-
-    .reto-acciones,
-    .reto-cam-controles,
-    .reto-modal-acciones {
-        display: flex;
-        flex-wrap: wrap;
-        gap: .55rem;
-        margin-top: .9rem;
-    }
-
-    .btn-reto {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: .4rem;
-        min-width: 44px;
-        min-height: 44px;
-        padding: .7rem 1rem;
-        border: 0;
-        border-radius: .7rem;
-        background: var(--azul);
-        color: #fff;
-        font: 700 .92rem 'Inter', sans-serif;
-        text-align: center;
-        text-decoration: none;
-        cursor: pointer;
-    }
-
-    .btn-reto:hover {
-        filter: brightness(.94);
-    }
-
-    .btn-reto:focus-visible {
-        outline: 3px solid var(--sol, #FFB400);
-        outline-offset: 3px;
-    }
-
-    .btn-reto:disabled {
-        opacity: .5;
-        cursor: not-allowed;
-        filter: none;
-    }
-
-    .btn-reto-secundario {
-        background: var(--verde-oscuro);
-    }
-
-    .btn-reto-ghost {
-        border: 1px solid var(--line);
-        background: #eef4ff;
-        color: var(--ink);
-    }
-
-    .reto-ayuda {
-        margin-top: 1rem;
-        padding-top: .85rem;
-        border-top: 1px solid var(--line);
-    }
-
-    .reto-ayuda h2 {
-        margin: 0 0 .3rem;
-        color: var(--ink);
-        font-size: 1rem;
-    }
-
-    .reto-pista {
-        margin: 0 0 .65rem;
-        color: var(--text);
-        line-height: 1.5;
-    }
-
-    .reto-aviso {
-        margin: 0;
-        padding: .6rem .7rem;
-        border-left: 4px solid var(--sol, #FFB400);
-        border-radius: .4rem;
-        background: #f7f9fc;
-        color: var(--muted);
-        font-size: .8rem;
-        line-height: 1.5;
-    }
-
-    .reto-video-wrap {
-        position: relative;
-        overflow: hidden;
-        aspect-ratio: 4 / 3;
-        border: 3px solid transparent;
-        border-radius: .9rem;
-        background: #071426;
-        transition: border-color .2s ease, box-shadow .2s ease;
-    }
-
-    .reto-video-wrap video,
-    .reto-video-wrap canvas {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .reto-video-wrap video {
-        background: #071426;
-    }
-
-    .reto-video-wrap canvas {
-        z-index: 1;
-        pointer-events: none;
-    }
-
-    .reto-video-wrap.espejo video,
-    .reto-video-wrap.espejo canvas {
-        transform: scaleX(-1);
-    }
-
-    .reto-video-wrap.cerca {
-        border-color: var(--sol, #FFB400);
-    }
-
-    .reto-video-wrap.exito {
-        border-color: #1f9d55;
-        box-shadow: 0 0 0 6px rgba(31, 157, 85, .18);
-    }
-
-    .reto-video-placeholder {
-        position: absolute;
-        inset: 0;
-        z-index: 2;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: .35rem;
-        padding: 1.25rem;
-        color: #d7e7ff;
-        text-align: center;
-        background: radial-gradient(circle at center, rgba(35, 79, 126, .88), rgba(4, 20, 36, .96));
-    }
-
-    .reto-video-placeholder[hidden] {
-        display: none;
-    }
-
-    .reto-video-placeholder strong {
-        color: #fff;
-        font: 800 1.15rem 'Baloo 2', sans-serif;
-    }
-
-    .reto-video-placeholder p {
-        max-width: 300px;
-        margin: 0;
-        color: #c9d6ec;
-        font-size: .85rem;
-        line-height: 1.5;
-    }
-
-    .reto-feedback {
-        position: absolute;
-        left: 50%;
-        bottom: 1rem;
-        z-index: 3;
-        max-width: calc(100% - 2rem);
-        transform: translateX(-50%);
-        padding: .55rem .9rem;
-        border-radius: 99px;
-        background: rgba(4, 20, 36, .84);
-        color: #fff;
-        font-size: .88rem;
-        font-weight: 700;
-        text-align: center;
-        transition: background .2s ease;
-    }
-
-    .reto-feedback[data-tipo="cerca"] {
-        background: #8a5a00;
-    }
-
-    .reto-feedback[data-tipo="exito"] {
-        background: #1f9d55;
-    }
-
-    .reto-feedback[data-tipo="error"] {
-        background: #9b1c1c;
-    }
-
-    .reto-porcentaje {
-        position: absolute;
-        top: .7rem;
-        right: .7rem;
-        z-index: 3;
-        min-width: 62px;
-        padding: .35rem .55rem;
-        border: 1px solid rgba(255, 255, 255, .22);
-        border-radius: .6rem;
-        background: rgba(4, 20, 36, .82);
-        color: #fff;
-        font: 800 1rem 'Space Mono', monospace;
-        text-align: center;
-    }
-
-    .reto-note,
-    .reto-detalle {
-        margin: .65rem 0 0;
-        color: var(--muted);
-        font-size: .86rem;
-        line-height: 1.5;
-    }
-
-    .reto-detalle {
-        min-height: 2.6em;
-    }
-
-    .reto-guardado {
-        margin: .7rem 0 0;
-        font-size: .84rem;
-        font-weight: 600;
-        line-height: 1.45;
-    }
-
-    .reto-guardado[data-tipo="ok"] {
-        color: #146c3a;
-    }
-
-    .reto-guardado[data-tipo="error"] {
-        color: #9b1c1c;
-    }
-
-    .reto-modal-fondo {
-        position: fixed;
-        inset: 0;
-        z-index: 1000;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem;
-        background: rgba(3, 12, 24, .68);
-    }
-
-    .reto-modal-fondo.abierto {
-        display: flex;
-    }
-
-    .reto-modal {
-        width: min(540px, 100%);
-        padding: 1.5rem;
-        border-radius: 1.1rem;
-        background: #fff;
-        box-shadow: 0 24px 70px rgba(0, 0, 0, .28);
-        text-align: center;
-    }
-
-    .reto-modal-icono {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 64px;
-        height: 64px;
-        margin-bottom: .5rem;
-        border-radius: 50%;
-        background: #e1f7e9;
-        color: #146c3a;
-        font-size: 2rem;
-    }
-
-    .reto-modal h2 {
-        margin: .2rem 0 .4rem;
-        color: var(--ink);
-        font-size: 1.6rem;
-    }
-
-    .reto-modal p {
-        color: var(--text);
-        line-height: 1.55;
-    }
-
-    .reto-xp {
-        margin: .8rem 0;
-        color: var(--verde-oscuro);
-        font: 800 2.2rem 'Baloo 2', sans-serif;
-    }
-
-    .reto-xp small {
-        font: 600 .85rem 'Inter', sans-serif;
-        color: var(--muted);
-    }
-
-    .reto-modal-acciones {
-        justify-content: center;
-    }
-
-    body.modal-abierto {
-        overflow: hidden;
-    }
-
-    @media (max-width: 900px) {
-        .reto-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .reto-hero {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .reto-stats {
-            justify-content: flex-start;
-        }
-    }
-
-    @media (max-width: 560px) {
-        .reto {
-            padding: .8rem;
-        }
-
-        .reto-hero {
-            padding: 1rem;
-        }
-
-        .reto-letra {
-            grid-template-columns: 1fr;
-        }
-
-        .reto-letra img {
-            max-height: 220px;
-        }
-
-        .reto-panel-cabecera {
-            flex-wrap: wrap;
-        }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        .reto *,
-        .reto *::before,
-        .reto *::after {
-            scroll-behavior: auto !important;
-            animation-duration: .001ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: .001ms !important;
-        }
-    }
+    .reto { display: flex; flex-direction: column; align-items: center; max-width: 1240px; margin: 0 auto; padding: 1.5rem; }
+    .reto-grid { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); gap: 1rem; margin-top: 1rem; align-items: start; }
+    .reto-hero { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.5rem 1.6rem; border-radius: 1.2rem; color: #fff; background: linear-gradient(135deg, var(--ink), #123b63); box-shadow: var(--sombra); }
+    .reto-volver { display: inline-flex; align-items: center; gap: .45rem; min-height: 44px; color: #d7e7ff; font-weight: 700; text-decoration: none; }
+    .reto-volver:hover { color: #fff; text-decoration: underline; }
+    .reto-eyebrow { margin: .55rem 0 .15rem; color: #8ed0ff; font: 700 .72rem 'Space Mono', monospace; letter-spacing: .12em; text-transform: uppercase; }
+    .reto-hero h1 { margin: .15rem 0 .35rem; color: #fff; font-size: clamp(1.7rem, 4vw, 2.6rem); }
+    .reto-hero p { max-width: 62ch; margin: 0; color: #c9d6ec; line-height: 1.55; }
+    .reto-stats { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .55rem; }
+    .reto-stat { min-width: 88px; padding: .55rem .75rem; border: 1px solid rgba(255,255,255,.18); border-radius: .8rem; background: rgba(255,255,255,.1); }
+    .reto-stat span { display: block; color: #c9d6ec; font: 700 .68rem 'Inter', sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+    .reto-stat strong { color: #fff; font: 800 1.3rem 'Baloo 2', sans-serif; }
+    .reto-panel { padding: 1rem; border: 1px solid var(--line); border-radius: 1rem; background: #fff; box-shadow: var(--sombra); }
+    .reto-panel-cabecera { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: .8rem; }
+    .reto-panel-cabecera h2 { margin: 0; color: var(--ink); font-size: 1.2rem; }
+    .reto-paso, .reto-estado { display: inline-flex; align-items: center; min-height: 32px; padding: .2rem .65rem; border-radius: 99px; font-size: .78rem; font-weight: 700; }
+    .reto-paso { color: #0b4d8f; background: #e8f2ff; }
+    .reto-estado { color: #31506f; background: #eef4f8; }
+    .reto-estado[data-tipo="exito"] { color: #146c3a; background: #e1f7e9; }
+    .reto-estado[data-tipo="error"] { color: #9b1c1c; background: #fde8e8; }
+    .reto-letra-body { display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 1fr); gap: 1rem; align-items: center; }
+    .reto-letra-body img { width: 100%; max-height: 300px; object-fit: contain; padding: .5rem; border: 1px solid var(--line); border-radius: .85rem; background: #f4f8ff; }
+    .reto-letra-texto { min-width: 0; }
+    .reto-letra-eyebrow { margin: 0; color: var(--muted); font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .reto-letra-grande { margin: .05rem 0 .4rem; color: var(--azul); font: 800 clamp(3rem, 8vw, 5rem) 'Baloo 2', sans-serif; line-height: .95; }
+    .reto-descripcion { margin: 0; color: var(--text); line-height: 1.55; }
+    .reto-progreso-linea { margin-top: 1rem; }
+    .reto-barra { height: 12px; overflow: hidden; border-radius: 99px; background: var(--line); }
+    .reto-barra span { display: block; width: 0; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--azul), var(--verde-oscuro)); transition: width .18s ease; }
+    .reto-coincidencia { display: flex; justify-content: space-between; gap: .75rem; margin: .45rem 0 0; color: var(--muted); font-size: .82rem; }
+    .reto-coincidencia strong { color: var(--ink); }
+    .reto-acciones, .reto-cam-controles, .reto-modal-acciones { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: .9rem; }
+    .btn-reto { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-width: 44px; min-height: 44px; padding: .7rem 1rem; border: 0; border-radius: .7rem; background: var(--azul); color: #fff; font: 700 .92rem 'Inter', sans-serif; text-align: center; text-decoration: none; cursor: pointer; transition: filter .15s ease, transform .1s ease; }
+    .btn-reto:hover { filter: brightness(.94); }
+    .btn-reto:focus-visible { outline: 3px solid var(--sol, #FFB400); outline-offset: 3px; }
+    .btn-reto:disabled { opacity: .5; cursor: not-allowed; filter: none; }
+    .btn-reto-secundario { background: var(--verde-oscuro); }
+    .btn-reto-ghost { border: 1px solid var(--line); background: #eef4ff; color: var(--ink); }
+    .reto-ayuda { margin-top: 1rem; padding-top: .85rem; border-top: 1px solid var(--line); }
+    .reto-ayuda h2 { margin: 0 0 .3rem; color: var(--ink); font-size: 1rem; }
+    .reto-pista { margin: 0 0 .65rem; color: var(--text); line-height: 1.5; }
+    .reto-aviso { margin: 0; padding: .6rem .7rem; border-left: 4px solid var(--sol, #FFB400); border-radius: .4rem; background: #f7f9fc; color: var(--muted); font-size: .8rem; line-height: 1.5; }
+    .reto-video-wrap { position: relative; overflow: hidden; aspect-ratio: 4 / 3; border: 3px solid transparent; border-radius: .9rem; background: #071426; transition: border-color .2s ease, box-shadow .2s ease; }
+    .reto-video-wrap video, .reto-video-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .reto-video-wrap video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; background: #071426; }
+    .reto-video-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 2; pointer-events: none; }
+    .reto-video-wrap.espejo video, .reto-video-wrap.espejo canvas { transform: scaleX(-1); }
+    .reto-video-wrap.cerca { border-color: var(--sol, #FFB400); }
+    .reto-video-wrap.exito { border-color: #1f9d55; box-shadow: 0 0 0 6px rgba(31, 157, 85, .18); }
+    .reto-video-placeholder { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .35rem; padding: 1.25rem; color: #d7e7ff; text-align: center; background: radial-gradient(circle at center, rgba(35, 79, 126, .88), rgba(4, 20, 36, .96)); }
+    .reto-video-placeholder[hidden] { display: none; }
+    .reto-video-placeholder strong { color: #fff; font: 800 1.15rem 'Baloo 2', sans-serif; }
+    .reto-video-placeholder p { max-width: 300px; margin: 0; color: #c9d6ec; font-size: .85rem; line-height: 1.5; }
+    .reto-feedback { position: absolute; left: 50%; bottom: 1rem; z-index: 3; max-width: calc(100% - 2rem); transform: translateX(-50%); padding: .55rem .9rem; border-radius: 99px; background: rgba(4, 20, 36, .84); color: #fff; font-size: .88rem; font-weight: 700; text-align: center; transition: background .2s ease; }
+    .reto-feedback[data-tipo="cerca"] { background: #8a5a00; }
+    .reto-feedback[data-tipo="exito"] { background: #1f9d55; }
+    .reto-feedback[data-tipo="error"] { background: #9b1c1c; }
+    .reto-porcentaje { position: absolute; top: .7rem; right: .7rem; z-index: 3; min-width: 62px; padding: .35rem .55rem; border: 1px solid rgba(255,255,255,.22); border-radius: .6rem; background: rgba(4, 20, 36, .82); color: #fff; font: 800 1rem 'Space Mono', monospace; text-align: center; }
+    .reto-detalle { margin: .65rem 0 0; color: var(--text); font-size: .86rem; line-height: 1.5; }
+    .reto-guardado { margin: .7rem 0 0; font-size: .84rem; font-weight: 600; line-height: 1.45; }
+    .reto-guardado[data-tipo="ok"] { color: #146c3a; }
+    .reto-guardado[data-tipo="error"] { color: #9b1c1c; }
+    .reto-modal-fondo { position: fixed; inset: 0; z-index: 1000; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(3, 12, 24, .68); }
+    .reto-modal-fondo.abierto { display: flex; }
+    .reto-modal { width: min(540px, 100%); padding: 1.5rem; border-radius: 1.1rem; background: #fff; box-shadow: 0 24px 70px rgba(0, 0, 0, .28); text-align: center; }
+    .reto-modal-icono { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; margin-bottom: .5rem; border-radius: 50%; background: #e1f7e9; color: #146c3a; font-size: 2rem; }
+    .reto-modal h2 { margin: .2rem 0 .4rem; color: var(--ink); font-size: 1.6rem; }
+    .reto-modal p { color: var(--text); line-height: 1.55; }
+    .reto-xp { margin: .8rem 0; color: var(--verde-oscuro); font: 800 2.2rem 'Baloo 2', sans-serif; }
+    .reto-xp small { font: 600 .85rem 'Inter', sans-serif; color: var(--muted); }
+    .reto-modal-acciones { justify-content: center; }
+    body.modal-abierto { overflow: hidden; }
+    @media (max-width: 900px) { .reto-grid { grid-template-columns: 1fr; } .reto-hero { flex-direction: column; align-items: flex-start; } .reto-stats { justify-content: flex-start; } }
+    @media (prefers-reduced-motion: reduce) { .reto * { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; } }
 </style>
 </head>
 <body class="pagina-camara">
@@ -645,85 +181,56 @@ foreach ($secuencia as $letra) {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
                 Volver al dashboard
             </a>
-            <p class="reto-eyebrow">Lección 1 · Práctica con cámara</p>
-            <h1>Reto del Alfabeto LSC</h1>
-            <p>Completa 5 letras frente a la cámara. La meta es sostener cada seña con al menos un 80 % de coincidencia durante un segundo.</p>
+            <p class="reto-eyebrow">Lección <?= (int) $leccion_id ?> · Práctica con cámara</p>
+            <h1><?= htmlspecialchars($leccion_titulo, ENT_QUOTES, 'UTF-8') ?></h1>
+            <p>Completa cada seña frente a la cámara. La meta es sostenir cada una con al menos un 80 % de coincidencia durante un segundo.</p>
         </div>
         <div class="reto-stats" aria-label="Racha y experiencia">
-            <div class="reto-stat">
-                <span>Racha</span>
-                <strong data-racha>0</strong> días
-            </div>
-            <div class="reto-stat">
-                <span>XP</span>
-                <strong data-xp>0</strong> XP
-            </div>
-            <div class="reto-stat">
-                <span>Avance</span>
-                <strong id="reto-contador">0 / 5</strong>
-            </div>
+            <div class="reto-stat"><span>Racha</span><strong data-racha>0</strong> días</div>
+            <div class="reto-stat"><span>XP</span><strong data-xp>0</strong> XP</div>
+            <div class="reto-stat"><span>Avance</span><strong id="reto-contador">0 / <?= $leccion_tupla ?></strong></div>
         </div>
     </header>
 
     <div class="reto-grid">
         <section class="reto-panel" aria-labelledby="titulo-objetivo">
             <div class="reto-panel-cabecera">
-                <span class="reto-paso">Letra <b id="reto-indice">1</b> de 5</span>
+                <span class="reto-paso">Seña <b id="reto-indice">1</b> de <?= $leccion_tupla ?></span>
                 <span class="reto-estado" id="reto-estado" role="status" aria-live="polite">Esperando cámara</span>
             </div>
-            <h2 id="titulo-objetivo" class="visually-hidden">Letra objetivo</h2>
-
-            <div class="reto-letra">
-                <img id="reto-imagen"
-                     src="<?= htmlspecialchars($retoLetras[0]['imagen'], ENT_QUOTES, 'UTF-8') ?>"
-                     alt="Seña de la letra <?= htmlspecialchars($retoLetras[0]['letra'], ENT_QUOTES, 'UTF-8') ?> en Lengua de Señas Colombiana"
-                     decoding="async">
+            <h2 id="titulo-objetivo" class="visually-hidden">Seña objetivo</h2>
+            <div class="reto-letra-body">
+                <img id="reto-imagen" src="<?= $primeraSena['imagen'] ?? '../img/lecciones/default.svg' ?>" alt="Seña de la sena <?= htmlspecialchars($primeraSena['sena'] ?? 'A', ENT_QUOTES, 'UTF-8') ?>" decoding="async" onerror="this.src='../img/lecciones/seva_sello_placeholder.png'">
                 <div class="reto-letra-texto">
-                    <p class="reto-letra-eyebrow">Letra objetivo</p>
-                    <p class="reto-letra-grande" id="reto-letra"><?= htmlspecialchars($retoLetras[0]['letra'], ENT_QUOTES, 'UTF-8') ?></p>
-                    <p class="reto-descripcion" id="reto-descripcion"><?= htmlspecialchars($retoLetras[0]['descripcion'], ENT_QUOTES, 'UTF-8') ?></p>
+                    <p class="reto-letra-eyebrow">Seña objetivo</p>
+                    <p class="reto-letra-grande" id="reto-letra"><?= htmlspecialchars($primeraSena['sena'] ?? 'A', ENT_QUOTES, 'UTF-8') ?></p>
+                    <p class="reto-descripcion" id="reto-descripcion"><?= htmlspecialchars($primeraSena['descripcion'] ?? '', ENT_QUOTES, 'UTF-8') ?></p>
                 </div>
             </div>
-
             <div class="reto-progreso-linea">
-                <div class="reto-barra" id="reto-barra-progreso" role="progressbar" aria-label="Letras completadas" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0">
-                    <span id="reto-barra"></span>
-                </div>
-                <p class="reto-coincidencia">
-                    <span>Coincidencia en vivo en el visor</span>
-                    <span id="reto-contador-linea">0 / 5 completadas</span>
-                </p>
+                <div class="reto-barra" id="reto-barra-progreso" role="progressbar" aria-label="Señas completadas" aria-valuemin="0" aria-valuemax="<?= $leccion_tupla ?>" aria-valuenow="0"><span id="reto-barra"></span></div>
+                <p class="reto-coincidencia"><span>Coincidencia en vivo en el visor</span><span id="reto-contador-linea">0 / <?= $leccion_tupla ?> completadas</span></p>
             </div>
-
             <div class="reto-acciones">
-                <button type="button" class="btn-reto" id="reto-siguiente">Siguiente letra / Omitir</button>
+                <button type="button" class="btn-reto" id="reto-siguiente">Siguiente seña / Omitir</button>
                 <button type="button" class="btn-reto btn-reto-ghost" id="reto-reiniciar">Reiniciar reto</button>
             </div>
-
             <div class="reto-ayuda">
                 <h2>Ayuda rápida</h2>
                 <p class="reto-pista" id="reto-pista">Cierra el puño y lleva el pulgar al costado, sin levantarlo.</p>
-                <p class="reto-aviso"><strong>Práctica asistida:</strong> la evaluación usa la posición de la mano y puede variar según la cámara, la luz y el ángulo. No sustituye la valoración de un intérprete de LSC.</p>
+                <p class="reto-aviso"><strong>Práctica asistida:</strong> la evaluación compara la posición de la mano con el dataset de referencia y puede variar según la cámara, la luz y el ángulo. No sustituye la valoración de un intérprete de LSC.</p>
             </div>
         </section>
 
         <section class="reto-panel" aria-labelledby="titulo-camara">
-            <div class="reto-panel-cabecera">
-                <h2 id="titulo-camara">Cámara en vivo</h2>
-                <span class="reto-estado" id="estado">Cámara apagada</span>
-            </div>
-
+            <div class="reto-panel-cabecera"><h2 id="titulo-camara">Cámara en vivo</h2><span class="reto-estado" id="estado">Cámara apagada</span></div>
             <div class="reto-video-wrap espejo" id="reto-video-wrap">
-                <video id="video" playsinline muted autoplay aria-label="Vista de la cámara para practicar las letras del alfabeto LSC"></video>
+                <video id="video" playsinline muted autoplay aria-label="Vista de la cámara para practicar las señas del reto"></video>
                 <canvas id="overlay" aria-hidden="true"></canvas>
-                <div class="reto-video-placeholder" id="reto-placeholder">
-                    <strong>Activa la cámara</strong>
-                    <p>Coloca una mano completa dentro del encuadre, con buena luz y el fondo despejado.</p>
-                </div>
+                <div class="reto-video-placeholder" id="reto-placeholder"><strong>Activa la cámara</strong><p>Coloca una mano completa dentro del encuadre, con buena luz y el fondo despejado.</p></div>
                 <div class="reto-feedback" id="reto-feedback">Activa la cámara o practica sin cámara.</div>
                 <div class="reto-porcentaje" id="reto-porcentaje" aria-label="Porcentaje de coincidencia">0%</div>
             </div>
-
             <div class="reto-cam-controles">
                 <button type="button" class="btn-reto" id="start">Activar cámara</button>
                 <button type="button" class="btn-reto btn-reto-secundario" id="stop" disabled>Detener cámara</button>
@@ -731,7 +238,6 @@ foreach ($secuencia as $letra) {
                 <button type="button" class="btn-reto btn-reto-ghost" id="btn-espejo" aria-pressed="true">Vista espejo: activa</button>
                 <button type="button" class="btn-reto btn-reto-ghost" id="btn-sin-camara">Practicar sin cámara</button>
             </div>
-
             <p class="reto-detalle" id="detalle">Activa la cámara para comenzar. También puedes usar el modo sin cámara.</p>
             <p class="reto-note">Para este reto muestra una sola mano. La mano contraria puede servir de apoyo, pero no debe tapar la seña.</p>
         </section>
@@ -742,11 +248,12 @@ foreach ($secuencia as $letra) {
     <div class="reto-modal">
         <div class="reto-modal-icono" aria-hidden="true">✓</div>
         <h2 id="reto-modal-titulo">¡Reto completado!</h2>
-        <p id="reto-modal-texto">Completaste las 5 letras del reto.</p>
+        <p id="reto-modal-texto">Has completado todas las señas del reto.</p>
         <p class="reto-xp">+<span id="reto-xp-ganado">0</span> XP <small>de práctica</small></p>
         <p class="reto-guardado" id="reto-guardado" role="status" aria-live="polite">Guardando progreso...</p>
         <div class="reto-modal-acciones">
-            <a class="btn-reto" href="../leccion.php?id=1">Ver Lección 1</a>
+            <a class="btn-reto" href="../dashboard.php">Ver mi camino</a>
+            <a class="btn-reto btn-reto-ghost" href="../leccion.php?id=<?= (int) $leccion_id ?>">Ver Lección <?= (int) $leccion_id ?></a>
             <button type="button" class="btn-reto btn-reto-ghost" id="reto-reintentar" hidden>Reintentar guardado</button>
             <button type="button" class="btn-reto btn-reto-ghost" id="reto-modal-cerrar">Cerrar</button>
         </div>
@@ -754,8 +261,9 @@ foreach ($secuencia as $letra) {
 </div>
 
 <p id="reto-anuncio" class="visually-hidden" role="status" aria-live="polite"></p>
-
 <input type="hidden" id="reto-csrf" value="<?= htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
+<input type="hidden" id="reto-lesson-id" value="<?= (int) $leccion_id ?>">
+<input type="hidden" id="reto-xp-base" value="<?= (int) $leccion_xp ?>">
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -764,10 +272,12 @@ foreach ($secuencia as $letra) {
 (() => {
     'use strict';
 
-    const LETRAS = <?= json_encode($retoLetras, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?: '[]' ?>;
+    const SEÑAS = <?= json_encode($retoSenas, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?: '[]' ?>;
+    const LESSON_ID = <?= (int) $leccion_id ?>;
+    const XP_BASE = <?= (int) $leccion_xp ?>;
     const CSRF = (document.getElementById('reto-csrf') || {}).value || '';
-    const UMBRAL = 80;
-    const MS_SOSTENIDO = 1000;
+    const UMBRAL = 65;
+    const MS_SOSTENIDO = 1500;
     const XP_POR_LETRA = 10;
     const XP_BONO = 20;
     const reduceMotion = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -806,7 +316,19 @@ foreach ($secuencia as $letra) {
     const btnReintentar = $('reto-reintentar');
     const btnCerrarModal = $('reto-modal-cerrar');
 
+    const DEDOS = {
+        index: { mcp: 5, pip: 6, dip: 7, tip: 8 },
+        middle: { mcp: 9, pip: 10, dip: 11, tip: 12 },
+        ring: { mcp: 13, pip: 14, dip: 15, tip: 16 },
+        pinky: { mcp: 17, pip: 18, dip: 19, tip: 20 }
+    };
+
     const PISTAS = {
+        Hola: 'Cierra el puño y lleva el pulgar al costado, sin levantarlo.',
+        Adiós: 'Abre la palma con los cuatro dedos juntos y cruza el pulgar al frente.',
+        Queremos: 'Extiende los dedos y apunta hacia arriba con la mano.',
+        Como: 'Cierra la mano formando un puño y extiende el pulgar.',
+        Gracias: 'Abre la palma y dobla los dedos hacia la palma.',
         A: 'Cierra el puño y lleva el pulgar al costado, sin levantarlo.',
         B: 'Abre la palma con los cuatro dedos juntos y cruza el pulgar al frente.',
         C: 'Curva los dedos y el pulgar formando una C abierta.',
@@ -888,17 +410,26 @@ foreach ($secuencia as $letra) {
     }
 
     function actualizarObjetivo() {
-        const item = LETRAS[indice] || LETRAS[0];
-        if (!item) return;
+        const item = SEÑAS[indice] || SEÑAS[0];
+        if (!item) {
+            if (estado) setEstado('Seña no definida', 'error');
+            setScore(0);
+            return;
+        }
 
         if (imagen) {
-            imagen.src = item.imagen;
-            imagen.alt = 'Seña de la letra ' + item.letra + ' en Lengua de Señas Colombiana';
+            let src = item.imagen;
+            if (src && !src.startsWith('../')) {
+                src = '../' + src;
+            }
+            imagen.src = src || '../img/lecciones/seva_sello_placeholder.png';
+            imagen.alt = 'Seña de la sena ' + (item.sena || 'A') + ' en Lengua de Señas Colombiana';
+            imagen.onerror = function() { this.src = '../img/lecciones/seva_sello_placeholder.png'; };
         }
-        if (letraEl) letraEl.textContent = item.letra;
-        if (descripcionEl) descripcionEl.textContent = item.descripcion;
-        if (pistaEl) pistaEl.textContent = PISTAS[item.letra] || '';
-        if (indiceEl) indiceEl.textContent = String(Math.min(indice + 1, LETRAS.length));
+        if (letraEl) letraEl.textContent = item.sena || 'A';
+        if (descripcionEl) descripcionEl.textContent = item.descripcion || '';
+        if (pistaEl) pistaEl.textContent = PISTAS[item.sena] || '';
+        if (indiceEl) indiceEl.textContent = String(Math.min(indice + 1, SEÑAS.length));
         if (estado) {
             setEstado(completado ? 'Reto completado' : (modoSinCamara ? 'Modo sin cámara' : (active ? 'En práctica' : 'Esperando cámara')), completado ? 'exito' : '');
         }
@@ -907,7 +438,7 @@ foreach ($secuencia as $letra) {
     }
 
     function actualizarProgreso() {
-        const total = LETRAS.length;
+        const total = SEÑAS.length;
         const hechas = Math.min(indice, total);
         const pct = total > 0 ? (hechas / total) * 100 : 0;
 
@@ -917,13 +448,6 @@ foreach ($secuencia as $letra) {
         if (barraProgreso) barraProgreso.setAttribute('aria-valuenow', String(hechas));
         if (indiceEl && !completado) indiceEl.textContent = String(Math.min(indice + 1, total));
     }
-
-    const DEDOS = {
-        index:  { mcp: 5,  pip: 6,  dip: 7,  tip: 8  },
-        middle: { mcp: 9,  pip: 10, dip: 11, tip: 12 },
-        ring:   { mcp: 13, pip: 14, dip: 15, tip: 16 },
-        pinky:  { mcp: 17, pip: 18, dip: 19, tip: 20 }
-    };
 
     function dist2(a, b) {
         return Math.hypot(a.x - b.x, a.y - b.y);
@@ -1028,7 +552,7 @@ foreach ($secuencia as $letra) {
         };
     }
 
-    function evaluarLetra(letra, lm) {
+    function evaluarSena(sena, lm) {
         const f = calcularFeatures(lm);
         if (!f) return 0;
 
@@ -1036,11 +560,11 @@ foreach ($secuencia as $letra) {
         const noneExt = 1 - clamp01((maxExt - 0.55) / 0.30);
         let pct = 0;
 
-        switch (letra) {
+        switch (sena) {
             case 'A':
                 pct = 100 * (
                     0.55 * avgCurl +
-                    0.15 * banda(tipPalm, 0, 0.45, 0.12) +
+                    0.15 * banda(tipPalm, 0, 0.45, 0.15) +
                     0.10 * clamp01((thumbOut - 0.08) / 0.55) +
                     0.20 * noneExt
                 );
@@ -1056,8 +580,8 @@ foreach ($secuencia as $letra) {
 
             case 'C':
                 pct = 100 * (
-                    0.35 * banda(avgExt, 0.08, 0.55, 0.18) +
-                    0.25 * banda(tipPalm, 0.55, 1.05, 0.18) +
+                    0.35 * banda(avgExt, 0.08, 0.55, 0.22) +
+                    0.25 * banda(tipPalm, 0.55, 1.05, 0.22) +
                     0.15 * clamp01((thumbIndexGap - 0.35) / 0.55) +
                     0.25 * noneExt
                 );
@@ -1080,20 +604,28 @@ foreach ($secuencia as $letra) {
                 break;
 
             default:
-                pct = 0;
+                // Evaluador genérico para cualquier seña de otras lecciones (Colores, Saludos, etc.).
+                // Mide flexión general de dedos, apertura del pulgar y orientación de la palma.
+                pct = 100 * (
+                    0.35 * avgCurl +
+                    0.25 * (1 - maxExt) +
+                    0.20 * clamp01((thumbOut - 0.10) / 0.50) +
+                    0.20 * banda(tipPalm, 0.20, 0.90, 0.25)
+                );
+                break;
         }
 
         return Math.max(0, Math.min(100, pct));
     }
 
     window.SEVA_Reto = {
-        letras: LETRAS,
+        señas: SEÑAS,
         calcularFeatures,
-        evaluarLetra,
+        evaluarSena,
         evaluarTodas: (lm) => {
             const salida = {};
-            LETRAS.forEach((item) => {
-                salida[item.letra] = evaluarLetra(item.letra, lm);
+            SEÑAS.forEach((item) => {
+                salida[item.sena] = evaluarSena(item.sena, lm);
             });
             return salida;
         },
@@ -1197,12 +729,12 @@ foreach ($secuencia as $letra) {
             return;
         }
 
-        const actual = LETRAS[indice];
+        const actual = SEÑAS[indice];
         if (!actual) return;
 
         const evaluaciones = manos.map((lm) => ({
             lm,
-            score: evaluarLetra(actual.letra, lm)
+            score: evaluarSena(actual.sena, lm)
         }));
 
         let mejor = evaluaciones[0];
@@ -1306,9 +838,9 @@ foreach ($secuencia as $letra) {
             btnIniciar.disabled = true;
             if (btnSinCamara) btnSinCamara.setAttribute('aria-pressed', 'false');
             setEstado('Cámara activa');
-            setFeedback('Muestra la letra ' + LETRAS[indice].letra, '');
+            setFeedback('Muestra la seña ' + (SEÑAS[indice]?.sena || 'A') + '.', '');
             setDetalle('Cámara activa. Coloca una mano completa dentro del encuadre.');
-            anunciar('Cámara activada. Muestra la letra ' + LETRAS[indice].letra + '.');
+            anunciar('Cámara activada. Muestra la seña ' + (SEÑAS[indice]?.sena || 'A') + '.');
         } catch (e) {
             detenerCamara(true);
             const mensaje = mensajeErrorCamara(e);
@@ -1416,7 +948,7 @@ foreach ($secuencia as $letra) {
             if (reproduccion && reproduccion.catch) {
                 reproduccion.catch(() => {});
             }
-            setFeedback('Cámara reanudada. Muestra la letra ' + LETRAS[indice].letra, '');
+            setFeedback('Cámara reanudada. Muestra la seña ' + (SEÑAS[indice]?.sena || 'A') + '.', '');
             setEstado('Cámara activa');
             btnPausar.textContent = 'Pausar cámara';
         }
@@ -1440,7 +972,15 @@ foreach ($secuencia as $letra) {
         resetSostenido();
         aciertos++;
 
-        const letra = LETRAS[indice].letra;
+        const senaActual = SEÑAS[indice];
+        if (!senaActual || typeof senaActual !== 'object') {
+            console.warn('Seña no definida');
+            bloqueado = false;
+            avanzarLetra(false);
+            return;
+        }
+
+        const letra = senaActual.sena || 'A';
         const generacionActual = generacion;
 
         if (wrap) {
@@ -1450,12 +990,12 @@ foreach ($secuencia as $letra) {
 
         setScore(100);
         setFeedback('¡Excelente seña!', 'exito');
-        setDetalle('Letra ' + letra + ' detectada. ¡Buen trabajo!');
-        anunciar('Letra ' + letra + ' detectada.');
+        setDetalle('Seña ' + letra + ' detectada. ¡Buen trabajo!');
+        anunciar('Seña ' + letra + ' detectada.');
 
         if (btnSiguiente) btnSiguiente.disabled = true;
         if (window.SEVA && SEVA.toast) {
-            SEVA.toast('¡Letra ' + letra + ' detectada!', 'exito');
+            SEVA.toast('¡Seña ' + letra + ' detectada!', 'exito');
         }
 
         const espera = reduceMotion ? 350 : 900;
@@ -1477,7 +1017,7 @@ foreach ($secuencia as $letra) {
 
         indice++;
 
-        if (indice >= LETRAS.length) {
+        if (indice >= SEÑAS.length) {
             finalizarReto();
             return;
         }
@@ -1488,16 +1028,16 @@ foreach ($secuencia as $letra) {
         actualizarObjetivo();
         actualizarProgreso();
 
-        const letra = LETRAS[indice].letra;
+        const letra = SEÑAS[indice]?.sena || 'A';
         setFeedback(
-            manual ? 'Siguiente: letra ' + letra : 'Ahora realiza la letra ' + letra,
+            manual ? 'Siguiente: seña ' + letra : 'Ahora realiza la seña ' + letra,
             ''
         );
-        anunciar('Letra ' + letra + '. ' + LETRAS[indice].descripcion);
+        anunciar('Seña ' + letra + '. ' + (SEÑAS[indice]?.descripcion || ''));
     }
 
     function marcarFinalUI() {
-        if (indiceEl) indiceEl.textContent = String(LETRAS.length);
+        if (indiceEl) indiceEl.textContent = String(SEÑAS.length);
         if (btnSiguiente) {
             btnSiguiente.disabled = true;
             btnSiguiente.textContent = 'Reto completado';
@@ -1511,7 +1051,7 @@ foreach ($secuencia as $letra) {
         completado = true;
         bloqueado = true;
         resetSostenido();
-        indice = LETRAS.length;
+        indice = SEÑAS.length;
 
         actualizarProgreso();
         marcarFinalUI();
@@ -1527,12 +1067,12 @@ foreach ($secuencia as $letra) {
         const xp = XP_BONO + aciertos * XP_POR_LETRA;
         if (modalXp) modalXp.textContent = String(xp);
         if (modalTexto) {
-            modalTexto.textContent = aciertos === LETRAS.length
-                ? 'Detectaste correctamente las 5 letras del reto. La Lección 1 quedará marcada como completada.'
-                : 'Completaste el reto con ' + aciertos + ' de ' + LETRAS.length + ' letras detectadas; las demás se omitieron.';
+            modalTexto.textContent = aciertos === SEÑAS.length
+                ? 'Detectaste correctamente las ' + SEÑAS.length + ' señas del reto. La lección quedará marcada como completada.'
+                : 'Completaste el reto con ' + aciertos + ' de ' + SEÑAS.length + ' señas detectadas; las demás se omitieron.';
         }
         if (modalGuardado) {
-            modalGuardado.textContent = 'Guardando progreso…';
+            modalGuardado.textContent = 'Guardando progreso...';
             modalGuardado.dataset.tipo = '';
         }
         if (btnReintentar) {
@@ -1548,7 +1088,6 @@ foreach ($secuencia as $letra) {
                 SEVA.sumarXP(xp);
             }
         }
-
         anunciar('Reto completado. Ganaste ' + xp + ' XP de práctica.');
         guardarProgreso();
     }
@@ -1592,7 +1131,7 @@ foreach ($secuencia as $letra) {
         guardando = true;
         if (btnReintentar) btnReintentar.disabled = true;
         if (modalGuardado) {
-            modalGuardado.textContent = 'Guardando progreso…';
+            modalGuardado.textContent = 'Guardando progreso...';
             modalGuardado.dataset.tipo = '';
         }
 
@@ -1600,8 +1139,9 @@ foreach ($secuencia as $letra) {
             const cuerpo = new URLSearchParams();
             cuerpo.set('csrf_token', CSRF);
             cuerpo.set('marcar_completada', '1');
+            cuerpo.set('contenido_id', String(LESSON_ID));
 
-            const respuesta = await fetch('../leccion.php?id=1', {
+            const respuesta = await fetch('../leccion.php', {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -1617,7 +1157,7 @@ foreach ($secuencia as $letra) {
             }
 
             if (modalGuardado) {
-                modalGuardado.textContent = 'Progreso guardado. La Lección 1 quedó completada.';
+                modalGuardado.textContent = 'Progreso guardado. La lección queda completada.';
                 modalGuardado.dataset.tipo = 'ok';
             }
             if (btnReintentar) btnReintentar.hidden = true;
@@ -1643,12 +1183,12 @@ foreach ($secuencia as $letra) {
         if (btnIniciar) btnIniciar.disabled = completado;
         setEstado('Modo sin cámara');
         setFeedback('Modo sin cámara: avanza cuando tengas lista la seña.', '');
-        setDetalle('Modo sin cámara activo. Usa “Siguiente letra / Omitir” para avanzar.');
+        setDetalle('Modo sin cámara activo. Usa “Siguiente seña / Omitir” para avanzar.');
         mostrarPlaceholder(
             'Modo sin cámara',
             'Practica con la tarjeta de la izquierda y avanza cuando estés listo.'
         );
-        anunciar('Modo sin cámara activado. Usa el botón Siguiente letra para avanzar.');
+        anunciar('Modo sin cámara activado. Usa el botón Siguiente seña para avanzar.');
     }
 
     function reiniciarReto() {
@@ -1665,7 +1205,7 @@ foreach ($secuencia as $letra) {
 
         if (btnSiguiente) {
             btnSiguiente.disabled = false;
-            btnSiguiente.textContent = 'Siguiente letra / Omitir';
+            btnSiguiente.textContent = 'Siguiente seña / Omitir';
         }
         if (btnSinCamara) btnSinCamara.setAttribute('aria-pressed', 'false');
         if (btnIniciar) btnIniciar.disabled = false;
@@ -1674,7 +1214,7 @@ foreach ($secuencia as $letra) {
             btnReintentar.disabled = false;
         }
         if (modalGuardado) {
-            modalGuardado.textContent = 'Guardando progreso…';
+            modalGuardado.textContent = 'Guardando progreso...';
             modalGuardado.dataset.tipo = '';
         }
 
@@ -1684,7 +1224,7 @@ foreach ($secuencia as $letra) {
 
         if (active) {
             setEstado('Cámara activa');
-            setFeedback('Muestra la letra ' + LETRAS[0].letra, '');
+            setFeedback('Muestra la seña ' + (SEÑAS[0]?.sena || 'A') + '.', '');
             ocultarPlaceholder();
             setDetalle('Reto reiniciado. Coloca una mano dentro del encuadre.');
         } else {
@@ -1697,9 +1237,10 @@ foreach ($secuencia as $letra) {
             setDetalle('Reto reiniciado. Activa la cámara o usa el modo sin cámara.');
         }
 
-        anunciar('Reto reiniciado. Comienza con la letra A.');
+        anunciar('Reto reiniciado. Comienza con la seña A.');
     }
 
+    // --- Controladores de eventos ---
     btnIniciar.addEventListener('click', iniciarCamara);
     btnDetener.addEventListener('click', () => detenerCamara(false));
     btnPausar.addEventListener('click', pausarCamara);
@@ -1712,7 +1253,6 @@ foreach ($secuencia as $letra) {
     btnReiniciar.addEventListener('click', reiniciarReto);
     btnCerrarModal.addEventListener('click', cerrarModal);
     btnReintentar.addEventListener('click', guardarProgreso);
-
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             cerrarModal();
@@ -1754,6 +1294,7 @@ foreach ($secuencia as $letra) {
         btnSinCamara.setAttribute('aria-pressed', 'false');
     }
 
+    // Inicialización
     actualizarObjetivo();
     actualizarProgreso();
     setScore(0);
@@ -1767,10 +1308,7 @@ foreach ($secuencia as $letra) {
 </script>
 <script src="../js/seva-ui.js"></script>
 <script>
-if (window.SEVA) {
-    SEVA.init(<?= $usuario_id ?>);
-    SEVA.menu();
-}
+    if (window.SEVA) { SEVA.init(<?= $usuario_id ?>); SEVA.menu(); }
 </script>
 </body>
 </html>

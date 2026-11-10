@@ -120,7 +120,40 @@ function seguridad_cerrar_sesion(): void
  */
 function seguridad_requiere_login(): void
 {
+    // Timeout de inactividad: 30 minutos sin actividad → cierre de sesión
+    if (seguridad_verificar_inactividad()) {
+        seguridad_cerrar_sesion();
+        if (!headers_sent()) {
+            header('Location: login.php?error=sesion_expirada');
+        }
+        exit;
+    }
+
     if (empty($_SESSION['usuario_id'])) {
+        // Re-autenticación mediante la cookie segura de "Recordarme"
+        $token_recordatorio = '';
+        if (isset($_COOKIE[SEGURIDAD_COOKIE_REMEMBER_NOMBRE]) && is_string($_COOKIE[SEGURIDAD_COOKIE_REMEMBER_NOMBRE])) {
+            $token_recordatorio = $_COOKIE[SEGURIDAD_COOKIE_REMEMBER_NOMBRE];
+        }
+
+        $recordatorio = null;
+        $pdo_recordatorio = $GLOBALS['pdo'] ?? null;
+        if ($token_recordatorio !== '' && $pdo_recordatorio instanceof PDO) {
+            $recordatorio = seguridad_validar_recordatorio($pdo_recordatorio, $token_recordatorio);
+        }
+
+        if ($recordatorio !== null) {
+            // Restaurar la sesión a partir del token válido
+            $_SESSION['usuario_id'] = (int) $recordatorio['id_usuario'];
+            $_SESSION['nombre']     = (string) $recordatorio['nombre'];
+            $_SESSION['email']      = (string) $recordatorio['email'];
+            seguridad_actualizar_actividad();
+            if (!headers_sent()) {
+                session_regenerate_id(true);
+            }
+            return;
+        }
+
         header('Location: login.php');
         exit;
     }
@@ -379,7 +412,144 @@ function honeypot_accionado(): bool
 }
 
 // -----------------------------------------------------------------------------
-// 6. ENTORNO Y URLS
+// 6. RECORDAR SESIÓN ("RECUÉNTAME") Y TIMEOUT DE INACCIÓN
+// -----------------------------------------------------------------------------
+// - Sesión por inactividad: 30 minutos sin actividad (marcas LAST_ACTIVITY).
+// - "Recordarme" activado: cookie segura (HttpOnly, SameSite=Lax, Secure solo
+//   en HTTPS) con persistencia de 14 días para mantener la sesión.
+
+const SEGURIDAD_SESION_INACTIVIDAD_SEGUNDOS = 1800; // 30 minutos
+const SEGURIDAD_COOKIE_REMEMBER_NOMBRE     = 'seva_remember';
+const SEGURIDAD_COOKIE_REMEMBER_DIAS      = 14;    // días de persistencia
+
+/**
+ * Actualiza la marca de tiempo de la última actividad de la sesión.
+ */
+function seguridad_actualizar_actividad(): void
+{
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        $_SESSION['LAST_ACTIVITY'] = time();
+    }
+}
+
+/**
+ * Verifica el timeout de inactividad (30 minutos). Devuelve true si la sesión
+ * está vencida y debe reiniciarse; refresca el timestamp mientras sigue activa.
+ */
+function seguridad_verificar_inactividad(): bool
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        return false;
+    }
+
+    $ultima_actividad = (int) ($_SESSION['LAST_ACTIVITY'] ?? 0);
+    if ($ultima_actividad <= 0) {
+        $_SESSION['LAST_ACTIVITY'] = time();
+        return false;
+    }
+
+    $vencida = (time() - $ultima_actividad) > SEGURIDAD_SESION_INACTIVIDAD_SEGUNDOS;
+    $_SESSION['LAST_ACTIVITY'] = time();
+    return $vencida;
+}
+
+/**
+ * Genera la cookie de "Recordarme" (segura: HttpOnly + SameSite=Lax, Secure en
+ * HTTPS) con persistencia de 14 días y persiste el hash del token en la BD.
+ */
+function seguridad_login_recordatorio(PDO $pdo, int $usuario_id): void
+{
+    $token = bin2hex(random_bytes(32));
+    $token_hash = hash('sha256', $token);
+
+    try {
+        $stmt = $pdo->prepare('UPDATE usuarios SET remember_token = ? WHERE id_usuario = ?');
+        $stmt->execute([$token_hash, $usuario_id]);
+    } catch (PDOException $e) {
+        error_log('Error al guardar el token de recordatorio en SEVA: ' . $e->getMessage());
+    }
+
+    if (!headers_sent()) {
+        setcookie(
+            SEGURIDAD_COOKIE_REMEMBER_NOMBRE,
+            $token,
+            [
+                'expires'  => time() + (SEGURIDAD_COOKIE_REMEMBER_DIAS * 86400),
+                'path'     => '/',
+                'secure'   => seguridad_es_https(),
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]
+        );
+    }
+}
+
+/**
+ * Valida el token de "Recordarme" (cookie) contra el hash almacenado en BD y
+ * devuelve los datos del usuario restaurado, o null si el token no es válido.
+ */
+function seguridad_validar_recordatorio(PDO $pdo, string $token): ?array
+{
+    if ($token === '') {
+        return null;
+    }
+
+    $token_hash = hash('sha256', $token);
+
+    try {
+        $stmt = $pdo->prepare('SELECT id_usuario, nombre, email FROM usuarios WHERE remember_token = ? LIMIT 1');
+        $stmt->execute([$token_hash]);
+        $fila = $stmt->fetch();
+
+        if (!$fila) {
+            return null;
+        }
+
+        return [
+            'id_usuario' => (int) $fila['id_usuario'],
+            'nombre'     => (string) $fila['nombre'],
+            'email'      => (string) $fila['email'],
+        ];
+    } catch (PDOException $e) {
+        error_log('Error al validar el token de recordatorio en SEVA: ' . $e->getMessage());
+        return null;
+    }
+}
+
+/**
+ * Invalida el token de "Recordarme" del usuario y elimina la cookie asociada.
+ */
+function seguridad_borrar_recordatorio(PDO $pdo, int $usuario_id): void
+{
+    if ($usuario_id > 0) {
+        try {
+            $stmt = $pdo->prepare('UPDATE usuarios SET remember_token = NULL WHERE id_usuario = ?');
+            $stmt->execute([$usuario_id]);
+        } catch (PDOException $e) {
+            error_log('Error al limpiar el token de recordatorio en SEVA: ' . $e->getMessage());
+        }
+    }
+
+    if (isset($_COOKIE[SEGURIDAD_COOKIE_REMEMBER_NOMBRE]) && is_string($_COOKIE[SEGURIDAD_COOKIE_REMEMBER_NOMBRE])) {
+        if (!headers_sent()) {
+            setcookie(
+                SEGURIDAD_COOKIE_REMEMBER_NOMBRE,
+                '',
+                [
+                    'expires'  => time() - 42000,
+                    'path'     => '/',
+                    'secure'   => seguridad_es_https(),
+                    'httponly' => true,
+                    'samesite' => 'Lax',
+                ]
+            );
+        }
+        unset($_COOKIE[SEGURIDAD_COOKIE_REMEMBER_NOMBRE]);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// 7. ENTORNO Y URLS
 // -----------------------------------------------------------------------------
 // APP_ENV controla comportamientos exclusivos de desarrollo. En producción debe
 // definirse APP_ENV=production (por ejemplo en el VirtualHost o en .htaccess):

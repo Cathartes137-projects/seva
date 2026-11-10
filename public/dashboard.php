@@ -84,7 +84,7 @@ function seva_imagen_leccion(?string $ruta): string
     if ($ruta !== '' && strpos($ruta, '..') === false && is_file(__DIR__ . '/' . $ruta)) {
         return $ruta;
     }
-    return 'img/lecciones/default.svg';
+    return 'img/lecciones/default.png';
 }
 ?>
 <!DOCTYPE html>

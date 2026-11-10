@@ -1,0 +1,72 @@
+{
+  "leccion": 3,
+  "titulo": "Familia",
+  "reference_signs": [
+  {
+    "sign_id": "mama",
+    "letter": "M",
+    "palabra": "Mamá",
+    "archivo": "img/familia/mama.png",
+    "descripcion": "Seña de la familia: mamá.",
+    "description": "Seña de la familia: mamá.",
+    "con_movimiento": false,
+    "features": { "avg_ext": [0.20, 0.60], "avg_curl": [0.40, 0.80], "max_ext": [0.40, 0.80], "tip_palm": [0.40, 1.10], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.20, 0.70], "together": [0.30, 0.80] },
+    "valid_range": { "avg_ext": [0.20, 0.60], "avg_curl": [0.40, 0.80], "max_ext": [0.40, 0.80], "tip_palm": [0.40, 1.10], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.20, 0.70], "together": [0.30, 0.80] }
+  },
+  {
+    "sign_id": "papa",
+    "letter": "P",
+    "palabra": "Papá",
+    "archivo": "img/familia/papa.png",
+    "descripcion": "Seña de la familia: papá.",
+    "description": "Seña de la familia: papá.",
+    "con_movimiento": false,
+    "features": { "avg_ext": [0.20, 0.60], "avg_curl": [0.40, 0.80], "max_ext": [0.40, 0.80], "tip_palm": [0.40, 1.10], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.20, 0.70], "together": [0.30, 0.80] },
+    "valid_range": { "avg_ext": [0.20, 0.60], "avg_curl": [0.40, 0.80], "max_ext": [0.40, 0.80], "tip_palm": [0.40, 1.10], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.20, 0.70], "together": [0.30, 0.80] }
+  },
+  {
+    "sign_id": "hijo_hija",
+    "letter": "H",
+    "palabra": "Hijo / Hija",
+    "archivo": "img/familia/hijo_hija.png",
+    "descripcion": "Seña de la familia: hijo / hija.",
+    "description": "Seña de la familia: hijo / hija.",
+    "con_movimiento": false,
+    "features": { "avg_ext": [0.20, 0.60], "avg_curl": [0.40, 0.80], "max_ext": [0.40, 0.80], "tip_palm": [0.40, 1.10], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.20, 0.70], "together": [0.30, 0.80] },
+    "valid_range": { "avg_ext": [0.20, 0.60], "avg_curl": [0.40, 0.80], "max_ext": [0.40, 0.80], "tip_palm": [0.40, 1.10], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.20, 0.70], "together": [0.30, 0.80] }
+  },
+  {
+    "sign_id": "hermano_hermana",
+    "letter": "H",
+    "palabra": "Hermano / Hermana",
+    "archivo": "img/familia/hermano_hermana.png",
+    "descripcion": "Seña de la familia: hermano / hermana.",
+    "description": "Seña de la familia: hermano / hermana.",
+    "con_movimiento": false,
+    "features": { "avg_ext": [0.20, 0.60], "avg_curl": [0.40, 0.80], "max_ext": [0.40, 0.80], "tip_palm": [0.40, 1.10], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.20, 0.70], "together": [0.30, 0.80] },
+    "valid_range": { "avg_ext": [0.20, 0.60], "avg_curl": [0.40, 0.80], "max_ext": [0.40, 0.80], "tip_palm": [0.40, 1.10], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.20, 0.70], "together": [0.30, 0.80] }
+  },
+  {
+    "sign_id": "abuelo",
+    "letter": "A",
+    "palabra": "Abuelo",
+    "archivo": "img/familia/abuelo.png",
+    "descripcion": "Seña de la familia: abuelo.",
+    "description": "Seña de la familia: abuelo.",
+    "con_movimiento": false,
+    "features": { "avg_ext": [0.20, 0.60], "avg_curl": [0.40, 0.80], "max_ext": [0.40, 0.80], "tip_palm": [0.40, 1.10], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.20, 0.70], "together": [0.30, 0.80] },
+    "valid_range": { "avg_ext": [0.20, 0.60], "avg_curl": [0.40, 0.80], "max_ext": [0.40, 0.80], "tip_palm": [0.40, 1.10], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.20, 0.70], "together": [0.30, 0.80] }
+  },
+  {
+    "sign_id": "abuela",
+    "letter": "A",
+    "palabra": "Abuela",
+    "archivo": "img/familia/abuelo.png",
+    "descripcion": "Seña de la familia: abuela.",
+    "description": "Seña de la familia: abuela.",
+    "con_movimiento": false,
+    "features": { "avg_ext": [0.20, 0.60], "avg_curl": [0.40, 0.80], "max_ext": [0.40, 0.80], "tip_palm": [0.40, 1.10], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.20, 0.70], "together": [0.30, 0.80] },
+    "valid_range": { "avg_ext": [0.20, 0.60], "avg_curl": [0.40, 0.80], "max_ext": [0.40, 0.80], "tip_palm": [0.40, 1.10], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.20, 0.70], "together": [0.30, 0.80] }
+  }
+  ]
+}

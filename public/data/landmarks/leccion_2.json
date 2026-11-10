@@ -1,0 +1,72 @@
+{
+  "leccion": 2,
+  "titulo": "Saludos y presentaciones",
+  "reference_signs": [
+  {
+    "sign_id": "hola",
+    "letter": "H",
+    "palabra": "Hola",
+    "archivo": "img/guia/hola_informal.png",
+    "descripcion": "Con la palma abierta orientada hacia el frente, realiza un movimiento suave de lado a lado cerca de la sien.",
+    "description": "Con la palma abierta orientada hacia el frente, realiza un movimiento suave de lado a lado cerca de la sien.",
+    "con_movimiento": true,
+    "features": { "avg_ext": [0.40, 0.80], "avg_curl": [0.20, 0.60], "max_ext": [0.60, 1.00], "tip_palm": [0.70, 1.40], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.30, 0.90], "together": [0.10, 0.60] },
+    "valid_range": { "avg_ext": [0.40, 0.80], "avg_curl": [0.20, 0.60], "max_ext": [0.60, 1.00], "tip_palm": [0.70, 1.40], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.30, 0.90], "together": [0.10, 0.60] }
+  },
+  {
+    "sign_id": "buenos_dias",
+    "letter": "B",
+    "palabra": "Buenos días",
+    "archivo": "img/guia/buenos_dias.png",
+    "descripcion": "Junta las yemas de los dedos de una mano sobre el pecho y asciende el brazo suavemente simulando la salida del sol.",
+    "description": "Junta las yemas de los dedos de una mano sobre el pecho y asciende el brazo suavemente simulando la salida del sol.",
+    "con_movimiento": true,
+    "features": { "avg_ext": [0.40, 0.80], "avg_curl": [0.20, 0.60], "max_ext": [0.50, 0.90], "tip_palm": [0.60, 1.30], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.30, 0.90], "together": [0.30, 0.80] },
+    "valid_range": { "avg_ext": [0.40, 0.80], "avg_curl": [0.20, 0.60], "max_ext": [0.50, 0.90], "tip_palm": [0.60, 1.30], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.30, 0.90], "together": [0.30, 0.80] }
+  },
+  {
+    "sign_id": "mucho_gusto",
+    "letter": "M",
+    "palabra": "Mucho gusto",
+    "archivo": "img/guia/que_gusto.png",
+    "descripcion": "Con los pulgares hacia arriba, toca primero suavemente tu pecho y luego extiende ambas manos hacia tu interlocutor.",
+    "description": "Con los pulgares hacia arriba, toca primero suavemente tu pecho y luego extiende ambas manos hacia tu interlocutor.",
+    "con_movimiento": true,
+    "features": { "avg_ext": [0.40, 0.80], "avg_curl": [0.20, 0.60], "max_ext": [0.60, 1.00], "tip_palm": [0.70, 1.40], "thumb_out": [0.40, 1.00], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.30, 0.90], "together": [0.10, 0.60] },
+    "valid_range": { "avg_ext": [0.40, 0.80], "avg_curl": [0.20, 0.60], "max_ext": [0.60, 1.00], "tip_palm": [0.70, 1.40], "thumb_out": [0.40, 1.00], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.30, 0.90], "together": [0.10, 0.60] }
+  },
+  {
+    "sign_id": "como_estas",
+    "letter": "C",
+    "palabra": "¿Cómo estás?",
+    "archivo": "img/guia/preguntar.png",
+    "descripcion": "Mueve ambas manos con pulgares arriba alternadamente hacia adelante, acompañando con una expresión facial interrogativa.",
+    "description": "Mueve ambas manos con pulgares arriba alternadamente hacia adelante, acompañando con una expresión facial interrogativa.",
+    "con_movimiento": true,
+    "features": { "avg_ext": [0.30, 0.70], "avg_curl": [0.30, 0.70], "max_ext": [0.50, 0.90], "tip_palm": [0.60, 1.30], "thumb_out": [0.30, 0.90], "thumb_index_gap": [0.20, 0.80], "thumb_straight": [0.30, 0.90], "together": [0.20, 0.70] },
+    "valid_range": { "avg_ext": [0.30, 0.70], "avg_curl": [0.30, 0.70], "max_ext": [0.50, 0.90], "tip_palm": [0.60, 1.30], "thumb_out": [0.30, 0.90], "thumb_index_gap": [0.20, 0.80], "thumb_straight": [0.30, 0.90], "together": [0.20, 0.70] }
+  },
+  {
+    "sign_id": "mi_nombre",
+    "letter": "N",
+    "palabra": "Mi nombre es",
+    "archivo": "img/guia/nombre.png",
+    "descripcion": "Toca dos veces los dedos índice y medio entre ambas manos de forma cruzada y procede a deletrear tu nombre.",
+    "description": "Toca dos veces los dedos índice y medio entre ambas manos de forma cruzada y procede a deletrear tu nombre.",
+    "con_movimiento": true,
+    "features": { "avg_ext": [0.30, 0.70], "avg_curl": [0.30, 0.70], "max_ext": [0.50, 0.90], "tip_palm": [0.50, 1.20], "thumb_out": [0.20, 0.70], "thumb_index_gap": [0.20, 0.80], "thumb_straight": [0.30, 0.90], "together": [0.20, 0.70] },
+    "valid_range": { "avg_ext": [0.30, 0.70], "avg_curl": [0.30, 0.70], "max_ext": [0.50, 0.90], "tip_palm": [0.50, 1.20], "thumb_out": [0.20, 0.70], "thumb_index_gap": [0.20, 0.80], "thumb_straight": [0.30, 0.90], "together": [0.20, 0.70] }
+  },
+  {
+    "sign_id": "adios",
+    "letter": "A",
+    "palabra": "Adiós",
+    "archivo": "img/guia/adios.png",
+    "descripcion": "Abre y cierra suavemente los cuatro dedos con la palma extendida hacia la otra persona en gesto de despedida.",
+    "description": "Abre y cierra suavemente los cuatro dedos con la palma extendida hacia la otra persona en gesto de despedida.",
+    "con_movimiento": true,
+    "features": { "avg_ext": [0.30, 0.70], "avg_curl": [0.30, 0.70], "max_ext": [0.40, 0.80], "tip_palm": [0.50, 1.20], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.20, 0.70], "together": [0.30, 0.80] },
+    "valid_range": { "avg_ext": [0.30, 0.70], "avg_curl": [0.30, 0.70], "max_ext": [0.40, 0.80], "tip_palm": [0.50, 1.20], "thumb_out": [0.10, 0.60], "thumb_index_gap": [0.10, 0.60], "thumb_straight": [0.20, 0.70], "together": [0.30, 0.80] }
+  }
+  ]
+}

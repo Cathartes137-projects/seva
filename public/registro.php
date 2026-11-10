@@ -135,11 +135,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-weight:700;
         font-size:1.25rem;
         letter-spacing:0.01em;
+        text-decoration:none;
     }
     .marca .punto{
         width:10px;height:10px;border-radius:50%;
         background:var(--verde-seva);
         display:inline-block;
+    }
+    .marca:focus-visible{
+        outline:3px solid var(--verde-seva);
+        outline-offset:4px;
+        border-radius:0.4rem;
     }
     .hero-texto{
         position:relative;
@@ -329,6 +335,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         outline-offset:2px;
     }
 
+    .enlace-volver{
+        display:inline-flex;
+        align-items:center;
+        gap:0.5rem;
+        font-size:0.9rem;
+        font-weight:600;
+        color:var(--azul-seva);
+        text-decoration:none;
+        margin:0 0 1.4rem;
+        min-height:44px;
+        padding:0.25rem 0;
+        border-radius:0.4rem;
+    }
+    .enlace-volver:hover{ text-decoration:underline; }
+    .enlace-volver:focus-visible{
+        outline:3px solid var(--azul-seva);
+        outline-offset:2px;
+    }
+    .enlace-volver svg{ width:20px; height:20px; flex-shrink:0; }
+
     .campo{ margin-bottom:1.15rem; }
     .campo label{
         display:block;
@@ -425,7 +451,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- ================= IZQUIERDA: ilustración ================= -->
     <div class="panel-senas">
-        <div class="marca"><span class="punto"></span>SEVA</div>
+        <a class="marca" href="index.html" aria-label="SEVA: volver a la página principal"><span class="punto"></span>SEVA</a>
 
         <div class="hero-texto">
             <h1>Cada seña <span>abre</span> una conversación.</h1>
@@ -472,6 +498,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="ojo">Registro</p>
             <h2>Crea tu cuenta</h2>
             <p class="sub">Empieza a aprender lengua de señas hoy mismo.</p>
+
+            <a href="index.html" class="enlace-volver" aria-label="Volver a la página principal">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Volver al Inicio
+            </a>
 
             <?php if ($error): ?>
                 <div class="alerta error" role="alert" aria-live="assertive">

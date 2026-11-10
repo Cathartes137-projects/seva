@@ -18,6 +18,11 @@ if (csrf_error_en_url()) {
     $error = 'La solicitud expiró o no es válida. Inténtalo de nuevo.';
 }
 
+// Aviso cuando la sesión expiró por inactividad (timeout de 30 minutos)
+if (isset($_GET['error']) && $_GET['error'] === 'sesion_expirada') {
+    $error = 'Tu sesión expiró por inactividad. Inicia sesión de nuevo.';
+}
+
 // Mensaje de confirmación tras restablecer la contraseña (Fase 5 / D13)
 if (isset($_GET['recuperado']) && $_GET['recuperado'] === '1') {
     $exito = 'Tu contraseña se actualizó correctamente. Ya puedes iniciar sesión.';
@@ -63,6 +68,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['usuario_id'] = $fila['id_usuario'];
             $_SESSION['nombre']     = $fila['nombre'];
             $_SESSION['email']      = $fila['email'];
+            seguridad_actualizar_actividad();
+
+            // Opción A: "Recordarme" → cookie segura de 14 días o borrado del token
+            if (!empty($_POST['remember'])) {
+                seguridad_login_recordatorio($pdo, (int) $fila['id_usuario']);
+            } else {
+                seguridad_borrar_recordatorio($pdo, (int) $fila['id_usuario']);
+            }
+
             if (!headers_sent()) {
                 header('Location: dashboard.php');
                 exit;
@@ -147,11 +161,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-family:'Baloo 2', sans-serif;
         font-weight:700;
         font-size:1.25rem;
+        text-decoration:none;
     }
     .marca .punto{
         width:10px;height:10px;border-radius:50%;
         background:var(--verde-seva);
         display:inline-block;
+    }
+    .marca:focus-visible{
+        outline:3px solid var(--verde-seva);
+        outline-offset:4px;
+        border-radius:0.4rem;
     }
     .hero-texto{
         position:relative;
@@ -283,6 +303,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         border-color:rgba(40, 167, 69, 0.35);
     }
 
+    .enlace-volver{
+        display:inline-flex;
+        align-items:center;
+        gap:0.5rem;
+        font-size:0.9rem;
+        font-weight:600;
+        color:var(--azul-seva);
+        text-decoration:none;
+        margin:0 0 1.4rem;
+        min-height:44px;
+        padding:0.25rem 0;
+        border-radius:0.4rem;
+    }
+    .enlace-volver:hover{ text-decoration:underline; }
+    .enlace-volver:focus-visible{
+        outline:3px solid var(--azul-seva);
+        outline-offset:2px;
+    }
+    .enlace-volver svg{ width:20px; height:20px; flex-shrink:0; }
+
     .campo{ margin-bottom:1.15rem; }
     .campo label{
         display:block;
@@ -330,6 +370,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     .fila-extra a:hover{ color:var(--azul-oscuro); text-decoration:underline; }
     .fila-extra a:focus-visible{
+        outline:3px solid var(--azul-seva);
+        outline-offset:2px;
+    }
+
+    .recordatorio{
+        display:inline-flex;
+        align-items:center;
+        gap:0.6rem;
+        font-size:0.9rem;
+        font-weight:600;
+        color:var(--ink);
+        min-height:44px;
+        margin:0 0 1.2rem;
+        cursor:pointer;
+    }
+    .recordatorio input[type="checkbox"]{
+        width:20px;
+        height:20px;
+        margin:0;
+        cursor:pointer;
+        accent-color:var(--azul-seva);
+        flex-shrink:0;
+    }
+    .recordatorio input[type="checkbox"]:focus-visible{
         outline:3px solid var(--azul-seva);
         outline-offset:2px;
     }
@@ -392,7 +456,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- ================= IZQUIERDA: ilustración ================= -->
     <div class="panel-senas">
-        <div class="marca"><span class="punto"></span>SEVA</div>
+        <a class="marca" href="index.html" aria-label="SEVA: volver a la página principal"><span class="punto"></span>SEVA</a>
 
         <div class="hero-texto">
             <h1>Qué bueno <span>verte</span> otra vez.</h1>
@@ -436,6 +500,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h2>Inicia sesión</h2>
             <p class="sub">Ingresa con tu correo y contraseña.</p>
 
+            <a href="index.html" class="enlace-volver" aria-label="Volver a la página principal">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Volver al Inicio
+            </a>
+
             <?php if ($error): ?>
                 <div class="alerta" role="alert" aria-live="assertive">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0; margin-top:1px;">
@@ -472,6 +544,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="fila-extra">
                     <a href="recuperar.php">¿Olvidaste tu contraseña?</a>
                 </div>
+
+                <label class="recordatorio">
+                    <input type="checkbox" id="remember-me" name="remember" value="1" autocomplete="off">
+                    <span>Recordarme</span>
+                </label>
 
                 <button type="submit" class="btn-entrar">Entrar</button>
             </form>
